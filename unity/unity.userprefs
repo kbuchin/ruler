@@ -1,0 +1,16 @@
+﻿<Properties StartupItem="unity.CSharp.csproj">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Menu\credits.txt">
+    <Files>
+      <File FileName="Assets\Scripts\KingsTaxes\Tags.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\FishManager.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\KingsTaxes\Controllers\TSPController.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\KingsTaxes\ReshapingMesh.cs" Line="47" Column="75" />
+      <File FileName="Assets\Menu\credits.txt" Line="8" Column="21" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

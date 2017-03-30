@@ -1,0 +1,6 @@
+--Better Menus with strech?
+	--Add Back button everywhere (so one can navigate back to the main menu) 
+--Actually add music
+--Add sound effect(s)
+--Endless modes
+

@@ -1,0 +1,6 @@
+@Misc{art-gallery-unicamp-page,
+ author = {Davi C. Tozoni and Pedro J. de Rezende and Cid C. de Souza},
+ title = {The {Art Gallery Problem} Project},
+ year = {2013},
+ note = {\sl{www.ic.unicamp.br/$\sim$cid/Problem-instances/Art-Gallery/AGPPG}}
+}
