@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using System;
 
 namespace KingsTaxes
 {
@@ -10,6 +11,7 @@ namespace KingsTaxes
         private Graph m_goalgraph;
         [SerializeField]
         private GameObject m_solutionRoadPrefab;
+        private DisableButtonContainer m_advanceButton;
 
         protected override void Start()
         {
@@ -17,6 +19,9 @@ namespace KingsTaxes
             m_goalgraph = new Graph(m_settlements.Select<Settlement, Vector2>(go => go.Pos).ToList());
             m_goalgraph.MakeCompleteGraph();
             m_goalgraph.MinimumSpanningTree();
+
+            m_advanceButton = GameObject.FindGameObjectWithTag(Tags.AdvanceButtonContainer).GetComponent<DisableButtonContainer>();
+            m_advanceButton.Disable();
         }
 
 
@@ -24,9 +29,10 @@ namespace KingsTaxes
         {
             if (Graph.EqualGraphs(m_graph, m_goalgraph))
             {
-                AdvanceLevel();
+                m_advanceButton.Enable();
             }   
         }
+
 
         protected override List<Vector2> InitEndlessLevel(int level, float width, float height)
         {
