@@ -1,11 +1,11 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 using Algo.Polygons;
 using System.Linq;
 using UnityEngine.SceneManagement;
 using Algo;
 using UnityEngine.UI;
+using KingsTaxes;
 
 namespace ArtGallery {
     public class ArtGalleryController : MonoBehaviour
@@ -29,8 +29,11 @@ namespace ArtGallery {
         private IslandMesh m_levelMesh;
         private List<LightHouse> m_lighthouses = new List<LightHouse>();
         private LightHouse m_selectedLighthouse;
+        private DisableButtonContainer m_advanceButton;
+
 
         internal VertexHolePolygon LevelPolygon { get { return m_level;} }
+
 
         public void Start()
         {
@@ -38,6 +41,9 @@ namespace ArtGallery {
             m_levelMesh = GetComponentInChildren<IslandMesh>();
             m_levelMesh.Polygon = m_level.Outside;
             UpdateLighthouseText();
+
+            m_advanceButton = GameObject.FindGameObjectWithTag(Tags.AdvanceButtonContainer).GetComponent<DisableButtonContainer>();
+            m_advanceButton.Disable();
         }
 
         internal void SelectLighthouse(LightHouse a_select)
@@ -103,7 +109,7 @@ namespace ArtGallery {
                 Debug.Log(ratio + "part is visible");
                 if(ratio > 1 - m_eps)
                 {
-                    AdvanceLevel();
+                    m_advanceButton.Enable();
                 }
 
                 LevelPolygon.Vision(m_lighthouses[0].Pos);
@@ -113,7 +119,7 @@ namespace ArtGallery {
         /// <summary>
         /// Advances to the next level
         /// </summary>
-        private void AdvanceLevel()
+        public void AdvanceLevel()
         {
             SceneManager.LoadScene(m_nextlevel);
         }
