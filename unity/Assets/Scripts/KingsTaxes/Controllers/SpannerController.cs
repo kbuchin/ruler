@@ -84,19 +84,19 @@ namespace KingsTaxes
             text = "Your current graph has ratio " + a_verification.Ratio.ToString("0.##") + " and has length " + a_tourlength.ToString("0.##")+". ";
             if (a_verification.IsSpanner)
             {
-                text += "Hence it's a spanner.";
+                text += "Hence it's a 1.5-spanner.";
             }
             else
             {
-                text += "Hence it's NO spanner.";
+                text += "Hence it's NO 1.5-spanner.";
             }
 
-            text += "\nThe greedy spanner has length: " + m_thresholdscore.ToString("0.##");
+            text += "\nThe greedy 1.5-spanner has length: " + m_thresholdscore.ToString("0.##");
             
 
             if ( !m_endlessMode)
             {
-                text += "\nThe best spanner ever had length: " + m_highscore.ToString("0.##");
+                text += "\nThe shorthest 1.5-spanner on this instance had length: " + m_highscore.ToString("0.##");
             }
 
             m_text.text = text;

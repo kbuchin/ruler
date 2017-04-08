@@ -1,0 +1,164 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>10.0.20506</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <RootNamespace></RootNamespace>
+    <ProjectGuid>{C3DA89E1-70C6-7D6C-993E-C8F831D35880}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <AssemblyName>Assembly-CSharp</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <BaseDirectory>Assets</BaseDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>Temp\bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;UNITY_5_3_OR_NEWER;UNITY_5_4_OR_NEWER;UNITY_5_5_OR_NEWER;UNITY_5_5_2;UNITY_5_5;UNITY_5;ENABLE_AUDIO;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_DUCK_TYPING;ENABLE_GENERICS;ENABLE_MICROPHONE;ENABLE_MULTIPLE_DISPLAYS;ENABLE_PHYSICS;ENABLE_SPRITERENDERER_FLIPPING;ENABLE_SPRITES;ENABLE_TERRAIN;ENABLE_RAKNET;ENABLE_UNET;ENABLE_LZMA;ENABLE_UNITYEVENTS;ENABLE_WEBCAM;ENABLE_WWW;ENABLE_CLOUD_SERVICES_COLLAB;ENABLE_CLOUD_SERVICES_ADS;ENABLE_CLOUD_HUB;ENABLE_CLOUD_PROJECT_ID;ENABLE_CLOUD_SERVICES_UNET;ENABLE_CLOUD_SERVICES_BUILD;ENABLE_CLOUD_LICENSE;ENABLE_EDITOR_METRICS;ENABLE_EDITOR_METRICS_CACHING;INCLUDE_DYNAMIC_GI;INCLUDE_GI;PLATFORM_SUPPORTS_MONO;RENDER_SOFTWARE_CURSOR;INCLUDE_PUBNUB;ENABLE_PLAYMODE_TESTS_RUNNER;ENABLE_SCRIPTING_NEW_CSHARP_COMPILER;UNITY_STANDALONE_WIN;UNITY_STANDALONE;ENABLE_SUBSTANCE;ENABLE_RUNTIME_GI;ENABLE_MOVIES;ENABLE_NETWORK;ENABLE_CRUNCH_TEXTURE_COMPRESSION;ENABLE_UNITYWEBREQUEST;ENABLE_CLOUD_SERVICES;ENABLE_CLOUD_SERVICES_ANALYTICS;ENABLE_CLOUD_SERVICES_PURCHASING;ENABLE_CLOUD_SERVICES_CRASH_REPORTING;ENABLE_EVENT_QUEUE;ENABLE_CLUSTERINPUT;ENABLE_VIDEO;ENABLE_VR;ENABLE_WEBSOCKET_HOST;ENABLE_MONO;ENABLE_PROFILER;UNITY_ASSERTIONS;UNITY_EDITOR;UNITY_EDITOR_64;UNITY_EDITOR_WIN;UNITY_TEAM_LICENSE;CROSS_PLATFORM_INPUT</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>0169</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>Temp\bin\Release\</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>0169</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.XML" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="UnityEngine">
+      <HintPath>C:/Program Files/Unity/Editor/Data/Managed/UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEditor">
+      <HintPath>C:/Program Files/Unity/Editor/Data/Managed/UnityEditor.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+     <Compile Include="Assets\Scripts\Algo\AlgoException.cs" />
+     <Compile Include="Assets\Scripts\Algo\BoundingBoxComputer.cs" />
+     <Compile Include="Assets\Scripts\Algo\DCEL\DCEL.cs" />
+     <Compile Include="Assets\Scripts\Algo\DCEL\DECLHelper.cs" />
+     <Compile Include="Assets\Scripts\Algo\DCEL\Face.cs" />
+     <Compile Include="Assets\Scripts\Algo\DCEL\Halfedge.cs" />
+     <Compile Include="Assets\Scripts\Algo\DCEL\PositionOnEdge.cs" />
+     <Compile Include="Assets\Scripts\Algo\DataStructure\BinaryHeap.cs" />
+     <Compile Include="Assets\Scripts\Algo\DataStructure\FastPriorityQueue.cs" />
+     <Compile Include="Assets\Scripts\Algo\DataStructure\FastPriorityQueueNode.cs" />
+     <Compile Include="Assets\Scripts\Algo\DataStructure\IPriorityQueue.cs" />
+     <Compile Include="Assets\Scripts\Algo\DataStructure\SimplePriorityQueue.cs" />
+     <Compile Include="Assets\Scripts\Algo\FloatInterval.cs" />
+     <Compile Include="Assets\Scripts\Algo\GeomDual.cs" />
+     <Compile Include="Assets\Scripts\Algo\Graph\Edge.cs" />
+     <Compile Include="Assets\Scripts\Algo\Graph\EdgeByMinLengthComparer.cs" />
+     <Compile Include="Assets\Scripts\Algo\Graph\Graph.cs" />
+     <Compile Include="Assets\Scripts\Algo\Graph\Vertex.cs" />
+     <Compile Include="Assets\Scripts\Algo\Line.cs" />
+     <Compile Include="Assets\Scripts\Algo\LineSegment.cs" />
+     <Compile Include="Assets\Scripts\Algo\MathUtil.cs" />
+     <Compile Include="Assets\Scripts\Algo\Polygons\IPolygon.cs" />
+     <Compile Include="Assets\Scripts\Algo\Polygons\ISimplePolygon.cs" />
+     <Compile Include="Assets\Scripts\Algo\Polygons\VertexPolygon\VertexHolePolygon.cs" />
+     <Compile Include="Assets\Scripts\Algo\Polygons\VertexPolygon\VertexMultiPolygon.cs" />
+     <Compile Include="Assets\Scripts\Algo\Polygons\VertexPolygon\VertexSimplePolygon.cs" />
+     <Compile Include="Assets\Scripts\Algo\RectExtension.cs" />
+     <Compile Include="Assets\Scripts\ArtGallery\ArtGalleryController.cs" />
+     <Compile Include="Assets\Scripts\ArtGallery\IslandMesh.cs" />
+     <Compile Include="Assets\Scripts\ArtGallery\LightHouse.cs" />
+     <Compile Include="Assets\Scripts\ArtGallery\Triangualtor.cs" />
+     <Compile Include="Assets\Scripts\ArtGallery\VertexSimplePolygonMesh.cs" />
+     <Compile Include="Assets\Scripts\Delaunay.cs" />
+     <Compile Include="Assets\Scripts\Divide\ControlsOverlay.cs" />
+     <Compile Include="Assets\Scripts\Divide\ControlsOverlayButton.cs" />
+     <Compile Include="Assets\Scripts\Divide\DivideLineDrawer.cs" />
+     <Compile Include="Assets\Scripts\Divide\GameController.cs" />
+     <Compile Include="Assets\Scripts\Divide\MouseLine.cs" />
+     <Compile Include="Assets\Scripts\Divide\Solution.cs" />
+     <Compile Include="Assets\Scripts\Divide\Tags.cs" />
+     <Compile Include="Assets\Scripts\Divide\Thing.cs" />
+     <Compile Include="Assets\Scripts\FishManager.cs" />
+     <Compile Include="Assets\Scripts\GUIManager.cs" />
+     <Compile Include="Assets\Scripts\General\ColoredLines.cs" />
+     <Compile Include="Assets\Scripts\General\GraphDrawer.cs" />
+     <Compile Include="Assets\Scripts\General\LineDrawer.cs" />
+     <Compile Include="Assets\Scripts\GraphManager.cs" />
+     <Compile Include="Assets\Scripts\HalfEdge.cs" />
+     <Compile Include="Assets\Scripts\KingsTaxes\Controllers\KingsTaxesController.cs" />
+     <Compile Include="Assets\Scripts\KingsTaxes\Controllers\MSTController.cs" />
+     <Compile Include="Assets\Scripts\KingsTaxes\Controllers\SpannerController.cs" />
+     <Compile Include="Assets\Scripts\KingsTaxes\Controllers\TSPController.cs" />
+     <Compile Include="Assets\Scripts\KingsTaxes\DisableButtonContainer.cs" />
+     <Compile Include="Assets\Scripts\KingsTaxes\ReshapingMesh.cs" />
+     <Compile Include="Assets\Scripts\KingsTaxes\Road.cs" />
+     <Compile Include="Assets\Scripts\KingsTaxes\RoadBuilder.cs" />
+     <Compile Include="Assets\Scripts\KingsTaxes\Settlement.cs" />
+     <Compile Include="Assets\Scripts\KingsTaxes\Tags.cs" />
+     <Compile Include="Assets\Scripts\KingsTaxes\UI\FreeModeButton.cs" />
+     <Compile Include="Assets\Scripts\KingsTaxes\UI\LevelCompleteMarker.cs" />
+     <Compile Include="Assets\Scripts\KingsTaxes\UI\MenuController.cs" />
+     <Compile Include="Assets\Scripts\KingsTaxes\UI\NextLevel.cs" />
+     <Compile Include="Assets\Scripts\KingsTaxes\UI\VictoryController.cs" />
+     <Compile Include="Assets\Scripts\Menu\Quiter.cs" />
+     <Compile Include="Assets\Scripts\Menu\SceneLoader.cs" />
+     <Compile Include="Assets\Scripts\MeshContainer.cs" />
+     <Compile Include="Assets\Scripts\Triangle.cs" />
+     <Compile Include="Assets\Scripts\Utility.cs" />
+     <Compile Include="Assets\Scripts\Vertex.cs" />
+     <Compile Include="Assets\Scripts\VoronoiDCEL\AATree.cs" />
+     <Compile Include="Assets\Scripts\VoronoiDCEL\DCEL.cs" />
+     <Compile Include="Assets\Scripts\VoronoiDCEL\Edge.cs" />
+     <Compile Include="Assets\Scripts\VoronoiDCEL\Face.cs" />
+     <Compile Include="Assets\Scripts\VoronoiDCEL\HalfEdge.cs" />
+     <Compile Include="Assets\Scripts\VoronoiDCEL\StatusTree.cs" />
+     <Compile Include="Assets\Scripts\VoronoiDCEL\Vertex.cs" />
+     <None Include="Assets\Menu\credits.txt" />
+     <None Include="Assets\Libs\redist.txt" />
+     <None Include="Assets\Libs\System.Threading.xml" />
+     <None Include="Assets\Libs\Net35\MathNet.Numerics.xml" />
+     <None Include="Assets\editor\README.txt" />
+ <Reference Include="UnityEngine.UI">
+ <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
+ </Reference>
+ <Reference Include="UnityEngine.Networking">
+ <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll</HintPath>
+ </Reference>
+ <Reference Include="UnityEngine.PlaymodeTestsRunner">
+ <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/PlaymodeTestsRunner/UnityEngine.PlaymodeTestsRunner.dll</HintPath>
+ </Reference>
+ <Reference Include="UnityEngine.Analytics">
+ <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/UnityAnalytics/UnityEngine.Analytics.dll</HintPath>
+ </Reference>
+ <Reference Include="UnityEngine.HoloLens">
+ <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/UnityHoloLens/RuntimeEditor/UnityEngine.HoloLens.dll</HintPath>
+ </Reference>
+ <Reference Include="UnityEngine.VR">
+ <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/UnityVR/RuntimeEditor/UnityEngine.VR.dll</HintPath>
+ </Reference>
+ <Reference Include="System.Threading">
+ <HintPath>C:/Users/Sander/Documents/ruler/unity/Assets/Libs/System.Threading.dll</HintPath>
+ </Reference>
+ <Reference Include="MathNet.Numerics">
+ <HintPath>C:/Users/Sander/Documents/ruler/unity/Assets/Libs/Net35/MathNet.Numerics.dll</HintPath>
+ </Reference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  
+</Project>
