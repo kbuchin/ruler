@@ -14,8 +14,8 @@ namespace KingsTaxes
 
         private void Awake()
         {
-            m_child = transform.FindChild("Button").gameObject; //Hackily get child
-            m_text = m_child.transform.FindChild("Text").gameObject.GetComponent<Text>();
+            m_child = transform.Find("Button").gameObject; //Hackily get child
+            m_text = m_child.transform.Find("Text").gameObject.GetComponent<Text>();
         }
 
         /// <summary>

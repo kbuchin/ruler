@@ -17,7 +17,7 @@ namespace KingsTaxes.UI
             } else
             {
                 var score = PlayerPrefs.GetInt(m_numberOfLevelsKey, 0);
-                this.transform.FindChild("Panel").FindChild("Text").GetComponent<Text>().text = score.ToString();
+                this.transform.Find("Panel").Find("Text").GetComponent<Text>().text = score.ToString();
             }
         }
     }

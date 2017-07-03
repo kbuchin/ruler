@@ -110,22 +110,30 @@ namespace Algo.Polygons
                 linesegments.AddRange(hole.Segments());
             }
 
-            //remove those segments collinear with the gaurd position. These disturb the algorithm and are unnesecary since the algorithm automaticly continues at to the foremost wall.
+            //remove those segments collinear with the guard position. These disturb the algorithm and are unnecessary since the algorithm automatically continues at to the foremost wall.
             var removeSegments = new List<LineSegment>();
+            //kevin: dist, minDist for debugging
+            //double minDist = 10.0;
+            //double dist;
             foreach (var seg in linesegments)
             {
                 if (seg.Line.DistanceToPoint(a_pos) <= m_eps)
                 {
                     removeSegments.Add(seg);
                 }
+                //dist = seg.Line.DistanceToPoint(a_pos);
+                //if (dist < minDist) minDist = dist;
             }
+            //Debug.Log("smallest distance: " + minDist);
             foreach (var seg in removeSegments)
             {
-                linesegments.Remove(seg);
+                //kevin: removing edges doesn't seem to solve the problem, so lets not do it for now
+                //Debug.Log("removed a segment");
+                //linesegments.Remove(seg);
             }
 
             //fill eventlist with begin and end points of segments. Also set up status structure.
-            List<LineSegment> status = new List<LineSegment>(); //abuse sorted list, we are only intressted in the key
+            List<LineSegment> status = new List<LineSegment>(); //abuse sorted list, we are only interested in the key
             SimplePriorityQueue<BeginVertex> begin = new SimplePriorityQueue<BeginVertex>();
             SimplePriorityQueue<EndVertex> end = new SimplePriorityQueue<EndVertex>();
             foreach (var segment in linesegments)
@@ -188,11 +196,12 @@ namespace Algo.Polygons
                     sweepline = new Line(a_pos, angle);
                     segmentComparer.UpdateSweepline(sweepline);
 
-                    //Strictly speaking this sort is unesscary, however if two segments start at the same vertex we can have them in the wrong order. This solves that.
+                    //Strictly speaking this sort is unnecessary, however if two segments start at the same vertex we can have them in the wrong order. This solves that.
+                    //kevin: I am not convinced
                     status.Sort(segmentComparer);
                 }
 
-                //prefer begining an edge over ending edge (to prevent seeing trough a vertex)
+                //prefer beginning an edge over ending edge (to prevent seeing through a vertex)
                 if (endPrio < beginPrio )
                 {
                     //end a segment
@@ -249,7 +258,7 @@ namespace Algo.Polygons
             }
 
 
-            //the sweepline yields a counterclokwise polygon (traitonal for increasing angle), we want out polygons to be oriented clockwise
+            //the sweepline yields a counterclockwise polygon (traitonal for increasing angle), we want out polygons to be oriented clockwise
             resultVertices.Reverse();
             return new VertexSimplePolygon(resultVertices);
         }
