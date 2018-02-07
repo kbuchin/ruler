@@ -793,48 +793,8 @@ public sealed class GraphManager : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
-            Vector3 pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            pos.y = 0;
-            Vertex me = new Vertex(pos.x, pos.z, player1Turn ? Vertex.EOwnership.PLAYER1 : Vertex.EOwnership.PLAYER2);
-            if (m_Delaunay.AddVertex(me))
-            {
-                GameObject onClickObject = null;
-                if (player1Turn)
-                {
-                    onClickObject = GameObject.Instantiate(m_Player1Prefab, pos, Quaternion.identity) as GameObject;
-                }
-                else
-                {
-                    onClickObject = GameObject.Instantiate(m_Player2Prefab, pos, Quaternion.identity) as GameObject;
-                }
 
-                if (onClickObject == null)
-                {
-                    Debug.LogError("Couldn't instantiate m_PlayerPrefab!");
-                }
-                else
-                {
-                    onClickObject.name = "onClickObject_" + me.Ownership.ToString();
-                    onClickObject.transform.parent = m_MyTransform;
-                    m_FishManager.AddFish(onClickObject.transform, player1Turn ? 1 : 2, m_WithLookAtOnPlacement);
-                }
-
-                UpdateVoronoiMesh();
-
-                player1Turn = !player1Turn;
-                if (player1Turn)
-                {
-                    m_GUIManager.OnBlueTurnStart();
-                }
-                else
-                {
-                    m_GUIManager.OnRedTurnStart();
-                }
-            }
-
-            //Update turn counter
-            m_halfTurnsTaken += 1;
-            if(m_halfTurnsTaken>= 2 * m_turns)
+            if (m_halfTurnsTaken >= 2 * m_turns)
             {
                 if (m_playerArea[0] > m_playerArea[1])
                 {
@@ -843,6 +803,55 @@ public sealed class GraphManager : MonoBehaviour
                 else
                 {
                     UnityEngine.SceneManagement.SceneManager.LoadScene(m_p2Victory);
+                }
+            }
+            else
+            {
+
+                Vector3 pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                pos.y = 0;
+                Vertex me = new Vertex(pos.x, pos.z, player1Turn ? Vertex.EOwnership.PLAYER1 : Vertex.EOwnership.PLAYER2);
+                if (m_Delaunay.AddVertex(me))
+                {
+                    GameObject onClickObject = null;
+                    if (player1Turn)
+                    {
+                        onClickObject = GameObject.Instantiate(m_Player1Prefab, pos, Quaternion.identity) as GameObject;
+                    }
+                    else
+                    {
+                        onClickObject = GameObject.Instantiate(m_Player2Prefab, pos, Quaternion.identity) as GameObject;
+                    }
+
+                    if (onClickObject == null)
+                    {
+                        Debug.LogError("Couldn't instantiate m_PlayerPrefab!");
+                    }
+                    else
+                    {
+                        onClickObject.name = "onClickObject_" + me.Ownership.ToString();
+                        onClickObject.transform.parent = m_MyTransform;
+                        m_FishManager.AddFish(onClickObject.transform, player1Turn ? 1 : 2, m_WithLookAtOnPlacement);
+                    }
+
+                    UpdateVoronoiMesh();
+
+                    player1Turn = !player1Turn;
+                    if (player1Turn)
+                    {
+                        m_GUIManager.OnBlueTurnStart();
+                    }
+                    else
+                    {
+                        m_GUIManager.OnRedTurnStart();
+                    }
+                }
+                //Update turn counter
+                m_halfTurnsTaken += 1;
+
+                if (m_halfTurnsTaken >= 2 * m_turns)
+                {
+                    m_GUIManager.OnLastMove();
                 }
             }
         }
