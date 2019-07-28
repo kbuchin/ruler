@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
-using Algo.Graph;
+using Util.DataStructures.Queue;
 using System;
 
 namespace Algo.Graph
@@ -288,55 +288,6 @@ namespace Algo.Graph
         }
 
         /// <summary>
-        /// Finds the length of the shorthest path betweeen two points
-        /// </summary>
-        /// <remarks>Implements dijkstra's algorithm in O(m n +  n log n) time</remarks>
-        /// <param name="a_start"></param>
-        /// <param name="a_terminus"></param>
-        /// <returns></returns>
-        public float ShorthestPathLength(Vertex a_start, Vertex a_terminus)
-        {
-            if (!(m_vertices.Contains(a_start) && m_vertices.Contains(a_terminus)))
-            {
-                throw new AlgoException("Invalid arguments");
-            }
-
-            var queue = new SimplePriorityQueue<Vertex>();
-
-            //add all vertices O(n log n)
-            foreach(var vertex in Vertices)
-            {
-                queue.Enqueue(vertex, double.PositiveInfinity);
-            }
-            //set start vertex O(n)
-            queue.UpdatePriority(a_start, 0);
-
-            //O(mn = nlog n) due to update neighbpurs
-            while (true)
-            {
-                //get cheapest vertex O( n log n) in total
-                var distance = queue.LowestPriority();
-                var currentVertex = queue.Dequeue();
-
-                //Check for termination
-                if (currentVertex == a_terminus)
-                {
-                    return (float) distance;
-                }
-
-                //update neighbours O(m n) in total
-                foreach (var edge in currentVertex.IncidentEdges)
-                {
-                    var updateVertex = edge.OtherVertex(currentVertex);
-                    if (queue.Contains(updateVertex))
-                    {
-                        queue.UpdatePriorityDecreasing(updateVertex, distance + edge.Length);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
         /// Returns a list of neihbours of the given vertex
         /// </summary>
         /// <param name="a_vertex"></param>
@@ -362,17 +313,12 @@ namespace Algo.Graph
 
             //initialize data structures
             var visitedVertices = new List<Vertex>() { root };
-            var edgesToConsider = new BinaryHeap<Edge>(new EdgeByMinLengthComparer());
+            var edgesToConsider = new BinaryHeap<Edge>(root.IncidentEdges, new EdgeByMinLengthComparer());
             var edgesToRemove = new List<Edge>(Edges); //shallow copy
-
-            foreach (Edge edge in root.IncidentEdges)
-            {
-                edgesToConsider.Insert(edge);
-            }
 
             while (visitedVertices.Count < m_vertices.Count)
             {
-                var edge = edgesToConsider.RemoveRoot();
+                var edge = edgesToConsider.Pop();
                 var v1visited = visitedVertices.Contains(edge.Vertex1);
                 var v2visited = visitedVertices.Contains(edge.Vertex2);
                 if (v1visited && v2visited)
@@ -388,7 +334,7 @@ namespace Algo.Graph
                         if (visitedVertices.Contains(newedge.Vertex1) && visitedVertices.Contains(newedge.Vertex2)) {
                             continue;
                         }
-                        edgesToConsider.Insert(newedge);
+                        edgesToConsider.Push(newedge);
                     }
                     continue;
                 } else if (v2visited)
@@ -402,7 +348,7 @@ namespace Algo.Graph
                         {
                             continue;
                         }
-                        edgesToConsider.Insert(newedge);
+                        edgesToConsider.Push(newedge);
                     }
                     continue;
                 }

@@ -1,31 +1,35 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using UnityEngine;
-using System;
-using Util.Math;
-
-namespace Algo.Polygons
+﻿namespace Util.Geometry.Polygon
 {
+    using System.Collections.Generic;
+    using System.Collections.ObjectModel;
+    using System.Linq;
+    using UnityEngine;
+    using System;
+    using Util.Math;
+    using Util.Geometry.Duality;
+
     /// <summary>
-    /// A simple polygon, that is, one without holes. The polygon should be imutable, instead we retun new polygons if somthing changes.
-    /// We represent the polygon internally as a list of vertices 
+    /// A simple polygon, that is, one without holes. The polygon should be imutable, instead we return new polygons if something changes.
+    /// We represent the polygon internally as a list of vertices.
     /// </summary>
-    public class VertexSimplePolygon
+    public class Polygon2D : IPolygon2D
     {
         private List<Vector2> m_vertices;
         private bool m_convex;
         private Rect? m_bBox = null;
         private Vector2? m_vertexMean = null;
         private Vector2? m_leftMostVertex = null;
-        private List<VertexSimplePolygon> m_triangulization = null;
+        private List<Polygon2D> m_triangulization = null;
         private static readonly float m_eps = 0.005f;
 
         public ReadOnlyCollection<Vector2> Vertices { get { return m_vertices.AsReadOnly(); } }
 
         public int VertexCount { get { return m_vertices.Count; } }
 
-        public Vector2 VertexMean { get {
+        public Vector2 VertexMean
+        {
+            get
+            {
                 if (!m_vertexMean.HasValue)
                 {
                     var sum = new Vector2(0, 0);
@@ -36,7 +40,8 @@ namespace Algo.Polygons
                     m_vertexMean = sum / m_vertices.Count;
                 }
                 return m_vertexMean.Value;
-            } }
+            }
+        }
 
         public Vector2 LeftMostVertex
         {
@@ -45,7 +50,8 @@ namespace Algo.Polygons
                 if (m_leftMostVertex.HasValue)
                 {
                     return m_leftMostVertex.Value;
-                } else
+                }
+                else
                 {
                     m_leftMostVertex = FindLeftMostVertex();
                     return m_leftMostVertex.Value;
@@ -57,8 +63,8 @@ namespace Algo.Polygons
             }
         }
 
-        //TODO change to vertexMultiPolygon
-        public List<VertexSimplePolygon> Triangulation
+        //TODO change to Polygon2DWithHoles
+        public List<Polygon2D> Triangulation
         {
             get
             {
@@ -78,7 +84,8 @@ namespace Algo.Polygons
 
             foreach (var v in Vertices)
             {
-                if (v.x < minX) {
+                if (v.x < minX)
+                {
                     minX = v.x;
                     minVertex = v;
                 }
@@ -91,14 +98,14 @@ namespace Algo.Polygons
         /// Constructs a clockwise polygon with the given vertices. They are assumed to be in clokwise order.
         /// </summary>
         /// <param name="a_vertices"></param>
-        public VertexSimplePolygon(IEnumerable<Vector2> a_vertices)
+        public Polygon2D(IEnumerable<Vector2> a_vertices)
         {
             m_vertices = a_vertices.ToList();
             if (m_vertices.Count() < 3)
             {
-                throw new AlgoException("Creating polygon of less then three vertices");
+                throw new GeomException("Creating polygon of less then three vertices");
             }
-            m_convex = isConvexAndClockwise();
+            m_convex = isConvex();
         }
 
 
@@ -113,7 +120,8 @@ namespace Algo.Polygons
 
             //add up signed areas allong the edges of the polygon
             var areasum = 0f;
-            foreach (LineSegment seg in Segments()) {
+            foreach (LineSegment seg in Segments())
+            {
                 var v1 = seg.Point1;
                 var v2 = seg.Point2;
                 areasum += v1.x * v2.y - v2.x * v1.y;
@@ -155,11 +163,11 @@ namespace Algo.Polygons
         /// <summary>
         /// Tests wheter this polygon is clockwise and convex by verifying that each tripple of points constitues a right turn
         /// </summary>
-        private bool isConvexAndClockwise()
+        public bool isConvex()
         {
             if (VertexCount < 3)
             {
-                throw new AlgoException("Being convex is illdefined for polygons of 2 or less vertices");
+                throw new GeomException("Being convex is illdefined for polygons of 2 or less vertices");
             }
 
             Line line;
@@ -168,7 +176,8 @@ namespace Algo.Polygons
             {
                 line = new Line(m_vertices[i], m_vertices[i + 1]);
                 test = line.PointRightOfLine(m_vertices[i + 2]);
-                if (test == false) {
+                if (test == false)
+                {
                     return false;
                 }
             }
@@ -196,19 +205,19 @@ namespace Algo.Polygons
             {
                 return false;
             }
-            if (isConvexAndClockwise())
+            if (isConvex())
             {
                 LineSegment segment;
                 for (var i = 0; i < m_vertices.Count - 1; i++)
                 {
                     segment = new LineSegment(m_vertices[i], m_vertices[i + 1]);
-                    if (!segment.pointIsRightOf(a_pos))
+                    if (!segment.IsRightOf(a_pos))
                     {
                         return false;
                     }
                 }
                 segment = new LineSegment(m_vertices[m_vertices.Count - 1], m_vertices[0]);
-                if (!segment.pointIsRightOf(a_pos))
+                if (!segment.IsRightOf(a_pos))
                 {
                     return false;
                 }
@@ -218,7 +227,7 @@ namespace Algo.Polygons
             else
             {
                 Debug.Assert(VertexCount > 3);
-                foreach (var triangle in Triangulation) 
+                foreach (var triangle in Triangulation)
                 {
                     if (triangle.Contains(a_pos))
                     {
@@ -234,34 +243,35 @@ namespace Algo.Polygons
         /// </summary>
         /// NB: Also see poygontriangulation.pdf in the docs folder
         /// <returns>A list of clockwise triangles whose disjoint union is this polygon</returns>
-        private List<VertexSimplePolygon> Triangulate()
+        private List<Polygon2D> Triangulate()
         {
             //PERF we can do this faster as a sweepline algorithm
             if (VertexCount == 3)
             {
-                if (this.isConvexAndClockwise())
+                if (this.isConvex())
                 {
-                    return new List<VertexSimplePolygon>() { this };
-                } else
+                    return new List<Polygon2D>() { this };
+                }
+                else
                 {
                     var resultvertices = m_vertices.Where(v => true).Reverse();
-                    var result = new VertexSimplePolygon(resultvertices);
-                    Debug.Assert(result.isConvexAndClockwise());
-                    return new List<VertexSimplePolygon>() { result };
+                    var result = new Polygon2D(resultvertices);
+                    Debug.Assert(result.isConvex());
+                    return new List<Polygon2D>() { result };
                 }
             }
 
-            var triangles = new List<VertexSimplePolygon>();
+            var triangles = new List<Polygon2D>();
 
             //Find leftmost vertex
             var leftVertex = LeftMostVertex;
-            int index = Vertices.IndexOf(leftVertex);
-            int previndex = (int)MathUtil.PositiveMod(index - 1, VertexCount);
-            int nextindex = (int)MathUtil.PositiveMod(index + 1, VertexCount);
+            var index = Vertices.IndexOf(leftVertex);
+            var previndex = (int)MathUtil.PositiveMod(index - 1, VertexCount);
+            var nextindex = (int)MathUtil.PositiveMod(index + 1, VertexCount);
 
             //Create triangle with diagonal
             var triangleVertices = new List<Vector2>() { m_vertices[previndex], m_vertices[index], m_vertices[nextindex] };
-            var candidateTriangle = new VertexSimplePolygon(triangleVertices);
+            var candidateTriangle = new Polygon2D(triangleVertices);
 
             //check for other vertices inside the candidate triangle
             Line baseline = new Line(m_vertices[previndex], m_vertices[nextindex]);
@@ -288,32 +298,34 @@ namespace Algo.Polygons
             //Do Recursive call
             if (diagonalIndex == -1) //didn't change
             {
-                if (candidateTriangle.isConvexAndClockwise())
+                if (candidateTriangle.isConvex())
                 {
                     triangles.Add(candidateTriangle);
                 }
                 else
                 {
                     var resultvertices = triangleVertices.Where(v => true).Reverse();
-                    triangles.Add(new VertexSimplePolygon(resultvertices));
+                    triangles.Add(new Polygon2D(resultvertices));
                 }
                 var recursionList = Vertices.ToList();
                 recursionList.Remove(leftVertex);
-                triangles.AddRange(new VertexSimplePolygon(recursionList).Triangulate());
-            } else
+                triangles.AddRange(new Polygon2D(recursionList).Triangulate());
+            }
+            else
             {
                 IEnumerable<Vector2> poly1List, poly2List;
                 if (diagonalIndex < index)
                 {
                     poly1List = Vertices.Skip(diagonalIndex).Take(index - diagonalIndex + 1);
                     poly2List = Vertices.Take(diagonalIndex + 1).Union(Vertices.Skip(index));
-                } else
+                }
+                else
                 {
                     poly1List = Vertices.Skip(index).Take(diagonalIndex - index + 1);
                     poly2List = Vertices.Take(index + 1).Union(Vertices.Skip(diagonalIndex));
                 }
-                triangles.AddRange(new VertexSimplePolygon(poly1List).Triangulate());
-                triangles.AddRange(new VertexSimplePolygon(poly2List).Triangulate());
+                triangles.AddRange(new Polygon2D(poly1List).Triangulate());
+                triangles.AddRange(new Polygon2D(poly2List).Triangulate());
             }
 
             //retun result
@@ -326,15 +338,15 @@ namespace Algo.Polygons
         /// <param name="a_poly1"></param>
         /// <param name="a_poly2"></param>
         /// <returns></returns>
-        public static VertexSimplePolygon IntersectConvex(VertexSimplePolygon a_poly1, VertexSimplePolygon a_poly2)
+        public static Polygon2D IntersectConvex(Polygon2D a_poly1, Polygon2D a_poly2)
         {
             if (!(a_poly1.m_convex))
             {
-                throw new AlgoException("Method not defined for nonconvex polygons" + a_poly1);
+                throw new GeomException("Method not defined for nonconvex polygons" + a_poly1);
             }
             if (!(a_poly2.m_convex))
             {
-                throw new AlgoException("Method not defined for nonconvex polygons" + a_poly2);
+                throw new GeomException("Method not defined for nonconvex polygons" + a_poly2);
             }
 
             var resultVertices = new List<Vector2>();
@@ -366,7 +378,8 @@ namespace Algo.Polygons
                     }
                 }
             }
-            if (resultVertices.Count >= 3) {
+            if (resultVertices.Count >= 3)
+            {
                 return ConvexPolygonFromPoints(resultVertices);
             }
             return null;
@@ -380,7 +393,7 @@ namespace Algo.Polygons
         /// <param name="a_subject"></param>
         /// <param name="a_clip"></param>
         /// <returns></returns>
-        public static VertexMultiPolygon CutOut(VertexSimplePolygon a_subject, VertexSimplePolygon a_clip)
+        public static Polygon2DWithHoles CutOut(Polygon2D a_subject, Polygon2D a_clip)
         {
             var subjectList = WeilerAthertonList(a_subject, a_clip);
             var clipList = new LinkedList<Vector2>(WeilerAthertonList(a_clip, a_subject).Reverse());
@@ -392,7 +405,7 @@ namespace Algo.Polygons
             {
                 //either polygons is entirly inside the other, or they are disjoint.
                 //We can't have vision polygons entirly inside each other.
-                return new VertexMultiPolygon(a_subject);
+                return new Polygon2DWithHoles(a_subject);
             }
 
 
@@ -404,7 +417,7 @@ namespace Algo.Polygons
         /// </summary>
         /// <param name="a_clip"></param>
         /// <returns>A new polygon that equals to this with a_clip cut away</returns>
-        public VertexMultiPolygon CutOut(VertexSimplePolygon a_clip)
+        public Polygon2DWithHoles CutOut(Polygon2D a_clip)
         {
             return CutOut(this, a_clip);
         }
@@ -418,10 +431,12 @@ namespace Algo.Polygons
         /// <returns></returns>
         /// 
         ///NOTE: An eventual interesecting implementation of the Weiler-Atherthon algorithm should use selection on the startvertices. (i.e. taking only inbound edges, see also wikipedia)
-        private static VertexMultiPolygon WeilerAtherthonCutOut(LinkedList<Vector2> a_subjectList, LinkedList<Vector2> a_clipList, List<Vector2> a_startVertexList)
+        private static Polygon2DWithHoles WeilerAtherthonCutOut(LinkedList<Vector2> a_subjectList, LinkedList<Vector2> a_clipList, List<Vector2> a_startVertexList)
         {
-            var result = new VertexMultiPolygon();
-            
+            throw new NotSupportedException();
+            /*
+            var result = new Polygon2DWithHoles();
+
             //PERF organise intersections better so i have to loop less over the lists
             while (a_startVertexList.Count > 0)
             {
@@ -434,7 +449,7 @@ namespace Algo.Polygons
                 {
                     foreach (Vector2 vertex in a_subjectList)
                     {
-                        if (Vector2.Distance(vertex, start) < 2*m_eps) //more liberal then Equals
+                        if (Vector2.Distance(vertex, start) < 2 * m_eps) //more liberal then Equals
                         {
                             startnode = a_subjectList.Find(vertex);
                         }
@@ -457,7 +472,7 @@ namespace Algo.Polygons
                         intersection = a_clipList.Find(workingvertex.Value);
                         //fallback
                         var iterationvertex = a_clipList.First;
-                        while(iterationvertex != null)
+                        while (iterationvertex != null)
                         {
                             if (Vector2.Distance(workingvertex.Value, iterationvertex.Value) < m_eps)
                             {
@@ -503,7 +518,8 @@ namespace Algo.Polygons
                         {
                             workingvertex = a_subjectList.First;
                         }
-                        else {
+                        else
+                        {
                             Debug.Assert(activeList == WAList.Clip);
                             workingvertex = a_clipList.First;
                         }
@@ -513,13 +529,13 @@ namespace Algo.Polygons
                     {
                         workingvertex.Value = start;
                         singlePolyVertices.Add(workingvertex.Value);
-                        //throw new AlgoException("nonterminating loop");
+                        //throw new GeomException("nonterminating loop");
                     }
 
                 }
-                if(singlePolyVertices.Count > 2)  //only add if we find a nontrivial polygon
+                if (singlePolyVertices.Count > 2)  //only add if we find a nontrivial polygon
                 {
-                    var candidatePoly = new VertexSimplePolygon(singlePolyVertices);
+                    var candidatePoly = new Polygon2D(singlePolyVertices);
                     if (candidatePoly.isClockwise())
                     {
                         result.Add(candidatePoly);
@@ -528,7 +544,8 @@ namespace Algo.Polygons
                         {
                             a_startVertexList.Remove(vertex);
                         }
-                    } else
+                    }
+                    else
                     {
                         // we accidently found a hole (due to some colinearity issues)
                         //remove only starting vertex, the other vertex could yield a succes
@@ -541,13 +558,10 @@ namespace Algo.Polygons
                     //remove only starting vertex, the other vertex could yield a succes
                     a_startVertexList.Remove(start);
                 }
-
-
             }
 
-
             return result;
-
+            */
         }
 
         /// <summary>
@@ -557,7 +571,7 @@ namespace Algo.Polygons
         private bool isClockwise()
         {
             var sum = 0f;
-            foreach(LineSegment seg in Segments())
+            foreach (LineSegment seg in Segments())
             {
                 sum += (seg.Point2.x - seg.Point1.x) * (seg.Point2.y + seg.Point1.y);
             }
@@ -578,7 +592,7 @@ namespace Algo.Polygons
         /// <param name="a_poly"></param>
         /// <param name="a_intersector"></param>
         /// <returns></returns>
-        private static LinkedList<Vector2> WeilerAthertonList(VertexSimplePolygon a_poly, VertexSimplePolygon a_intersector)
+        private static LinkedList<Vector2> WeilerAthertonList(Polygon2D a_poly, Polygon2D a_intersector)
         {
             var intersectionList = new LinkedList<Vector2>();
             var intersectingSegments = a_intersector.Segments();
@@ -586,7 +600,7 @@ namespace Algo.Polygons
             foreach (LineSegment segment in a_poly.Segments())
             {
                 intersectionList.AddLast(segment.Point1);
-                foreach(Vector2 intersection in segment.IntersectionWithSegments(intersectingSegments)) //no AddRange for LinkedList
+                foreach (Vector2 intersection in segment.IntersectionWithSegments(intersectingSegments)) //no AddRange for LinkedList
                 {
                     //Debug.Log(segment.Line.DistanceToPoint(intersection));
                     intersectionList.AddLast(intersection);
@@ -606,7 +620,7 @@ namespace Algo.Polygons
                     workingvertex = workingvertex.Next;
                 }
             }
-            if (Vector2.Distance(intersectionList.First.Value, intersectionList.Last.Value) < m_eps  && intersectionList.Count != 1)
+            if (Vector2.Distance(intersectionList.First.Value, intersectionList.Last.Value) < m_eps && intersectionList.Count != 1)
             {
                 intersectionList.RemoveLast();
             }
@@ -627,7 +641,7 @@ namespace Algo.Polygons
         /// <param name="a_clip"></param>
         /// <returns>Those intersections where subject enters or exits the clipping polygon</returns>
         /// 
-        private static List<Vector2> WeilerAthertonIntersectionList(VertexSimplePolygon a_subject, VertexSimplePolygon a_clip)
+        private static List<Vector2> WeilerAthertonIntersectionList(Polygon2D a_subject, Polygon2D a_clip)
         {
             var intersectionList = new List<Vector2>();
             var intersectingSegments = a_subject.Segments();
@@ -647,7 +661,7 @@ namespace Algo.Polygons
             var i = 0;
             while (intersectionList.Count > i + 1)
             {
-                if (Vector2.Distance(intersectionList[i], intersectionList[i + 1]) < m_eps )
+                if (Vector2.Distance(intersectionList[i], intersectionList[i + 1]) < m_eps)
                 {
                     intersectionList.RemoveAt(i + 1);
                 }
@@ -657,7 +671,7 @@ namespace Algo.Polygons
                 }
             }
 
-            if (Vector2.Distance(intersectionList[0], intersectionList[intersectionList.Count-1]) < m_eps && intersectionList.Count != 1)
+            if (Vector2.Distance(intersectionList[0], intersectionList[intersectionList.Count - 1]) < m_eps && intersectionList.Count != 1)
             {
                 intersectionList.RemoveAt(0);
             }
@@ -670,11 +684,11 @@ namespace Algo.Polygons
         /// Does a simple graham scan
         /// </summary>
         /// <param name="a_points"></param>
-        public static VertexSimplePolygon ConvexPolygonFromPoints(List<Vector2> a_points)
+        public static Polygon2D ConvexPolygonFromPoints(List<Vector2> a_points)
         {
             if (a_points.Count <= 2)
             {
-                throw new AlgoException("Too little points provided");
+                throw new GeomException("Too little points provided");
             }
 
             var tuple = ComputeUpperAndLowerHull(a_points);
@@ -683,7 +697,7 @@ namespace Algo.Polygons
 
             //STITCH AND RETURN
             lowerhull.Reverse();
-            return new VertexSimplePolygon(upperhull.Concat(lowerhull.GetRange(1, lowerhull.Count - 2)));
+            return new Polygon2D(upperhull.Concat(lowerhull.GetRange(1, lowerhull.Count - 2)));
         }
 
         public Rect BoundingBox
@@ -741,12 +755,12 @@ namespace Algo.Polygons
 
         public override string ToString()
         {
-            var str = "";
+            var str = "Face: {";
             foreach (var vertex in Vertices)
             {
-                str += vertex;
+                str += vertex + ", ";
             }
-            return str;
+            return str + "}";
         }
 
         /// <summary>
@@ -756,9 +770,9 @@ namespace Algo.Polygons
         /// <returns>Line with greatest distance to the points encoded by the polygon boundary </returns>
         public LineSeperationTuple LineOfGreatestMinimumSeperationInTheDual(bool a_isBoundingBoxFace)
         {
-            if (!isConvexAndClockwise())
+            if (!isConvex())
             {
-                throw new AlgoException();
+                throw new GeomException();
             }
 
             var tuple = ComputeUpperAndLowerHull(Vertices.ToList());
@@ -777,18 +791,18 @@ namespace Algo.Polygons
                     }
                 }
 
-                if(reallines.Count <2)
+                if (reallines.Count < 2)
                 {
-                    throw new AlgoException("Found impossibly low amount of real lines");
+                    throw new GeomException("Found impossibly low amount of real lines");
                 }
-                else if (reallines.Count==2)
+                else if (reallines.Count == 2)
                 {
                     //The two reallines are two points in the primal plane
                     var averagepoint = (reallines[0].Dual() + reallines[1].Dual()) / 2;
                     var lineTroughBothPoints = reallines[0].Intersect(reallines[1]).Dual();
                     var perpLineSlope = -1 / lineTroughBothPoints.Slope;
                     var perpPoint = averagepoint + Vector2.right + Vector2.up * perpLineSlope;
-                    return new LineSeperationTuple( new Line(averagepoint, perpPoint), 0);
+                    return new LineSeperationTuple(new Line(averagepoint, perpPoint), 0);
 
                     //we choose separtion 0 because a line with three constraints in the outer boundingboxface is more importnat?
                     //TODO this seems untrue, explictly calculate seperation (Wrt to all soldier??)
@@ -808,10 +822,10 @@ namespace Algo.Polygons
             float currentheight = 0;
             float nextheight;
 
-            LineSegment upperSegment=null;
-            LineSegment lowerSegment=null;
+            LineSegment upperSegment = null;
+            LineSegment lowerSegment = null;
 
-            Action<float, float> testCandidatePoint = delegate (float testx, float testheight) 
+            Action<float, float> testCandidatePoint = delegate (float testx, float testheight)
             {
                 var trueSeperation = Mathf.Sin(Mathf.PI / 2 - Mathf.Abs(Mathf.Atan(testx))) * testheight; //Atan(x) is the angle a line of slope x makes
                 if (trueSeperation > currentSeparation)
@@ -830,22 +844,22 @@ namespace Algo.Polygons
 
 
             //Break when one of the two lists is completly traversed
-            while (upperhullIterator < upperhull.Count-1 && lowerhullIterator < lowerhull.Count-1)
+            while (upperhullIterator < upperhull.Count - 1 && lowerhullIterator < lowerhull.Count - 1)
             {
                 //The part between currentx(exclusive) and nextx(inclusive) is under scrutiny
                 //we advance the segment that ends on the smallest x
                 if (upperhull[upperhullIterator].x < lowerhull[lowerhullIterator].x)
                 {
-                    upperhullIterator++;  
+                    upperhullIterator++;
                     upperSegment = new LineSegment(upperhull[upperhullIterator - 1], upperhull[upperhullIterator]);
                 }
-                else 
+                else
                 {
                     lowerhullIterator++;
                     lowerSegment = new LineSegment(lowerhull[lowerhullIterator - 1], lowerhull[lowerhullIterator]);
                 }
 
-                if(lowerSegment.IsVertical || upperSegment.IsVertical)
+                if (lowerSegment.IsVertical || upperSegment.IsVertical)
                 {
                     continue; //skip this iteration 
                 }
@@ -854,9 +868,9 @@ namespace Algo.Polygons
 
 
                 nextheight = upperSegment.Y(nextx) - lowerSegment.Y(nextx);
-                if(nextheight < 0)
+                if (nextheight < 0)
                 {
-                    throw new AlgoException();
+                    throw new GeomException();
                 }
                 testCandidatePoint(nextx, nextheight);
 
@@ -864,7 +878,7 @@ namespace Algo.Polygons
                 float heightchange = (nextheight - currentheight) / (nextx - currentx);
                 float baseheigth = nextheight - nextx * heightchange;
 
-                float candidatex =  heightchange / baseheigth;
+                float candidatex = heightchange / baseheigth;
                 if (currentx < candidatex && candidatex < nextx)
                 {
                     var candidateheigth = baseheigth + heightchange * candidatex;
@@ -877,8 +891,8 @@ namespace Algo.Polygons
                 currentx = nextx;
 
             }
-           
-            return new LineSeperationTuple(candidatePoint.Dual(), currentSeparation);
+
+            return new LineSeperationTuple(PointLineDual.Dual(candidatePoint), currentSeparation);
         }
 
         private static UpperLowerHullTuple ComputeUpperAndLowerHull(List<Vector2> a_vertices)
@@ -926,6 +940,11 @@ namespace Algo.Polygons
             return new UpperLowerHullTuple(upperhull, lowerhull);
         }
 
+        public bool isSimple()
+        {
+            return true; // TODO
+        }
+
         /// <summary>
         /// A tuple containg both upper and lower hull
         /// </summary>
@@ -934,7 +953,7 @@ namespace Algo.Polygons
             private List<Vector2> m_lowerhull;
             private List<Vector2> m_upperhull;
 
-            internal UpperLowerHullTuple( List<Vector2> upperhull, List<Vector2> lowerhull)
+            internal UpperLowerHullTuple(List<Vector2> upperhull, List<Vector2> lowerhull)
             {
                 m_upperhull = upperhull;
                 m_lowerhull = lowerhull;
@@ -963,7 +982,7 @@ namespace Algo.Polygons
         private enum WAList { Subject, Clip };
     }
 
-    public class LineSeperationTuple 
+    public class LineSeperationTuple
     {
         private float m_seperation;
         private Line m_line;
@@ -991,4 +1010,3 @@ namespace Algo.Polygons
         }
     }
 }
-

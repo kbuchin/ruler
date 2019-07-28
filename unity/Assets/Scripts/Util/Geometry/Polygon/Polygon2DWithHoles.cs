@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
-
-namespace Algo.Polygons
+﻿namespace Util.Geometry.Polygon
 {
-    class NoIntersectionException : AlgoException    {  }
+    using System;
+    using System.Collections.Generic;
+    using UnityEngine;
 
     struct BeginVertex
     {
@@ -41,22 +39,21 @@ namespace Algo.Polygons
     /// <summary>
     /// A class representing a general Polygon (possibly with holes)
     /// </summary>
-    public class VertexHolePolygon
+    public class Polygon2DWithHoles
     {
-        private readonly float m_eps = 0.001f;
 
-        VertexSimplePolygon m_outside;
-        List<VertexSimplePolygon> m_holes;
+        Polygon2D m_outside;
+        List<Polygon2D> m_holes;
 
-        public VertexSimplePolygon Outside { get { return m_outside; } }
+        public Polygon2D Outside { get { return m_outside; } }
 
-        public VertexHolePolygon(VertexSimplePolygon a_outside)
+        public Polygon2DWithHoles(Polygon2D a_outside)
         {
             m_outside = a_outside;
-            m_holes = new List<VertexSimplePolygon>();
+            m_holes = new List<Polygon2D>();
         }
 
-        public VertexHolePolygon(VertexSimplePolygon a_outside, List<VertexSimplePolygon> a_holes)
+        public Polygon2DWithHoles(Polygon2D a_outside, List<Polygon2D> a_holes)
         {
             //TODO Check no overlap in holes (or does that take to much time?)
             m_outside = a_outside;
@@ -76,7 +73,7 @@ namespace Algo.Polygons
             }
             if (result < 0)
             {
-                throw new AlgoException("somehow ended up with negative area");
+                throw new GeomException("somehow ended up with negative area");
             }
             return result;
         }
@@ -98,14 +95,16 @@ namespace Algo.Polygons
         /// working with won't cross
         /// <param name="a_pos">The position of the observer</param>
         /// <returns></returns>
-        public VertexSimplePolygon Vision(Vector2 a_pos)
+        public Polygon2D Vision(Vector2 a_pos)
         {
+            throw new NotSupportedException();
+            /*
             // We will apply a sweepline algorithm
 
             // First Gather all line segments
             var linesegments = new List<LineSegment>();
             linesegments.AddRange(m_outside.Segments());
-            foreach(var hole in m_holes)
+            foreach (var hole in m_holes)
             {
                 linesegments.AddRange(hole.Segments());
             }
@@ -117,7 +116,7 @@ namespace Algo.Polygons
             //double dist;
             foreach (var seg in linesegments)
             {
-                if (seg.Line.DistanceToPoint(a_pos) <= m_eps)
+                if (seg.Line.DistanceToPoint(a_pos) <= Mathf.Epsilon)
                 {
                     removeSegments.Add(seg);
                 }
@@ -139,11 +138,11 @@ namespace Algo.Polygons
             foreach (var segment in linesegments)
             {
                 //should it be in the status structure (when the segement crosses the positive x-axis ray from a_pos)
-                if (segment.YInterval.Contains(a_pos.y) && segment.X(a_pos.y)>a_pos.x)
+                if (segment.YInterval.Contains(a_pos.y) && segment.X(a_pos.y) > a_pos.x)
                 {
                     status.Add(segment);
                 }
-                
+
                 //normalize segment start points
                 var v1 = segment.Point1 - a_pos;
                 var v2 = segment.Point2 - a_pos;
@@ -153,17 +152,17 @@ namespace Algo.Polygons
                 var angle2 = Mathf.Atan2(v2.y, v2.x);
 
                 //and are in the 0..2Pi range
-                if (angle1 < 0) {angle1 += 2 * Mathf.PI; }
-                if (angle2 < 0) {angle2 += 2 * Mathf.PI; }
+                if (angle1 < 0) { angle1 += 2 * Mathf.PI; }
+                if (angle2 < 0) { angle2 += 2 * Mathf.PI; }
 
 
                 //we determine the begin and endpoint using the fact that the angle spanned by a line segment is never more then 180deg
-                if ( MathUtil.PositiveMod(angle2 - angle1, 2*Mathf.PI) < Mathf.PI)
+                if (MathUtil.PositiveMod(angle2 - angle1, 2 * Mathf.PI) < Mathf.PI)
                 {
                     if (angle1 == 0) { angle1 = Mathf.PI * 2; } //move begin events with angle 0 to 2Pi since they are already in the status
 
                     begin.Enqueue(new BeginVertex(segment.Point1, segment), angle1);
-                    end.Enqueue(new EndVertex(segment.Point2, segment),angle2);
+                    end.Enqueue(new EndVertex(segment.Point2, segment), angle2);
                 }
                 else
                 {
@@ -189,7 +188,7 @@ namespace Algo.Polygons
                 if (begin.Count > 0) { beginPrio = begin.LowestPriority(); } else { beginPrio = float.PositiveInfinity; }
                 if (end.Count > 0) { endPrio = end.LowestPriority(); } else { endPrio = float.PositiveInfinity; }
 
-                var newAngle = Mathf.Min( (float)beginPrio, (float)endPrio);
+                var newAngle = Mathf.Min((float)beginPrio, (float)endPrio);
                 if (angle != newAngle)
                 {
                     angle = newAngle;
@@ -202,7 +201,7 @@ namespace Algo.Polygons
                 }
 
                 //prefer beginning an edge over ending edge (to prevent seeing through a vertex)
-                if (endPrio < beginPrio )
+                if (endPrio < beginPrio)
                 {
                     //end a segment
                     var endpoint = end.Dequeue();
@@ -231,10 +230,10 @@ namespace Algo.Polygons
 
                     //did we add a segment in front of previous segment
                     status.Sort(segmentComparer);
-                    if (status[0] == beginpoint.Segment) 
+                    if (status[0] == beginpoint.Segment)
                     {
-                         resultVertices.Add(status[1].ForgivingIntersection(sweepline, a_pos)); //end of ray on previous segment
-                         resultVertices.Add(beginpoint.Vertex);
+                        resultVertices.Add(status[1].ForgivingIntersection(sweepline, a_pos)); //end of ray on previous segment
+                        resultVertices.Add(beginpoint.Vertex);
                     }
                 }
             }
@@ -246,7 +245,8 @@ namespace Algo.Polygons
                 if (resultVertices[i] == resultVertices[i + 1])
                 {
                     resultVertices.RemoveAt(i + 1);
-                } else
+                }
+                else
                 {
                     i++;
                 }
@@ -260,7 +260,8 @@ namespace Algo.Polygons
 
             //the sweepline yields a counterclockwise polygon (traitonal for increasing angle), we want out polygons to be oriented clockwise
             resultVertices.Reverse();
-            return new VertexSimplePolygon(resultVertices);
+            return new Polygon2D(resultVertices);
+            */
         }
 
 
@@ -273,12 +274,14 @@ namespace Algo.Polygons
         {
             foreach (var hole in m_holes)
             {
-                if (hole.Contains(a_pos)) {
+                if (hole.Contains(a_pos))
+                {
                     return false;
                 }
             }
 
-            if (m_outside.Contains(a_pos)){
+            if (m_outside.Contains(a_pos))
+            {
                 return true;
             }
 
@@ -325,9 +328,9 @@ namespace Algo.Polygons
             intersection = a_seg.Intersect(altLine);
             if (intersection == null)
             {
-                throw new NoIntersectionException();
+                throw new GeomException("No intersection");
             }
-            if (Vector2.Distance(intersection.Value, a_seg.Point1) < Vector2.Distance(intersection.Value, a_seg.Point2) )
+            if (Vector2.Distance(intersection.Value, a_seg.Point1) < Vector2.Distance(intersection.Value, a_seg.Point2))
             {
                 return a_seg.Point1;
             }
@@ -338,7 +341,7 @@ namespace Algo.Polygons
         }
     }
 
-    internal class SegmentComparer:IComparer<LineSegment>
+    internal class SegmentComparer : IComparer<LineSegment>
     {
         private Vector2 m_pos;
         private Line m_line;
@@ -354,14 +357,14 @@ namespace Algo.Polygons
             m_line = a_line;
         }
 
-       
-        
+
+
         public int Compare(LineSegment seg1, LineSegment seg2)
         {
             var intersection1 = seg1.ForgivingIntersection(m_line, m_pos);
             var intersection2 = seg2.ForgivingIntersection(m_line, m_pos);
 
-            return Vector2.Distance(m_pos, intersection1).CompareTo( Vector2.Distance(m_pos, intersection2) );
+            return Vector2.Distance(m_pos, intersection1).CompareTo(Vector2.Distance(m_pos, intersection2));
         }
     }
 }
