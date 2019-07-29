@@ -1,4 +1,4 @@
-﻿namespace Util.Geometry.Algorithms
+﻿namespace Util.Algorithms
 {
     using System.Collections;
     using System.Collections.Generic;

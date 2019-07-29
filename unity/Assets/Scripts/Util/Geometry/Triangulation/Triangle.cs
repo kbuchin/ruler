@@ -7,9 +7,9 @@
 
     public class Triangle {
 
-        public Vertex P0 { get; private set; }
-        public Vertex P1 { get; private set; }
-        public Vertex P2 { get; private set; }
+        public Vector2 P0 { get; private set; }
+        public Vector2 P1 { get; private set; }
+        public Vector2 P2 { get; private set; }
 
         public TriangleEdge E0 { get; private set; }
         public TriangleEdge E1 { get; private set; }
@@ -17,10 +17,10 @@
 
         public Vector2 Circumcenter { get; private set; }
 
-        public Triangle() : this(new Vertex(), new Vertex(), new Vertex())
+        public Triangle() : this(new Vector2(), new Vector2(), new Vector2())
         { }
 
-        public Triangle(Vertex v0, Vertex v1, Vertex v2) : this(
+        public Triangle(Vector2 v0, Vector2 v1, Vector2 v2) : this(
                 new TriangleEdge(v0, v1, null, null),
                 new TriangleEdge(v1, v2, null, null),
                 new TriangleEdge(v2, v0, null, null)
@@ -43,33 +43,38 @@
             P0 = e0.Start;
             P1 = e1.Start;
             P2 = e2.Start;
-            Circumcenter = MathUtil.CalculateCircumcenter(P0.Pos, P1.Pos, P2.Pos);
+            Circumcenter = MathUtil.CalculateCircumcenter(P0, P1, P2);
         }
 
-        public bool ContainsEndpoint(Vertex x)
+        public bool ContainsEndpoint(Vector2 x)
         {
             return x.Equals(P0) || x.Equals(P1) || x.Equals(P2);
         }
 
         public bool Inside(Vector2 X)
         {
-            int firstSide = Math.Sign(MathUtil.Orient2D(P0.Pos, P1.Pos, X));
-            int secondSide = Math.Sign(MathUtil.Orient2D(P1.Pos, P2.Pos, X));
-            int thirdSide = Math.Sign(MathUtil.Orient2D(P2.Pos, P0.Pos, X));
+            int firstSide = Math.Sign(MathUtil.Orient2D(P0, P1, X));
+            int secondSide = Math.Sign(MathUtil.Orient2D(P1, P2, X));
+            int thirdSide = Math.Sign(MathUtil.Orient2D(P2, P0, X));
             return (firstSide != 0 && firstSide == secondSide && secondSide == thirdSide);
+        }
+
+        public bool IsClockwise()
+        {
+            return MathUtil.Orient2D(P0, P1, P2) < 0;
         }
 
         public bool InsideCircumcircle(Vector2 X)
         {
-            return MathUtil.InsideCircle(P0.Pos, P1.Pos, P2.Pos, X);
+            return MathUtil.InsideCircle(P0, P1, P2, X);
         }
 
-        public Vertex OtherVertex(TriangleEdge a_Edge)
+        public Vector2? OtherVertex(TriangleEdge a_Edge)
         {
             return OtherVertex(a_Edge.Start, a_Edge.End);
         }
             
-        public Vertex OtherVertex(Vertex a, Vertex b)
+        public Vector2? OtherVertex(Vector2 a, Vector2 b)
         {
             if (P0 != a && P0 != b) return P0;
             if (P1 != a && P1 != b) return P1;
@@ -77,11 +82,11 @@
             return null;
         }
 
-        public TriangleEdge OtherEdge(TriangleEdge a, Vertex b)
+        public TriangleEdge OtherEdge(TriangleEdge a, Vector2 b)
         {
-            if (E0 != a && E0.ContainsVertex(b)) return E0;
-            if (E1 != a && E1.ContainsVertex(b)) return E1;
-            if (E2 != a && E2.ContainsVertex(b)) return E2;
+            if (E0 != a && E0.ContainsEndpoint(b)) return E0;
+            if (E1 != a && E1.ContainsEndpoint(b)) return E1;
+            if (E2 != a && E2.ContainsEndpoint(b)) return E2;
             return null;
         }
     }

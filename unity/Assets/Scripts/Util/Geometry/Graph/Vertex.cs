@@ -19,7 +19,7 @@
 
         public bool Equals(Vertex e)
         {
-            return Pos.Equals(e.Pos);
+            return Pos == e.Pos;
         }
 
         public override string ToString()

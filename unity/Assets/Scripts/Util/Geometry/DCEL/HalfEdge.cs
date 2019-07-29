@@ -9,8 +9,8 @@
         public Face Face { get; internal set; }
         public HalfEdge Next { get; internal set; }
         public HalfEdge Prev { get; internal set; }
-        public Vertex From { get; internal set; }
-        public Vertex To { get; internal set; }
+        public DCELVertex From { get; internal set; }
+        public DCELVertex To { get; internal set; }
         public HalfEdge Twin { get; internal set; }
 
         public LineSegment Segment
@@ -35,7 +35,7 @@
             get { return Segment.YInterval; }
         }
 
-        public HalfEdge(Vertex from, Vertex to)
+        public HalfEdge(DCELVertex from, DCELVertex to)
         {
             From = from;
             To = to;
@@ -51,9 +51,10 @@
             return line.PointRightOfLine(a_Point);
         }
 
-        public Vector2? IntersectLine(Line a_Line)
+        public bool IntersectLine(LineSegment a_Line, out Vector2? a_Point)
         {
-            return Segment.Intersect(a_Line);
+            a_Point = Segment.Intersect(a_Line);
+            return a_Point == null;
         }
 
         public override string ToString()

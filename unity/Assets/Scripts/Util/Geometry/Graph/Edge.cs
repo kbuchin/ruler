@@ -31,7 +31,7 @@
             Weight = weight;
         }
 
-        public bool ContainsVertex(Vertex v)
+        public bool ContainsEndpoint(Vertex v)
         {
             return Start == v || End == v;
         }

@@ -1,4 +1,4 @@
-﻿namespace Util.Geometry.Algorithms
+﻿namespace Util.Algorithms.Triangulation
 {
     using System;
     using System.Collections;
@@ -7,20 +7,22 @@
     using Util.Geometry.DCEL;
     using Util.Geometry.Graph;
     using Util.Geometry.Triangulation;
+    using Util.Algorithms.Graph;
+    using Util.Geometry;
 
     public static class Delaunay {
 
         public static Triangulation Create()
         {
             const float farAway = 10000; // 500000
-            var v0 = new Vertex(new Vector2(-farAway, -farAway));
-            var v1 = new Vertex(new Vector2(farAway, -farAway));
-            var v2 = new Vertex(new Vector2(0, farAway));
+            var v0 = new Vector2(-farAway, -farAway);
+            var v1 = new Vector2(farAway, -farAway);
+            var v2 = new Vector2(0, farAway);
 
             return new Triangulation(v0, v1, v2);
         }
 
-        public static Triangulation Create(IEnumerable<Vertex> vertices)
+        public static Triangulation Create(IEnumerable<Vector2> vertices)
         {
             var T = Create();
             foreach (var v in vertices)
@@ -30,7 +32,7 @@
             return T;
         }
 
-        public static bool AddVertex(Triangulation T, Vertex X)
+        public static bool AddVertex(Triangulation T, Vector2 X)
         {
             var triangle = FindTriangle(T, X);
             if (triangle == null)
@@ -49,11 +51,11 @@
             return true;
         }
 
-        private static Triangle FindTriangle(Triangulation T, Vertex a_Vector2)
+        private static Triangle FindTriangle(Triangulation T, Vector2 a_Vector2)
         {
             foreach (Triangle triangle in T.Triangles)
             {
-                if (triangle.Inside(a_Vector2.Pos))
+                if (triangle.Inside(a_Vector2))
                 {
                     return triangle;
                 }
@@ -61,9 +63,9 @@
             return null;
         }
 
-        private static void AddVertex(Triangulation T, Triangle a_Triangle, Vertex X)
+        private static void AddVertex(Triangulation T, Triangle a_Triangle, Vector2 X)
         {
-            if(!a_Triangle.Inside(X.Pos))
+            if(!a_Triangle.Inside(X))
             {
                 throw new ArgumentException("Vector to be added should be inside triangle.");
             }
@@ -93,7 +95,7 @@
             T.Add(t2);
         }
 
-        private static void LegalizeEdge(Triangulation T, Vertex a_Vertex, TriangleEdge a_Edge)
+        private static void LegalizeEdge(Triangulation T, Vector2 a_Vertex, TriangleEdge a_Edge)
         {
             var a_Triangle = a_Edge.T;
             var a_Twin = a_Edge.OtherTriangle();
@@ -104,10 +106,10 @@
             }
 
             // Points to test
-            var u = a_Edge.T.OtherVertex(a_Edge);
-            var v = a_Edge.Twin.T.OtherVertex(a_Edge.Twin);
+            var u = (Vector2)a_Edge.T.OtherVertex(a_Edge);
+            var v = (Vector2)a_Edge.Twin.T.OtherVertex(a_Edge.Twin);
 
-            if (a_Triangle.InsideCircumcircle(v.Pos) || a_Twin.InsideCircumcircle(u.Pos))
+            if (a_Triangle.InsideCircumcircle(v) || a_Twin.InsideCircumcircle(u))
             {
                 Flip(T, a_Edge);
 

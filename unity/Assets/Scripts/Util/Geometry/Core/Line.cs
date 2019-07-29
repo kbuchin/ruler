@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using UnityEngine;
 
-    public class Line : IComparable<Line>
+    public class Line : IComparable<Line>, IEquatable<Line>
     //Comparing lines sorts them on Slope
     {
         private Vector2 m_point1;
@@ -104,6 +104,11 @@
 
         public static Vector2 Intersect(Line a_line1, Line a_line2)
         {
+            if (a_line1.Slope == a_line2.Slope)
+            {
+                throw new GeomException("Two parallel lines");
+            }
+            
             if (float.IsInfinity(a_line1.Slope) && float.IsInfinity(a_line2.Slope))
             {
                 throw new GeomException("Two vertical lines ");
@@ -215,6 +220,11 @@
             var normalLine = new Line(v, v + Normal);
             var intersection = Intersect(normalLine);
             return Vector2.Distance(v, intersection);
+        }
+
+        public bool Equals(Line other)
+        {
+            return Point1 == other.Point1 && Point2 == other.Point2;
         }
     }
 }

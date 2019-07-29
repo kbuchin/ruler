@@ -62,6 +62,7 @@
      <Compile Include="Assets\Editor\Tests\LineSegmentTest.cs" />
      <Compile Include="Assets\Editor\Tests\Polygon\PolygonTest.cs" />
      <Compile Include="Assets\Editor\Tests\Polygon\VertexSimplePolygonTest.cs" />
+     <Compile Include="Assets\Editor\Tests\Util\MathUtilTest.cs" />
      <Compile Include="Assets\Editor\Tests\VoronoiTest.cs" />
      <None Include="Assets\Editor\README.txt" />
  <Reference Include="UnityEditor.StandardEvents">

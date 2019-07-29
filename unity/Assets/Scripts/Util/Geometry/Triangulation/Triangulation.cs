@@ -1,10 +1,9 @@
-﻿using Util.Geometry.Graph;
-
-namespace Util.Geometry.Triangulation
+﻿namespace Util.Geometry.Triangulation
 {
     using System.Linq;
     using System.Collections.Generic;
     using UnityEngine;
+    using Util.Geometry.Graph;
 
     public class Triangulation
     {
@@ -15,22 +14,35 @@ namespace Util.Geometry.Triangulation
 
         public ICollection<TriangleEdge> Edges { get { return m_Edges; } }
 
-        private readonly Vertex V0, V1, V2;
+        private readonly Vector2 V0, V1, V2;
 
         public Triangulation()
         {
             m_Triangles = new LinkedList<Triangle>();
         }
 
-        public Triangulation(Vertex v0, Vertex v1, Vertex v2)
+        public Triangulation(IEnumerable<Vector2> a_Points)
         {
+            var Points = a_Points.ToList();
+            for (var i = 0; i < Points.Count - 2; i++)
+            {
+                Add(new Triangle(
+                    Points[i],
+                    Points[i + 1],
+                    Points[i + 2]
+                ));
+            }
+        }
+
+        public Triangulation(Vector2 p0, Vector2 p1, Vector2 p2)
+        {
+            V0 = p0;
+            V1 = p1;
+            V2 = p2;
             m_Triangles = new LinkedList<Triangle>(new Triangle[]
             {
-                new Triangle(v0, v1, v2)
+                new Triangle(V0, V1, V2)
             });
-            V0 = v0;
-            V1 = v1;
-            V2 = v2;
         }
 
         public void Add(Triangle t)
@@ -41,6 +53,13 @@ namespace Util.Geometry.Triangulation
         public void Add(IEnumerable<Triangle> triangles)
         {
             foreach (var t in triangles) Add(t);
+
+            FixEdges();
+        }
+
+        public void Add(Triangulation T)
+        {
+            Add(T.Triangles);
         }
 
         public void Remove(Triangle t)
@@ -60,6 +79,28 @@ namespace Util.Geometry.Triangulation
 
             foreach (var t in ToRemove)
                 Triangles.Remove(t);
+        }
+
+        private void FixEdges()
+        {
+            foreach (var e1 in m_Edges)
+            {
+                foreach (var e2 in m_Edges)
+                {
+                    if (e1 == e2) continue;
+
+                    if(e1.T == null || e2.T == null || e1.Start == e2.Start || e1.End == e2.End)
+                    {
+                        throw new GeomException("Triangulation is misformed");
+                    }
+
+                    if(e1.Start == e2.End || e1.End == e2.Start)
+                    {
+                        e1.Twin = e2;
+                        e2.Twin = e1;
+                    }
+                }
+            }
         }
     }
 }

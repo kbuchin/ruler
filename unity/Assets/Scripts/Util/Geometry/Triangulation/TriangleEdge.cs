@@ -5,15 +5,32 @@
     using UnityEngine;
     using Util.Geometry.Graph;
 
-    public class TriangleEdge : Edge
+    public class TriangleEdge
     {
-        public new TriangleEdge Twin { get; set; }
+        public Vector2 Start { get; private set; }
+
+        public Vector2 End { get; private set; }
+
+        public float Length { get { return (End - Start).magnitude; } }
+
+        public TriangleEdge Twin { get; set; }
         public Triangle T { get; set; }
 
-        public TriangleEdge(Vertex start, Vertex end, TriangleEdge twin, Triangle t) : base(start, end)
+        public TriangleEdge(Vector2 start, Vector2 end)
+        {
+            Start = start;
+            End = end;
+        }
+
+        public TriangleEdge(Vector2 start, Vector2 end, TriangleEdge twin, Triangle t) : this(start, end)
         {
             Twin = Twin;
             T = t;
+        }
+
+        public bool ContainsEndpoint(Vector2 pos)
+        {
+            return Start == pos || End == pos;
         }
 
         public Triangle OtherTriangle()
@@ -24,6 +41,11 @@
             }
 
             return Twin.T;
+        }
+
+        public override string ToString()
+        {
+            return "(" + Start + ", " + End + ")";
         }
     }
 }

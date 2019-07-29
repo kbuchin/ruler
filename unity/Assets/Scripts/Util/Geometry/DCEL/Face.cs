@@ -12,15 +12,19 @@
         public HalfEdge OuterComponent { get; set; }
         public List<HalfEdge> InnerComponents { get; private set; }
 
+        public bool IsOuter { get; set; }
+
         public Face(HalfEdge a_outerComponent)
         {
             OuterComponent = a_outerComponent;
+            IsOuter = false;
         }
 
         public Face(HalfEdge a_outerComponent, List<HalfEdge> a_innerComponents)
         {
             OuterComponent = a_outerComponent;
             InnerComponents = a_innerComponents;
+            IsOuter = false;
         }
 
         /// <summary>

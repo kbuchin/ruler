@@ -1,8 +1,10 @@
 ﻿namespace Util.Geometry
 {
     using System;
+    using UnityEngine;
+    using Util.Math;
 
-    public class FloatInterval
+    public class FloatInterval : IEquatable<FloatInterval>
     {
         public float Max { get { return m_max; } }
         public float Min { get { return m_min; } }
@@ -28,7 +30,7 @@
         /// <returns></returns>
         public bool ContainsEpsilon(float a_val)
         {
-            var epsilon = 0.001f;
+            var epsilon = Mathf.Epsilon;
             return m_min - epsilon <= a_val && a_val <= m_max + epsilon;
         }
 
@@ -55,6 +57,11 @@
         public override string ToString()
         {
             return "Min: " + m_min + " Max: " + m_max;
+        }
+
+        public bool Equals(FloatInterval other)
+        {
+            return MathUtil.EqualsEps(Min, other.Min) && MathUtil.EqualsEps(Max, other.Max);
         }
     }
 }

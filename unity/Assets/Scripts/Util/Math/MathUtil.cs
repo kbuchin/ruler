@@ -41,6 +41,33 @@
         }
 
         /// <summary>
+        /// A positive modulo operation. (i.e. mod(-3, 4) == 1)
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="m"></param>
+        /// <returns></returns>
+        public static int PositiveMod(int a, int m)
+        {
+            return (a % m + m) % m;
+        }
+
+        /// <summary>
+        /// Returns the angle axb in radians from 0 to 2*pi.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns> angle axb in [0, 2*pi) </returns>
+        public static float Angle(Vector2 x, Vector2 a, Vector2 b)
+        {
+            var va = a - x;
+            var vb = b - x;
+            var SignedAngle = Math.Atan2(vb.y, vb.x) - Math.Atan2(va.y, va.x);
+            if (SignedAngle >= 0) return (float)SignedAngle;
+            else return (float)(2f * Math.PI + SignedAngle);
+        }
+
+        /// <summary>
         /// Returns a positive value if the points a, b, and c are arranged in
         /// counterclockwise order, a negative value if the points are in clockwise order,
         /// and zero if the points are collinear.

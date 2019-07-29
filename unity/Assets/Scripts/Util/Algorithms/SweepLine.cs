@@ -1,4 +1,4 @@
-﻿namespace Util.Geometry.Algorithms
+﻿namespace Util.Algorithms
 {
     using System;
     using System.Collections;
@@ -6,8 +6,9 @@
     using UnityEngine;
     using Util.DataStructures.BST;
     using Util.DataStructures.Queue;
+    using Util.Geometry;
 
-    public interface ISweepEvent<T>
+    public interface ISweepEvent<T> : IComparable
         where T : IComparable<T>, IEquatable<T>
     {
         T StatusItem { get; }
@@ -17,7 +18,7 @@
         bool IsEnd { get; }
     }
 
-    public class SweepLine<K,T>
+    public class SweepLine<T>
         where T : IComparable<T>, IEquatable<T>
     {
         // status tree used when sweeping
@@ -28,7 +29,7 @@
             Status = new AATree<T>();
         }
 
-        public delegate void handleEvent(ISweepEvent<T> ev);
+        public delegate void HandleEvent(T minItem, ISweepEvent<T> ev);
 
         public void InitializeStatus(IEnumerable<T> items)
         {
@@ -38,7 +39,7 @@
             }
         }
 
-        public void Sweep(List<ISweepEvent<T>> events, handleEvent eventHandler)
+        public void Sweep(List<ISweepEvent<T>> events, HandleEvent eventHandler)
         {
             events.Sort();
             
@@ -47,7 +48,10 @@
                 if (ev.IsEnd) Status.Delete(ev.StatusItem);
                 if (ev.IsStart) Status.Insert(ev.StatusItem);
 
-                eventHandler(ev);
+                T item;
+                Status.FindMin(out item);
+
+                eventHandler(item, ev);
             }
         }
     }

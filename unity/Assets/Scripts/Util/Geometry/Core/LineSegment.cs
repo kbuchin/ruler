@@ -3,18 +3,19 @@
     using System;
     using System.Collections.Generic;
     using UnityEngine;
+    using Util.Math;
 
-    public class LineSegment
+    public class LineSegment : IEquatable<LineSegment>
     {
-        protected Vector2 m_point1;
-        protected Vector2 m_point2;
+        protected Vector2 m_Point1;
+        protected Vector2 m_Point2;
 
-        public Vector2 Point1 { get { return m_point1; } }
-        public Vector2 Point2 { get { return m_point2; } }
+        public Vector2 Point1 { get { return m_Point1; } }
+        public Vector2 Point2 { get { return m_Point2; } }
 
-        public Line Line { get { return new Line(m_point1, m_point2); } }
+        public Line Line { get { return new Line(m_Point1, m_Point2); } }
 
-        public bool IsVertical { get { return m_point1.x == m_point2.x; } }
+        public bool IsVertical { get { return m_Point1.x == m_Point2.x; } }
 
         public float Magnitude
         {
@@ -27,24 +28,29 @@
 
         public LineSegment(Vector2 a_point1, Vector2 a_point2)
         {
-            m_point1 = a_point1;
-            m_point2 = a_point2;
+            m_Point1 = a_point1;
+            m_Point2 = a_point2;
         }
 
-        public bool IsRightOf(Vector2 a_point)
+        public bool IsRightOf(Vector2 a_Point)
         {
-            var line = new Line(m_point1, m_point2);
-            return line.PointRightOfLine(a_point);
+            var line = new Line(m_Point1, m_Point2);
+            return line.PointRightOfLine(a_Point);
+        }
+
+        public bool IsOnSegment(Vector2 a_Point)
+        {
+            return XInterval.Contains(a_Point.x) && MathUtil.EqualsEps(Y(a_Point.x), a_Point.y);
         }
 
         public FloatInterval XInterval
         {
-            get { return new FloatInterval(m_point1.x, m_point2.x); }
+            get { return new FloatInterval(m_Point1.x, m_Point2.x); }
         }
 
         public FloatInterval YInterval
         {
-            get { return new FloatInterval(m_point1.y, m_point2.y); }
+            get { return new FloatInterval(m_Point1.y, m_Point2.y); }
         }
 
         /// <summary>
@@ -103,6 +109,26 @@
         }
 
         /// <summary>
+        /// Computes the distance between this line and the given point 
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        internal float DistanceToPoint(Vector2 v)
+        {
+            var normalLine = new Line(v, v + Line.Normal);
+            var intersection = Intersect(normalLine);
+            if (intersection == null)
+            {
+                return Math.Min(Vector2.Distance(Point1, v),
+                                Vector2.Distance(Point2, v));
+            }
+            else
+            {
+                return Vector2.Distance((Vector2)intersection, v);
+            }
+        }
+
+        /// <summary>
         /// returns a list of intersections with the given segments. Sorted with the one closest to point1 on top.
         /// </summary>
         /// <param name="a_segments"></param>
@@ -154,7 +180,7 @@
         /// <returns></returns>
         public Vector2 Orientation()
         {
-            return m_point2 - m_point1;
+            return m_Point2 - m_Point1;
         }
 
         /// <summary>
@@ -189,6 +215,11 @@
             {
                 throw new GeomException("Y-value requested for x:" + a_x + "not in x-interval" + XInterval.ToString());
             }
+        }
+
+        public bool Equals(LineSegment other)
+        {
+            return Point1 == other.Point1 && Point2 == other.Point2;
         }
     }
 }
