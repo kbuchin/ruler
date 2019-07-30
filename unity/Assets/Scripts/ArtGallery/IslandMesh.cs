@@ -1,9 +1,13 @@
-﻿using UnityEngine;
-
-namespace ArtGallery
+﻿namespace ArtGallery
 {
-    class IslandMesh:VertexSimplePolygonMesh
+    using System;
+    using System.Collections.Generic;
+    using UnityEngine;
+    using General.Mesh;
+
+    class IslandMesh : Polygon2DMesh
     {
+        [SerializeField]
         private ArtGalleryController m_controller;
 
         protected IslandMesh()

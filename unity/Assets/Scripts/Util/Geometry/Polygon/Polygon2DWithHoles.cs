@@ -20,12 +20,25 @@
         {
             get
             {
-                var vertices = Outside.Vertices.ToList();
+                var vertices = Outside.Vertices;
                 foreach (var p in m_holes)
                 {
-                    vertices.AddRange(p.Vertices);
+                    vertices.Concat(p.Vertices);
                 }
                 return vertices;
+            }
+        }
+
+        public ICollection<LineSegment> Segments
+        {
+            get
+            {
+                var segments = Outside.Segments;
+                foreach (var h in m_holes)
+                {
+                    segments.Concat(h.Segments);
+                }
+                return segments;
             }
         }
 
@@ -46,14 +59,24 @@
             m_holes = a_holes;
         }
 
-        public Vector2 Next(Vector2 pos)
+        public Vector2? Next(Vector2 pos)
         {
-            return Outside.Next(pos);
+            if (Outside.Contains(pos)) return Outside.Next(pos);
+            foreach (var p in m_holes)
+            {
+                if (p.Contains(pos)) return p.Next(pos);
+            }
+            return null;
         }
 
-        public Vector2 Prev(Vector2 pos)
+        public Vector2? Prev(Vector2 pos)
         {
-            return Outside.Prev(pos);
+            if (Outside.Contains(pos)) return Outside.Prev(pos);
+            foreach (var p in m_holes)
+            {
+                if (p.Contains(pos)) return p.Prev(pos);
+            }
+            return null;
         }
 
         public void AddVertex(Vector2 pos)
@@ -66,9 +89,24 @@
             Outside.AddVertexFirst(pos);
         }
 
-        public void AddVertexAfter(Vector2 pos, Vector2 after)
+        public void AddVertexAfter(Vector2 after, Vector2 pos)
         {
             Outside.AddVertexAfter(pos, after);
+        }
+
+        public void AddHole(Polygon2D hole)
+        {
+            m_holes.Add(hole);
+        }
+
+        public void RemoveHole(Polygon2D hole)
+        {
+            m_holes.Remove(hole);
+        }
+
+        public void RemoveHoles()
+        {
+            m_holes.Clear();
         }
 
         public void RemoveVertex(Vector2 pos)
@@ -99,7 +137,7 @@
 
         public bool IsSimple()
         {
-            return m_holes.Count == 0;
+            return false; // TODO
         }
 
         /// <summary>
@@ -146,7 +184,7 @@
         public bool IsClockwise()
         {
             bool ret = Outside.IsClockwise();
-            foreach (var p in m_holes) ret &= Outside.IsClockwise();
+            foreach (var p in m_holes) ret &= !p.IsClockwise();
             return ret;
         }
     }

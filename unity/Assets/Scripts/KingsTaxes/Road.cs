@@ -1,14 +1,12 @@
-﻿using UnityEngine;
-using Algo.Graph;
-
-namespace KingsTaxes
+﻿namespace KingsTaxes
 {
+    using UnityEngine;
+    using Util.Geometry.Graph;
 
     public class Road: MonoBehaviour {
         private KingsTaxesController m_gameController;
-        private Edge m_edge;
 
-        public Edge Edge {get{ return m_edge; }internal set { m_edge = value; }   }
+        public Edge Edge { get; internal set; }
 
         void Awake()
         {
@@ -17,7 +15,7 @@ namespace KingsTaxes
 
         void OnMouseUpAsButton()
         {
-            m_gameController.RemoveEdge(m_edge);
+            m_gameController.RemoveEdge(Edge);
             Destroy(gameObject);
         }
     }

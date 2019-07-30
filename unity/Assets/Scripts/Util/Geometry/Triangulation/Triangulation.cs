@@ -3,7 +3,7 @@
     using System.Linq;
     using System.Collections.Generic;
     using UnityEngine;
-    using Util.Geometry.Graph;
+    using Util.Algorithms;
 
     public class Triangulation
     {
@@ -22,7 +22,7 @@
         }
 
         public Triangulation(IEnumerable<Vector2> a_Points)
-        {
+        { 
             var Points = a_Points.ToList();
             for (var i = 0; i < Points.Count - 2; i++)
             {
@@ -101,6 +101,42 @@
                     }
                 }
             }
+        }
+
+        public Mesh CreateMesh()
+        {
+            Mesh mesh = new Mesh();
+
+            // make indexed map of vertices
+            var vertices = new Dictionary<Vector2, int>();
+            var index = 0;
+            foreach (var t in m_Triangles)
+                foreach(var v in t.Vertices)
+                    if (!vertices.ContainsKey(v))
+                        vertices.Add(v, index++);
+
+            var vertexList = vertices.Keys.ToList();
+            
+            // Calculate UV's
+            var bbox = BoundingBox.FromVector2(vertexList);
+            var newUV = vertexList.Select<Vector2, Vector2>(p => Rect.PointToNormalized(bbox, p));
+
+            // Calculate mesh triangles
+            var tri = new List<int>();
+            foreach (var t in Triangles)
+            {
+                tri.AddRange(new int[3] {
+                    vertices[t.P0],
+                    vertices[t.P1],
+                    vertices[t.P2]
+                });
+            }
+
+            mesh.vertices = vertexList.Select<Vector2, Vector3>(p => p).ToArray();
+            mesh.uv = newUV.ToArray();
+            mesh.triangles = tri.ToArray();
+
+            return mesh;
         }
     }
 }

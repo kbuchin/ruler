@@ -1,10 +1,8 @@
-﻿using UnityEngine;
-using System.Collections;
-using Algo;
-
-
-namespace Divide
+﻿namespace Divide
 {
+    using UnityEngine;
+    using Util.Geometry;
+
     public class MouseLine : MonoBehaviour
     {
 

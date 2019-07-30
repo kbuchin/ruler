@@ -1,11 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using Algo.Polygons;
 using System.Linq;
 using UnityEngine.SceneManagement;
-using Algo;
 using UnityEngine.UI;
 using KingsTaxes;
+using Util.Math;
+using Util.Geometry.Polygon;
+using Util.Algorithms.Polygon;
 
 namespace ArtGallery {
     public class ArtGalleryController : MonoBehaviour
@@ -23,21 +24,20 @@ namespace ArtGallery {
         private GameObject m_lighthousePrefab;
 
 
-
-        private float m_eps = MathUtil.Epsilon*10;
-        private VertexHolePolygon m_level;
+        private float m_eps = Mathf.Epsilon * 10;
+        private Polygon2DWithHoles m_level;
         private IslandMesh m_levelMesh;
         private List<LightHouse> m_lighthouses = new List<LightHouse>();
         private LightHouse m_selectedLighthouse;
         private DisableButtonContainer m_advanceButton;
 
 
-        internal VertexHolePolygon LevelPolygon { get { return m_level;} }
+        internal Polygon2DWithHoles LevelPolygon { get { return m_level;} }
 
 
         public void Start()
         {
-            m_level = new VertexHolePolygon(new VertexSimplePolygon( m_levelPoints));
+            m_level = new Polygon2DWithHoles(new Polygon2D( m_levelPoints));
             m_levelMesh = GetComponentInChildren<IslandMesh>();
             m_levelMesh.Polygon = m_level.Outside;
             UpdateLighthouseText();
@@ -100,10 +100,10 @@ namespace ArtGallery {
         {
             if (m_lighthouses.Count > 0)
             {
-                var visiblePolygon = new VertexMultiPolygon(m_lighthouses[0].VisonArea);
+                var visiblePolygon = new MultiPolygon2D(m_lighthouses[0].VisionArea);
                 foreach ( LightHouse lighthouse in m_lighthouses.Skip(1)){
-                    visiblePolygon.CutOut(lighthouse.VisonArea);
-                    visiblePolygon.Add(lighthouse.VisonArea);
+                    Clipper.CutOut(visiblePolygon, lighthouse.VisionArea);
+                    visiblePolygon.AddPolygon(lighthouse.VisionArea);
                 }
                 var ratio = visiblePolygon.Area() / LevelPolygon.Area();
                 Debug.Log(ratio + "part is visible");
@@ -112,7 +112,7 @@ namespace ArtGallery {
                     m_advanceButton.Enable();
                 }
 
-                LevelPolygon.Vision(m_lighthouses[0].Pos);
+                Visibility.Vision(LevelPolygon, m_lighthouses[0].Pos);
             }
         }
 

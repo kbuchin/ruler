@@ -1,7 +1,4 @@
-﻿using UnityEngine;
-using System.Collections;
-
-namespace Divide
+﻿namespace Divide
 {
     public class Tags
     {

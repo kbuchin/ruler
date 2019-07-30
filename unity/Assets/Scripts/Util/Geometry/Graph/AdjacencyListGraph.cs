@@ -248,6 +248,44 @@
             m_Vertices.Remove(v);
             return v;
         }
+
+        /// <summary>
+        /// Checks wheter graph_1 and other have the same number of vertices and edges,
+        /// the vertices have the same positon and the edges are between the same vertices
+        /// </summary>
+        /// <param name="graph_1"></param>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public bool Equals(IGraph other)
+        {
+            
+            //equal size
+            if (Vertices.Count != other.Vertices.Count)
+            {
+                return false;
+            }
+            if (Edges.Count != other.Edges.Count)
+            {
+                return false;
+            }
+
+            //contaimaint of 1 in 2
+            foreach (var vertex in Vertices)
+            {
+                if (!other.ContainsVertex(vertex))
+                {
+                    return false;
+                }
+            }
+            foreach (Edge edge in Edges)
+            {
+                if (!other.ContainsEdge(edge))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 
     public class AdjacencyListGraph<E> : AdjacencyListGraph, IGraph<E>

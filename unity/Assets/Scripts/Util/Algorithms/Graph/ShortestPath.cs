@@ -6,6 +6,7 @@
     using UnityEngine;
     using Util.DataStructures.Queue;
     using Util.Geometry.Graph;
+    using Util.Geometry;
 
     struct VertexDist : IComparable<VertexDist>
     {

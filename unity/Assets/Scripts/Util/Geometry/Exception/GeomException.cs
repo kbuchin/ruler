@@ -1,7 +1,7 @@
-﻿using System;
-
-namespace Util.Geometry
+﻿namespace Util.Geometry
 {
+    using System;
+
     public class GeomException : Exception
     {
         public GeomException()

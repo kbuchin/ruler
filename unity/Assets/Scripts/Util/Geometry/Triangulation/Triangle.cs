@@ -1,11 +1,20 @@
 ﻿namespace Util.Geometry.Triangulation
 {
     using System;
+    using System.Collections.Generic;
     using UnityEngine;
     using Util.Geometry.Graph;
     using Util.Math;
 
     public class Triangle {
+
+        public ICollection<Vector2> Vertices {
+            get { return new List<Vector2> { P0, P1, P2 }; }
+        }
+
+        public ICollection<TriangleEdge> Edges {
+            get { return new List<TriangleEdge> { E0, E1, E2 }; }
+        }
 
         public Vector2 P0 { get; private set; }
         public Vector2 P1 { get; private set; }
@@ -76,17 +85,15 @@
             
         public Vector2? OtherVertex(Vector2 a, Vector2 b)
         {
-            if (P0 != a && P0 != b) return P0;
-            if (P1 != a && P1 != b) return P1;
-            if (P2 != a && P2 != b) return P2;
+            foreach (var v in Vertices)
+                if(v != a && v != b) return v;
             return null;
         }
 
         public TriangleEdge OtherEdge(TriangleEdge a, Vector2 b)
         {
-            if (E0 != a && E0.ContainsEndpoint(b)) return E0;
-            if (E1 != a && E1.ContainsEndpoint(b)) return E1;
-            if (E2 != a && E2.ContainsEndpoint(b)) return E2;
+            foreach (var e in Edges)
+                if (e != a && e.ContainsEndpoint(b)) return e;
             return null;
         }
     }

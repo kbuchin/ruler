@@ -1,4 +1,4 @@
-﻿namespace Util.Algorithms
+﻿namespace Util.Algorithms.Graph
 {
     using System.Collections;
     using System.Collections.Generic;

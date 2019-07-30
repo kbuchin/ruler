@@ -1,14 +1,15 @@
-﻿using Algo.Graph;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
-
-namespace KingsTaxes
+﻿namespace KingsTaxes
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using UnityEngine;
+    using UnityEngine.SceneManagement;
+    using UnityEngine.UI;
+    using Util.Geometry.Graph;
+    using Util.Algorithms.Graph;
+
     class TSPController : KingsTaxesController
     {
         private float m_thresholdscore;
@@ -35,7 +36,7 @@ namespace KingsTaxes
 
             //variables
             m_bestPlayerScore = float.PositiveInfinity;
-            m_thresholdscore = Graph.FindTSPLength(m_graph.Positions) + 0.0001f;
+            m_thresholdscore = TSP.FindTSPLength(m_graph) + 0.0001f;
             m_scorekey = SceneManager.GetActiveScene().name + "score";
             m_highscore = PlayerPrefs.GetFloat(m_scorekey, float.PositiveInfinity);
 
@@ -77,11 +78,11 @@ namespace KingsTaxes
 
         protected override void CheckVictory()
         {
-            var tour = m_graph.IsTSPTour();
+            var tour = TSP.IsHamiltonian(m_graph);
             var score = -1f;
             if (tour)
             {
-                score = m_graph.LengthOfAllEdges();
+                score = m_graph.totalEdgeWeight;
                 if (score< m_bestPlayerScore)
                 {
                     m_bestPlayerScore = score;
@@ -96,7 +97,7 @@ namespace KingsTaxes
                     PlayerPrefs.SetFloat(m_scorekey, m_highscore);
                 }
 
-                    Debug.Log("We have a tour of " + m_graph.LengthOfAllEdges());
+                    Debug.Log("We have a tour of " + m_graph.totalEdgeWeight);
             }
             UpdateTextField(tour, score);
         }

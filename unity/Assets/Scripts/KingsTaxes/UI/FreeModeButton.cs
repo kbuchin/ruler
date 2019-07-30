@@ -1,9 +1,9 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
-
-namespace KingsTaxes.UI
+﻿namespace KingsTaxes
 {
-    class FreeModeButton:MonoBehaviour
+    using UnityEngine;
+    using UnityEngine.UI;
+
+    class FreeModeButton :MonoBehaviour
     {
         public string m_beatkey = "beat";
         public string m_numberOfLevelsKey = "free";

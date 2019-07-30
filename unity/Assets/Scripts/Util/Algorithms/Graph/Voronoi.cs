@@ -5,7 +5,6 @@
     using UnityEngine;
     using Util.Geometry.Triangulation;
     using Util.Geometry.DCEL;
-    using Util.Geometry.Graph;
     using Util.Algorithms.Triangulation;
     using Util.Geometry;
 

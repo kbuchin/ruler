@@ -1,5 +1,6 @@
-﻿namespace Util.Geometry.Algorithms
+﻿namespace Util.Algorithms.Graph
 {
+    using System;
     using System.Collections;
     using System.Collections.Generic;
     using UnityEngine;
@@ -47,12 +48,21 @@
             return visited.Count == Graph.Vertices.Count;
         }
 
+        public static float FindTSPLength(IGraph graph)
+        {
+            if(!IsHamiltonian(graph))
+            {
+                throw new ArgumentException("Graph should be hamiltonian");
+            }
+            return FindTSPLength(graph.Vertices);
+        }
+
         /// <summary>
         /// Finds the lenth of a TSPtour, provided by christofides algorithm.
         /// </summary>
         /// <param name="positions"></param>
         /// <returns></returns>
-        public static float FindTSPLength(List<Vertex> vertices)
+        public static float FindTSPLength(IEnumerable<Vertex> vertices)
         {
             //first determine a MST
             var mst = new AdjacencyListGraph(vertices);

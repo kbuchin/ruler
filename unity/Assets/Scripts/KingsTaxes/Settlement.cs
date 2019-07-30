@@ -1,24 +1,23 @@
-﻿using Algo.Graph;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
-
-namespace KingsTaxes
+﻿namespace KingsTaxes
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using UnityEngine;
+    using Util.Geometry.Graph;
+
     public class Settlement : MonoBehaviour
     {
-        public Vertex Vertex { get { return m_vertex; } }
-        public Vector2 Pos { get { return m_vertex.Pos; } }
+        public Vertex Vertex { get; private set; }
+        public Vector2 Pos { get { return Vertex.Pos; } }
 
 
         private KingsTaxesController m_controller;
-        private Vertex m_vertex;
 
         void Awake()
         {
-            m_vertex = new Vertex(transform.position);
+            Vertex = new Vertex(transform.position);
         }
 
         void Start()

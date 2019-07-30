@@ -1,14 +1,15 @@
 ﻿
+using General.Mesh;
 using UnityEngine;
-using Algo.Polygons;
+using Util.Algorithms.Polygon;
+using Util.Geometry.Polygon;
 
 namespace ArtGallery
 {
-    class LightHouse:MonoBehaviour
+    class LightHouse : MonoBehaviour
     {
         private ArtGalleryController m_controller;
-        private VertexSimplePolygon m_visionArea;
-        private VertexSimplePolygonMesh m_visionAreaMesh;
+        private Polygon2DMesh m_visionAreaMesh;
 
         [SerializeField]
         private GameObject m_visionAreaPrefab;
@@ -25,16 +26,13 @@ namespace ArtGallery
             }
         }
 
-        public VertexSimplePolygon VisonArea
-        {
-            get { return m_visionArea; }
-        }
+        public Polygon2D VisionArea { get; private set; }
 
         void Awake()
         {
             m_controller = FindObjectOfType<ArtGalleryController>();
             GameObject go = Instantiate(m_visionAreaPrefab, new Vector3(0,0,-1.5f), Quaternion.identity) as GameObject;
-            m_visionAreaMesh = go.GetComponent<VertexSimplePolygonMesh>();
+            m_visionAreaMesh = go.GetComponent<Polygon2DMesh>();
             UpdateVisonArea();
         }
 
@@ -55,9 +53,8 @@ namespace ArtGallery
         {
             if (m_controller.LevelPolygon.Contains(Pos))
             {
-                var va = m_controller.LevelPolygon.Vision(Pos);
-                m_visionAreaMesh.Polygon = va;
-                m_visionArea = va;
+                VisionArea = Visibility.Vision(m_controller.LevelPolygon, Pos);
+                m_visionAreaMesh.Polygon = VisionArea;
             }
         }
     }

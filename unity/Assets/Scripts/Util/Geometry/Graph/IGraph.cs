@@ -1,10 +1,11 @@
 ﻿namespace Util.Geometry.Graph
 {
+    using System;
     using System.Collections;
     using System.Collections.Generic;
     using UnityEngine;
 
-    public interface IGraph
+    public interface IGraph : IEquatable<IGraph>
     {
         GraphType Type { get; }
         ICollection<Vertex> Vertices { get; }

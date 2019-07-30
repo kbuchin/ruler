@@ -1,13 +1,14 @@
-﻿using Algo.Graph;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-
-namespace KingsTaxes
+﻿namespace KingsTaxes
 {
-    class MSTController:KingsTaxesController
+    using Util.Geometry.Graph;
+    using System.Collections.Generic;
+    using System.Linq;
+    using UnityEngine;
+    using Util.Algorithms;
+
+    class MSTController : KingsTaxesController
     {
-        private Graph m_goalgraph;
+        private IGraph m_goalgraph;
         [SerializeField]
         private GameObject m_solutionRoadPrefab;
         private DisableButtonContainer m_advanceButton;
@@ -15,9 +16,9 @@ namespace KingsTaxes
         protected override void Start()
         {
             base.Start();
-            m_goalgraph = new Graph(m_settlements.Select<Settlement, Vector2>(go => go.Pos).ToList());
-            m_goalgraph.MakeCompleteGraph();
-            m_goalgraph.MinimumSpanningTree();
+            m_goalgraph = new AdjacencyListGraph(m_settlements.Select<Settlement, Vertex>(go => new Vertex(go.Pos)).ToList());
+            m_goalgraph.MakeComplete();
+            MST.MinimumSpanningTree(m_goalgraph);
 
             m_advanceButton = GameObject.FindGameObjectWithTag(Tags.AdvanceButtonContainer).GetComponent<DisableButtonContainer>();
             m_advanceButton.Disable();
@@ -26,7 +27,7 @@ namespace KingsTaxes
 
         protected override void CheckVictory()
         {
-            if (Graph.EqualGraphs(m_graph, m_goalgraph))
+            if (m_graph.Equals(m_goalgraph))
             {
                 m_advanceButton.Enable();
             }   
@@ -50,7 +51,7 @@ namespace KingsTaxes
             {
                 var solutionRoad = Instantiate(m_solutionRoadPrefab, Vector3.forward, Quaternion.identity) as GameObject;
                 var roadmeshScript = solutionRoad.GetComponent<ReshapingMesh>();
-                roadmeshScript.CreateNewMesh(edge.Vertex1.Pos, edge.Vertex2.Pos);
+                roadmeshScript.CreateNewMesh(edge.Start.Pos, edge.End.Pos);
             }
         }
     }

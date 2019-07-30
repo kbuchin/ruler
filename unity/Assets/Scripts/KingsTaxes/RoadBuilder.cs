@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
-
-namespace KingsTaxes
+﻿namespace KingsTaxes
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using UnityEngine;
+
     class RoadBuilder : MonoBehaviour
     {
         Settlement m_firstSettlement = null;

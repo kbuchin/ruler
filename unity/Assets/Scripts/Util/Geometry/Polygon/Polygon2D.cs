@@ -15,35 +15,42 @@
     /// </summary>
     public class Polygon2D : IPolygon2D
     {
-        private LinkedList<Vector2> m_vertices;
-        private Vector2? m_vertexMean = null;
-        private Vector2? m_leftMostVertex = null;
+        private readonly LinkedList<Vector2> m_vertices;
 
         public ICollection<Vector2> Vertices { get { return m_vertices; } }
 
-        public int VertexCount { get { return m_vertices.Count; } }
-
-        public Vector2? VertexMean
+        public ICollection<LineSegment> Segments
         {
-            get { return m_vertexMean; }
+            get
+            {
+                if (m_vertices.Count <= 1) return new List<LineSegment>();
+
+                var result = new List<LineSegment>(Vertices.Count);
+                var node = m_vertices.First;
+                while (node.Next != null)
+                {
+                    result.Add(new LineSegment(node.Value, node.Next.Value));
+                    node = node.Next;
+                }
+                result.Add(new LineSegment(m_vertices.Last.Value, m_vertices.First.Value));
+                return result;
+            }
         }
 
-        public Vector2? LeftMostVertex
+        public Vector2? Next(Vector2 pos)
         {
-            get { return m_leftMostVertex; }
-        }
-
-
-        public Vector2 Next(Vector2 pos)
-        {
-            var node = m_vertices.Find(pos).Next;
+            var node = m_vertices.Find(pos);
+            if (node == null) return null;
+            node = node.Next;
             if (node == null) node = m_vertices.First;
             return node.Value;
         }
 
-        public Vector2 Prev(Vector2 pos)
+        public Vector2? Prev(Vector2 pos)
         {
-            var node = m_vertices.Find(pos).Previous;
+            var node = m_vertices.Find(pos);
+            if (node == null) return null;
+            node = node.Previous;
             if (node == null) node = m_vertices.Last;
             return node.Value;
         }
@@ -58,7 +65,7 @@
             AddVertexAfter(m_vertices.First, pos);
         }
 
-        public void AddVertexAfter(Vector2 pos, Vector2 after)
+        public void AddVertexAfter(Vector2 after, Vector2 pos)
         {
             if (!Contains(after))
             {
@@ -70,14 +77,6 @@
         private void AddVertexAfter(LinkedListNode<Vector2> node, Vector2 pos)
         {
             m_vertices.AddAfter(node, pos);
-
-            if (!m_leftMostVertex.HasValue || m_leftMostVertex.Value.x > pos.x)
-                m_leftMostVertex = pos;
-
-            if (m_vertexMean.HasValue)
-                m_vertexMean = (m_vertexMean * m_vertices.Count + pos) / (m_vertices.Count + 1);
-            else
-                m_vertexMean = pos;
 
             m_vertices.AddAfter(node, pos);
         }
@@ -100,8 +99,6 @@
         public void Clear()
         {
             m_vertices.Clear();
-            m_leftMostVertex = null;
-            m_vertexMean = null;
         }
 
         private Vector2 FindLeftMostVertex()
@@ -151,7 +148,7 @@
 
             //add up signed areas allong the edges of the polygon
             var areasum = 0f;
-            foreach (LineSegment seg in Segments())
+            foreach (LineSegment seg in Segments)
             {
                 var v1 = seg.Point1;
                 var v2 = seg.Point2;
@@ -159,36 +156,6 @@
             }
 
             return Math.Abs(areasum) / 2;
-        }
-
-        /// <summary>
-        /// Returns a list of all the line segments forming the polygon oriented in a counterclockwise manner.
-        /// </summary>
-        /// <returns></returns>
-        public List<LineSegment> Segments()
-        {
-            if (m_vertices.Count <= 1) return new List<LineSegment>();
-
-            var result = new List<LineSegment>(Vertices.Count);
-            var node = m_vertices.First;
-            while (node.Next != null)
-            {
-                result.Add(new LineSegment(node.Value, node.Next.Value));
-                node = node.Next;
-            }
-            result.Add(new LineSegment(m_vertices.Last.Value, m_vertices.First.Value));
-            return result;
-        }
-
-        /// <summary>
-        /// returns a list of all the tangent lines
-        /// </summary>
-        /// <returns></returns>
-        public List<Line> Lines()
-        {
-            var result = new List<Line>(Vertices.Count);
-            foreach (var seg in Segments()) result.Add(seg.Line);
-            return result;
         }
 
         /// <summary>
@@ -262,7 +229,7 @@
         /// <param name="a_poly1"></param>
         /// <param name="a_poly2"></param>
         /// <returns></returns>
-        public static IPolygon2D IntersectConvex(Polygon2D a_poly1, Polygon2D a_poly2)
+        public static Polygon2D IntersectConvex(Polygon2D a_poly1, Polygon2D a_poly2)
         {
             if (!(a_poly1.IsConvex()))
             {
@@ -291,9 +258,9 @@
                 }
             }
 
-            foreach (LineSegment seg1 in a_poly1.Segments())
+            foreach (LineSegment seg1 in a_poly1.Segments)
             {
-                foreach (LineSegment seg2 in a_poly2.Segments())
+                foreach (LineSegment seg2 in a_poly2.Segments)
                 {
                     var intersection = seg1.Intersect(seg2);
                     if (intersection.HasValue)
@@ -317,7 +284,7 @@
         public bool IsClockwise()
         {
             var sum = 0f;
-            foreach (LineSegment seg in Segments())
+            foreach (LineSegment seg in Segments)
             {
                 sum += (seg.Point2.x - seg.Point1.x) * (seg.Point2.y + seg.Point1.y);
             }

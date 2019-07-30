@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using Algo;
+﻿namespace Divide {
+    using System.Collections.Generic;
+    using Util.Geometry;
 
-namespace Divide {
     public class Solution
     {
         List<Line> m_archers;

@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
-using UnityEngine.SceneManagement;
-
-namespace KingsTaxes.UI
+﻿namespace KingsTaxes
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using UnityEngine;
+    using UnityEngine.SceneManagement;
+
     class MenuController: MonoBehaviour
     {
         //Editable form unity

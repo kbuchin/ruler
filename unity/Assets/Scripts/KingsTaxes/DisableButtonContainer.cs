@@ -4,7 +4,6 @@ using UnityEngine.UI;
 
 namespace KingsTaxes
 {
-
     /// <summary>
     /// Container for a button that allows the button to be toglled on/of
     /// </summary>
@@ -34,7 +33,7 @@ namespace KingsTaxes
             m_child.SetActive(false);
         }
 
-        internal void setText(string text)
+        internal void SetText(string text)
         {
             m_text.text = text;
         }

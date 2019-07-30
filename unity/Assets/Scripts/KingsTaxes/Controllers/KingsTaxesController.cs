@@ -1,12 +1,12 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Algo.Graph;
-using System.Linq;
-using UnityEngine;
-using UnityEngine.SceneManagement;
-
-namespace KingsTaxes
+﻿namespace KingsTaxes
 {
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Linq;
+    using UnityEngine;
+    using UnityEngine.SceneManagement;
+    using Util.Geometry.Graph;
+
     public abstract class KingsTaxesController : MonoBehaviour {
         public string m_nextlevel = "lv";
         public bool m_endlessMode = false;
@@ -18,7 +18,7 @@ namespace KingsTaxes
         private int m_endlessLevel;
         protected float m_settlementRadius = 0.33f; // estimated radius of a settlement in unity units 
         protected bool m_solutionMode = false;
-        protected Graph m_graph;
+        protected IGraph m_graph;
         protected Settlement[] m_settlements;
             
 
@@ -53,7 +53,7 @@ namespace KingsTaxes
             //Make vertex list
             m_settlements = FindObjectsOfType<Settlement>();
             //init Empty grap
-            m_graph = new Graph(m_settlements.Select<Settlement, Vertex>(go => go.Vertex));
+            m_graph = new AdjacencyListGraph(m_settlements.Select<Settlement, Vertex>(go => go.Vertex));
         }
 	
 	    // Update is called once per frame

@@ -133,7 +133,7 @@
         /// </summary>
         /// <param name="a_segments"></param>
         /// <returns></returns>
-        public List<Vector2> IntersectionWithSegments(List<LineSegment> a_segments)
+        public List<Vector2> IntersectionWithSegments(IEnumerable<LineSegment> a_segments)
         {
             List<Vector2> intersections = new List<Vector2>();
 

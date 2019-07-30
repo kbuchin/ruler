@@ -1,17 +1,16 @@
-﻿using Algo.Polygons;
-using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
-
-namespace Algo.Polygons.Tests
+﻿namespace Algo.Polygons.Tests
 {
+    using NUnit.Framework;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using UnityEngine;
 
     [TestFixture]
     class VertexSimplePolygonTest
     {
+        /*
         private static Vector2 m_topVertex = new Vector2(0, 1);
         private static Vector2 m_botVertex = new Vector2(0, -1);
         private static Vector2 m_leftVertex = new Vector2(-1, 0);
@@ -223,6 +222,7 @@ namespace Algo.Polygons.Tests
                 }
             }
             return false;  
-        }    
+        } 
+        */
     }
 }

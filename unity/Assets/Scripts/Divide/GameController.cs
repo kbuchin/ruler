@@ -1,14 +1,18 @@
-﻿using UnityEngine;
-using System.Collections.Generic;
-using Algo;
-using Algo.DCEL;
-using Algo.Polygons;
-using System.Linq;
-using System;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
-
-namespace Divide { 
+﻿namespace Divide {
+    using UnityEngine;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System;
+    using UnityEngine.SceneManagement;
+    using UnityEngine.UI;
+    using Util.Geometry.DCEL;
+    using General.Drawing;
+    using Util.Geometry;
+    using Util.Geometry.Duality;
+    using Util.Algorithms;
+    using Util.Geometry.Polygon;
+    using Util.Algorithms.Polygon;
+    using Util.Math;
 
     public class GameController : MonoBehaviour {
         public string m_nextlevel = "lv1";
@@ -30,7 +34,7 @@ namespace Divide {
 
         //Unity references
         private DivideLineDrawer m_lineDrawer;
-        private GraphDrawer m_graphDrawer;
+        private DCELDrawer m_graphDrawer;
         private MouseLine m_mouseLine;
         private SpriteRenderer m_spriteRenderer;
         private BoxCollider2D m_colider;
@@ -47,7 +51,7 @@ namespace Divide {
             m_mages = GameObject.FindGameObjectsWithTag(Tags.Mage);
             m_mouseLine = FindObjectOfType<MouseLine>();
             m_lineDrawer = GameObject.FindObjectOfType<DivideLineDrawer>();
-            m_graphDrawer = GameObject.FindObjectOfType<GraphDrawer>();
+            m_graphDrawer = GameObject.FindObjectOfType<DCELDrawer>();
             m_spriteRenderer = GetComponent<SpriteRenderer>();
             m_colider = GetComponent<BoxCollider2D>();
             m_swapText = GameObject.FindGameObjectWithTag(Tags.Text).GetComponent<Text>();
@@ -238,8 +242,8 @@ namespace Divide {
             thing1.transform.position = thing2.transform.position;
             thing2.transform.position = pos;
 
-            thing1.deselect();
-            thing2.deselect();
+            thing1.Deselect();
+            thing2.Deselect();
 
             m_numberofswaps--;
             m_swapText.text = "Swaps:  " + m_numberofswaps;
@@ -255,34 +259,33 @@ namespace Divide {
         /// </summary>
         private void FindSolution()
         {
-            List<Line> archerlines = GeomDual.Dual(m_archerspos);
-            List<Line> swordsmenlines = GeomDual.Dual(m_swordsmenpos);
-            List<Line> magelines = GeomDual.Dual(m_magespos);
+            var archerlines = PointLineDual.Dual(m_archerspos);
+            var swordsmenlines = PointLineDual.Dual(m_swordsmenpos);
+            var magelines = PointLineDual.Dual(m_magespos);
 
-            List<Line> allLines = archerlines.Concat(swordsmenlines.Concat(magelines)).ToList<Line>();
+            var allLines = archerlines.Concat(swordsmenlines.Concat(magelines)).ToList<Line>();
 
-            Rect bBox = BoundingBoxComputer.FromLines(allLines, 10, 10);
-            m_archerDcel = new DCEL(archerlines, bBox);
-            m_swordsmenDcel = new DCEL(swordsmenlines, bBox.Enlarge(1f));
-            m_mageDcel = new DCEL(magelines, bBox.Enlarge(2f));
+            m_archerDcel = new DCEL(archerlines);
+            m_swordsmenDcel = new DCEL(swordsmenlines);
+            m_mageDcel = new DCEL(magelines);
 
-            List<Face> archerFeas = m_archerDcel.middleFaces();
-            List<Face> swordsmenFeas = m_swordsmenDcel.middleFaces();
-            List<Face> mageFeas = m_mageDcel.middleFaces();
+            var archerFaces = m_archerDcel.Faces;
+            var swordsmenFaces = m_swordsmenDcel.Faces;
+            var mageFaces = m_mageDcel.Faces;
 
-            m_solution = new Solution(findCutlines(archerFeas), 
-                findCutlines(swordsmenFeas), 
-                findCutlines(mageFeas), 
-                findPointsInRegions(archerFeas, swordsmenFeas, mageFeas));
+            m_solution = new Solution(FindCutlines(archerFaces), 
+                FindCutlines(swordsmenFaces), 
+                FindCutlines(mageFaces), 
+                findPointsInRegions(archerFaces.ToList(), swordsmenFaces.ToList(), mageFaces.ToList()));
             m_lineDrawer.NewSolution(m_solution);
         }
 
-        private List<Line> findCutlines(List<Face> a_region)
+        private List<Line> FindCutlines(ICollection<Face> a_region)
         {
-            return findCutlines(a_region.Select(f => f.Polygon));
+            return FindCutlines(a_region.Select(f => f.Polygon));
         }
 
-        private List<Line> findCutlines(IEnumerable<VertexSimplePolygon> a_region)
+        private List<Line> FindCutlines(IEnumerable<Polygon2D> a_region)
         {
             if(a_region.Count() <=0) //no valied faces are supplied
             {
@@ -290,12 +293,12 @@ namespace Divide {
             }
            //facebased approach
             var lines = new List<Line>();
-            foreach (VertexSimplePolygon poly in a_region.Skip(1).Take(a_region.Count() - 2)) //Treat faces on the bounding box seperatly
+            foreach (var poly in a_region.Skip(1).Take(a_region.Count() - 2)) //Treat faces on the bounding box seperatly
             {
-                var line = poly.LineOfGreatestMinimumSeperationInTheDual(false).Line;
+                var line = Seperator.LineOfGreatestMinimumSeperationInTheDual(poly, false).Line;
                 if (line == null)
                 {
-                    throw new AlgoException();
+                    throw new GeomException();
                 }
                 lines.Add(line);
             }
@@ -303,8 +306,8 @@ namespace Divide {
             //Solve boundingbox cases (Take only the line with the greatest seperation
             var firstBoundingboxPoly = a_region.ElementAt(0);
             var lastBoundingboxPoly = a_region.ElementAt(a_region.Count() - 1);
-            var firstTuple = firstBoundingboxPoly.LineOfGreatestMinimumSeperationInTheDual(true);
-            var lastTuple = lastBoundingboxPoly.LineOfGreatestMinimumSeperationInTheDual(true);
+            var firstTuple = Seperator.LineOfGreatestMinimumSeperationInTheDual(firstBoundingboxPoly, true);
+            var lastTuple = Seperator.LineOfGreatestMinimumSeperationInTheDual(lastBoundingboxPoly, true);
             if(firstTuple.Seperation > lastTuple.Seperation)
             {
                 lines.Add(firstTuple.Line);
@@ -328,30 +331,30 @@ namespace Divide {
             {
                 if (! MathUtil.EqualsEps(a_region1[i].BoundingBox().yMax , a_region1[i + 1].BoundingBox().yMin))
                 {
-                    throw new AlgoException("List has no unique y-order");
+                    throw new GeomException("List has no unique y-order");
                 }
             }
             for (int i = 0; i < a_region2.Count - 1; i++)
             {
                 if (!MathUtil.EqualsEps(a_region2[i].BoundingBox().yMax, a_region2[i + 1].BoundingBox().yMin))
                 {
-                    throw new AlgoException("List has no unique y-order " + a_region2[i].BoundingBox().yMax + " "+ a_region2[i + 1].BoundingBox().yMin);
+                    throw new GeomException("List has no unique y-order " + a_region2[i].BoundingBox().yMax + " "+ a_region2[i + 1].BoundingBox().yMin);
                 }
             }
             for (int i = 0; i < a_region3.Count - 1; i++)
             {
                 if (!MathUtil.EqualsEps(a_region3[i].BoundingBox().yMax, a_region3[i + 1].BoundingBox().yMin))
                 {
-                    throw new AlgoException("List has no unique y-order" + a_region3[i].BoundingBox().yMax + " " + a_region3[i + 1].BoundingBox().yMin);
+                    throw new GeomException("List has no unique y-order" + a_region3[i].BoundingBox().yMax + " " + a_region3[i + 1].BoundingBox().yMin);
                 }
             }
 
-            List<VertexSimplePolygon> region1 = a_region1.Select(x => x.Polygon).ToList();
+            var region1 = a_region1.Select(x => x.Polygon).ToList();
             var region2 = a_region2.Select(x => x.Polygon).ToList();
             var region3 = a_region3.Select(x => x.Polygon).ToList();
 
 
-            var intermediateList = new List<VertexSimplePolygon>();
+            var intermediateList = new List<Polygon2D>();
             //Intersect first two lists
             var list1index = 0;
             var list2index = 0;
@@ -359,12 +362,13 @@ namespace Divide {
             while (true)
             {
                 //progress trough y coordinates
-                var intersection = VertexSimplePolygon.IntersectConvex(region1[list1index], region2[list2index]);
+                var intersection = Polygon2D.IntersectConvex(region1[list1index], region2[list2index]);
                 if(intersection != null) {
                     intermediateList.Add(intersection);
                 }
                 
-                if (region2[list2index].BoundingBox.yMax < region1[list1index].BoundingBox.yMax)
+                if (BoundingBox.FromPolygon(region2[list2index]).yMax < 
+                    BoundingBox.FromPolygon(region1[list1index]).yMax)
                 {
                     list2index++;
                 }
@@ -379,20 +383,21 @@ namespace Divide {
                 }
             }
 
-            List<VertexSimplePolygon> result = new List<VertexSimplePolygon>();
+            var result = new List<Polygon2D>();
             //Intersect intermediate list and last list
             var intermediateIndex = 0;
             var list3index = 0;
             while (true)
             {
                 //progress trough y coordinates
-                var intersection = VertexSimplePolygon.IntersectConvex(intermediateList[intermediateIndex], region3[list3index]);
+                var intersection = Polygon2D.IntersectConvex(intermediateList[intermediateIndex], region3[list3index]);
                 if (intersection != null)
                 {
                     result.Add(intersection);
                 }
 
-                if (region3[list3index].BoundingBox.yMax < intermediateList[intermediateIndex].BoundingBox.yMax)
+                if (BoundingBox.FromPolygon(region3[list3index]).yMax <
+                    BoundingBox.FromPolygon(intermediateList[intermediateIndex]).yMax)
                 {
                     list3index++;
                 }
@@ -408,7 +413,7 @@ namespace Divide {
             }
 
             //Convert polygons to lines
-            return findCutlines(result);
+            return FindCutlines(result);
         }
     }
 }

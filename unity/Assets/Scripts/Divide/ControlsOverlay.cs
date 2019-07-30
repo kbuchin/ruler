@@ -1,8 +1,7 @@
-﻿using UnityEngine;
-using System.Collections;
-
-namespace Divide
+﻿namespace Divide
 {
+    using UnityEngine;
+
     public class ControlsOverlay : MonoBehaviour
     {
         private SpriteRenderer m_sprite;

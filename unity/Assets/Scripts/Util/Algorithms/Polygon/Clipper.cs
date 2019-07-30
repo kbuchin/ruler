@@ -16,7 +16,7 @@
         /// <param name="a_subject"></param>
         /// <param name="a_clip"></param>
         /// <returns></returns>
-        public static Polygon2DWithHoles CutOut(Polygon2D a_subject, Polygon2D a_clip)
+        public static MultiPolygon2D CutOut(Polygon2D a_subject, Polygon2D a_clip)
         {
             var subjectList = WeilerAthertonList(a_subject, a_clip);
             var clipList = new LinkedList<Vector2>(WeilerAthertonList(a_clip, a_subject).Reverse());
@@ -28,11 +28,27 @@
             {
                 //either polygons is entirly inside the other, or they are disjoint.
                 //We can't have vision polygons entirly inside each other.
-                return new Polygon2DWithHoles(a_subject);
+                return new MultiPolygon2D(a_subject);
             }
 
 
             return WeilerAtherthonCutOut(subjectList, clipList, intersectionList);
+        }
+
+        /// <summary>
+        /// Cuts a_cutPoly out of this polygon
+        /// </summary>
+        /// <param name="a_cutPoly"></param>
+        public static MultiPolygon2D CutOut(MultiPolygon2D a_subject, Polygon2D a_cutPoly)
+        {
+            var result = new List<Polygon2D>();
+
+            foreach (var poly in a_subject.Polygons)
+            {
+                result.AddRange(CutOut(poly, a_cutPoly).Polygons);
+            }
+
+            return new MultiPolygon2D(result);
         }
 
         /// <summary>
@@ -44,9 +60,9 @@
         /// <returns></returns>
         /// 
         ///NOTE: An eventual interesecting implementation of the Weiler-Atherthon algorithm should use selection on the startvertices. (i.e. taking only inbound edges, see also wikipedia)
-        private static Polygon2DWithHoles WeilerAtherthonCutOut(LinkedList<Vector2> a_subjectList, LinkedList<Vector2> a_clipList, List<Vector2> a_startVertexList)
+        private static MultiPolygon2D WeilerAtherthonCutOut(LinkedList<Vector2> a_subjectList, LinkedList<Vector2> a_clipList, List<Vector2> a_startVertexList)
         {
-            var result = new Polygon2DWithHoles();
+            var result = new MultiPolygon2D();
 
             //PERF organise intersections better so i have to loop less over the lists
             while (a_startVertexList.Count > 0)
@@ -185,9 +201,9 @@
         private static LinkedList<Vector2> WeilerAthertonList(Polygon2D a_poly, Polygon2D a_intersector)
         {
             var intersectionList = new LinkedList<Vector2>();
-            var intersectingSegments = a_intersector.Segments();
+            var intersectingSegments = a_intersector.Segments;
 
-            foreach (LineSegment segment in a_poly.Segments())
+            foreach (LineSegment segment in a_poly.Segments)
             {
                 intersectionList.AddLast(segment.Point1);
                 foreach (Vector2 intersection in segment.IntersectionWithSegments(intersectingSegments)) //no AddRange for LinkedList
@@ -235,9 +251,9 @@
         private static List<Vector2> WeilerAthertonIntersectionList(Polygon2D a_subject, Polygon2D a_clip)
         {
             var intersectionList = new List<Vector2>();
-            var intersectingSegments = a_subject.Segments();
+            var intersectingSegments = a_subject.Segments;
 
-            foreach (LineSegment segment in a_clip.Segments())
+            foreach (LineSegment segment in a_clip.Segments)
             {
                 intersectionList.AddRange(segment.IntersectionWithSegments(intersectingSegments));
             }

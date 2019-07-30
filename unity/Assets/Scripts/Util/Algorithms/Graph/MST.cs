@@ -5,6 +5,7 @@
     using UnityEngine;
     using Util.DataStructures.Queue;
     using Util.Geometry.Graph;
+    using Util.Geometry;
 
     public static class MST {
         public static void MinimumSpanningTree(IGraph Graph)

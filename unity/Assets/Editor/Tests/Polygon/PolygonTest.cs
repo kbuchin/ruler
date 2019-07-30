@@ -1,14 +1,14 @@
-﻿using NUnit.Framework;
-using System.Collections.Generic;
-using UnityEngine;
-using Algo.Polygons;
-
-namespace Algo.Polygons.Tests
+﻿namespace Util.Geometry.Polygons.Tests
 {
+    using NUnit.Framework;
+    using System.Collections.Generic;
+    using UnityEngine;
+    using Util.Geometry.Polygons;
 
     [TestFixture]
     class PolygonTest
     {
+        /*
         private static Vector2 m_topVertex = new Vector2(0, 1);
         private static Vector2 m_botVertex = new Vector2(0, -1);
         private static Vector2 m_leftVertex = new Vector2(-1, 0);
@@ -172,5 +172,6 @@ namespace Algo.Polygons.Tests
 
             Assert.NotNull(test);
         } 
+        */
     }
 }

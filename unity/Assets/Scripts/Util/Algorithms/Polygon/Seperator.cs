@@ -1,6 +1,4 @@
-﻿
-
-namespace Util.Algorithms.Polygon
+﻿namespace Util.Algorithms.Polygon
 {
     using System;
     using System.Linq;
@@ -32,11 +30,11 @@ namespace Util.Algorithms.Polygon
             {
                 //Check if the boundingboxface has only 2 real neighbouring lines(in the dual) and return the bisector (in the primal) in this case 
                 var reallines = new List<Line>();
-                foreach (var line in polygon.Lines())
+                foreach (var seg in polygon.Segments)
                 {
-                    if (!(float.IsInfinity(line.Slope) || MathUtil.EqualsEps(line.Slope, 0f)))
+                    if (!(float.IsInfinity(seg.Line.Slope) || MathUtil.EqualsEps(seg.Line.Slope, 0f)))
                     {
-                        reallines.Add(line);
+                        reallines.Add(seg.Line);
                     }
                 }
 

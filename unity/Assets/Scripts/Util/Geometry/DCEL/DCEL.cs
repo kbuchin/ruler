@@ -32,7 +32,7 @@
         }
 
         /// <summary>
-        ///  Creates DCEL from arrangement of lines
+        ///  Creates DCEL from arrangement of line segments
         /// </summary>
         public DCEL(IEnumerable<LineSegment> a_Segments) : this()
         {
@@ -40,6 +40,21 @@
             {
                 //add line
                 AddSegment(segment);
+            }
+
+            //debug stuff
+            AssertWellformed();
+        }
+
+        /// <summary>
+        ///  Creates DCEL from arrangement of line segments
+        /// </summary>
+        public DCEL(IEnumerable<Line> a_Lines) : this()
+        {
+            foreach (var line in a_Lines)
+            {
+                //add line
+                AddLine(line);
             }
 
             //debug stuff
@@ -224,6 +239,15 @@
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Adds a line to the dcel
+        /// </summary>
+        /// <param name="line"></param>
+        public void AddLine(Line line)
+        {
+            // TODO
         }
 
         /// <summary>

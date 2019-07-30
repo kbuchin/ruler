@@ -1,14 +1,15 @@
-﻿using Algo.Graph;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
-
-namespace KingsTaxes
+﻿namespace KingsTaxes
 {
+    using Util.Geometry.Graph;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using UnityEngine;
+    using UnityEngine.SceneManagement;
+    using UnityEngine.UI;
+    using Util.Algorithms;
+
     class SpannerController : KingsTaxesController
     {
         [SerializeField]
@@ -52,8 +53,11 @@ namespace KingsTaxes
             m_hintRoads = new List<GameObject>();
 
             //calculate goal
-            var greedySpanner = Graph.GreedySpanner(m_settlements.Select<Settlement, Vector2>(go => go.Pos).ToList(), m_t);
-            m_thresholdscore = greedySpanner.LengthOfAllEdges() + 0.0001f;
+            var greedySpanner = Spanner.GreedySpanner(
+                m_settlements.Select<Settlement, Vertex>(go => new Vertex(go.Pos)).ToList(), 
+                m_t
+            );
+            m_thresholdscore = greedySpanner.totalEdgeWeight + 0.0001f;
 
             //init
             UpdateHintButton();
@@ -104,8 +108,8 @@ namespace KingsTaxes
 
         protected override void CheckVictory()
         {
-            var spannerVerifier = m_graph.VerifySpanner(m_t);
-            float score = m_graph.LengthOfAllEdges();
+            var spannerVerifier = Spanner.VerifySpanner(m_graph, m_t);
+            float score = m_graph.totalEdgeWeight;
             if (spannerVerifier.IsSpanner)
             {
                 if (score < m_bestPlayerScore)
@@ -145,22 +149,19 @@ namespace KingsTaxes
 
         }
 
-        public void showHint()
+        public void ShowHint()
         {
             if (m_numberOfHints <= 0)
             {
                 return;
             }
-            var spannerVerifier = m_graph.VerifySpanner(m_t);
+            var spannerVerifier = Spanner.VerifySpanner(m_graph, m_t);
             if (spannerVerifier.IsSpanner)
             {
                 throw new Exception("Hint button could be clicked while no hint is available");
             } else
             {
-                for (int i = 0; i < spannerVerifier.FalsificationPathsStart.Count; i++)
-                {
-                    displayHintRoad(spannerVerifier.FalsificationPathsStart[i], spannerVerifier.FalsificationPathsEnd[i]);
-                }
+                displayHintRoad(spannerVerifier.FalsificationStart, spannerVerifier.FalsificationEnd);
                 m_numberOfHints -= 1;
                 UpdateHintButton();
             }
@@ -176,7 +177,7 @@ namespace KingsTaxes
         {
             if(m_numberOfHints > 0)
             {
-                m_hintButton.setText("Hint (" + m_numberOfHints + ")");
+                m_hintButton.SetText("Hint (" + m_numberOfHints + ")");
                 m_hintButton.Enable();
 
             } else

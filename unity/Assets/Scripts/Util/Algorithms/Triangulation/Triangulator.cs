@@ -5,7 +5,6 @@
     using System.Linq;
     using UnityEngine;
     using Util.Geometry;
-    using Util.Geometry.Graph;
     using Util.Geometry.Polygon;
     using Util.Geometry.Triangulation;
     using Util.Math;
@@ -17,8 +16,13 @@
         /// </summary>
         /// NB: Also see poygontriangulation.pdf in the docs folder
         /// <returns>A list of clockwise triangles whose disjoint union is this polygon</returns>
-        public static Triangulation Triangulate(Polygon2D polygon)
+        public static Triangulation Triangulate(IPolygon2D polygon)
         {
+            if(!polygon.IsSimple())
+            {
+                throw new ArgumentException("Polygon must be simple");
+            }
+
             var vertices = polygon.Vertices.ToList();
 
             if (vertices.Count < 3)
@@ -42,7 +46,7 @@
             var triangulation = new Triangulation();
 
             //Find leftmost vertex
-            var leftVertex = (Vector2)polygon.LeftMostVertex;
+            var leftVertex = LeftMost(vertices);
             var index = vertices.IndexOf(leftVertex);
             var prevVertex = vertices[MathUtil.PositiveMod(index - 1, vertices.Count)];
             var nextVertex = vertices[MathUtil.PositiveMod(index - 1, vertices.Count)];
@@ -107,6 +111,13 @@
             }
 
             return triangulation;
+        }
+
+        private static Vector2 LeftMost(IEnumerable<Vector2> vertices)
+        {
+            return vertices.Aggregate(
+                (minItem, nextItem) => minItem.x < nextItem.x ? minItem : nextItem
+                );
         }
     }
 }

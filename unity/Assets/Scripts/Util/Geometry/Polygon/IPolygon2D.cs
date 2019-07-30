@@ -8,12 +8,14 @@
     {
         ICollection<Vector2> Vertices { get; }
 
-        Vector2 Next(Vector2 pos);
-        Vector2 Prev(Vector2 pos);
+        ICollection<LineSegment> Segments { get; }
+
+        Vector2? Next(Vector2 pos);
+        Vector2? Prev(Vector2 pos);
 
         void AddVertex(Vector2 pos);
         void AddVertexFirst(Vector2 pos);
-        void AddVertexAfter(Vector2 pos, Vector2 after);
+        void AddVertexAfter(Vector2 after, Vector2 pos);
 
         void RemoveVertex(Vector2 pos);
         void RemoveFirst();

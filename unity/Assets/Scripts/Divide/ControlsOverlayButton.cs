@@ -1,6 +1,7 @@
-﻿using UnityEngine;
-using System.Collections;
-namespace Divide { 
+﻿namespace Divide {
+    using UnityEngine;
+    using System.Collections;
+
     public class ControlsOverlayButton : MonoBehaviour {
         private ControlsOverlay m_controlsoverlay;
 

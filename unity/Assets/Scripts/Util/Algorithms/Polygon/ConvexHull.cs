@@ -14,7 +14,7 @@
         /// Does a simple graham scan
         /// </summary>
         /// <param name="a_points"></param>
-        public static IPolygon2D ComputeConvexHull(IPolygon2D polygon)
+        public static Polygon2D ComputeConvexHull(IPolygon2D polygon)
         {
             if (polygon.Vertices.Count <= 2)
             {

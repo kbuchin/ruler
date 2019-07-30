@@ -1,12 +1,12 @@
-﻿using NUnit.Framework;
-
-namespace Voronoi.Tests
+﻿namespace Voronoi.Tests
 {
+    using NUnit.Framework;
+
     [TestFixture]
     [Category("Degeneracies")]
     public class VoronoiTest
     {
-
+        /*
         [Test]
         public void TestColinearPoints()
         {
@@ -32,5 +32,6 @@ namespace Voronoi.Tests
             Assert.IsTrue(m_Delaunay.AddVertex(new Vertex(1, 3, Vertex.EOwnership.PLAYER1)));
             Assert.IsTrue(m_Delaunay.AddVertex(new Vertex(2, 3, Vertex.EOwnership.PLAYER1)));
         }
+        */
     }
 }

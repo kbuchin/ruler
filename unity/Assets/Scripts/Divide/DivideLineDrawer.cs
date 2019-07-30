@@ -1,12 +1,10 @@
-﻿using Divide;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
+﻿
 
 namespace Divide
 {
+    using General.Drawing;
+    using UnityEngine;
+
     class DivideLineDrawer:LineDrawer
     {
         public Color ArcherColor = new Color(102f/255,194f/255,165f/255);

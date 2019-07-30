@@ -26,7 +26,6 @@ namespace Divide
 
         }
 
-
         void OnMouseUpAsButton()
         {
             //change selection
@@ -39,7 +38,7 @@ namespace Divide
             controller.thingClick(this, m_selected);
         }
 
-        internal void deselect()
+        internal void Deselect()
         {
             m_selected = false;
 

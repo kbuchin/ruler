@@ -1,15 +1,16 @@
-﻿using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
-
-namespace Algo.Tests
+﻿namespace Util.Geometry.Tests
 {
+    using NUnit.Framework;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using UnityEngine;
+
     [TestFixture]
     class LineSegmentTest
     {
+        /*
         [Test]
         public void OrdinarySegmentTest()
         {
@@ -71,6 +72,6 @@ namespace Algo.Tests
             var intersection = LineSegment.Intersect(seg1, seg2);
             Assert.AreEqual(null, intersection);
         }
-
+        */
     }
 }

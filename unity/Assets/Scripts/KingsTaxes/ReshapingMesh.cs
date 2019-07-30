@@ -1,8 +1,7 @@
-﻿using UnityEngine;
-using Algo.Graph;
-
-namespace KingsTaxes
+﻿namespace KingsTaxes
 {
+    using UnityEngine;
+    using Util.Geometry.Graph;
 
     public class ReshapingMesh : MonoBehaviour {
 

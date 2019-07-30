@@ -1,17 +1,20 @@
-﻿using UnityEngine;
+﻿namespace Menu
+{
+    using UnityEngine;
 
-public class Quiter : MonoBehaviour
-{ 
-    protected virtual void Start()
-    {
-        #if UNITY_WEBGL
-        Debug.Log("WebPlayer");
-        gameObject.SetActive(false);
-        #endif
-    }
+    public class Quiter : MonoBehaviour
+    { 
+        protected virtual void Start()
+        {
+            #if UNITY_WEBGL
+            Debug.Log("WebPlayer");
+            gameObject.SetActive(false);
+            #endif
+        }
 
-    public void Quit()
-    {
-        Application.Quit();
+        public void Quit()
+        {
+            Application.Quit();
+        }
     }
 }
