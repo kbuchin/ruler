@@ -11,7 +11,7 @@
     /// </summary>
     public class MultiPolygon2D : IPolygon2D
     {
-        private List<Polygon2D> m_Polygons;
+        private readonly List<Polygon2D> m_Polygons;
 
         public ICollection<Vector2> Vertices {
             get
@@ -21,6 +21,8 @@
                 return vertices;
             }
         }
+
+        public int VertexCount { get { return m_Polygons.Sum(p => p.VertexCount); } }
 
         public ICollection<LineSegment> Segments
         {
@@ -169,6 +171,11 @@
             return m_Polygons.TrueForAll(p => p.IsClockwise());
         }
 
+        public void Reverse()
+        {
+            foreach (var p in m_Polygons) p.Reverse();
+        }
+
         public override string ToString()
         {
             var str = "MultiPolygon: {";
@@ -182,6 +189,24 @@
         public bool IsSimple()
         {
             return true; // TODO
+        }
+
+        public bool Equals(IPolygon2D other)
+        {
+            var poly = other as MultiPolygon2D;
+            if (poly == null) return false;
+
+            if (Polygons.Count != poly.Polygons.Count) return false;
+
+            var polygons = Polygons.ToList();
+            var otherPolygons = poly.Polygons.ToList();
+
+            for (var i = 0; i < Polygons.Count; i++)
+            {
+                if (!polygons[i].Equals(otherPolygons[i])) return false;
+            }
+
+            return true;
         }
     }
 }

@@ -71,10 +71,10 @@
                 result.yMax = Math.Max(result.yMax, candidatepoint.y + margin);
             }
 
-            if (!MathUtil.isFinite(result.xMin) ||
-                !MathUtil.isFinite(result.xMax) ||
-                !MathUtil.isFinite(result.yMax) ||
-                !MathUtil.isFinite(result.yMin))
+            if (!MathUtil.IsFinite(result.xMin) ||
+                !MathUtil.IsFinite(result.xMax) ||
+                !MathUtil.IsFinite(result.yMax) ||
+                !MathUtil.IsFinite(result.yMin))
             {
                 throw new GeomException("Bounding box has nonfinite values");
             }

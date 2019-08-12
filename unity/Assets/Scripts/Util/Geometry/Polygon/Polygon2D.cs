@@ -1,12 +1,10 @@
 ﻿namespace Util.Geometry.Polygon
 {
     using System.Collections.Generic;
-    using System.Collections.ObjectModel;
     using System.Linq;
     using UnityEngine;
     using System;
     using Util.Math;
-    using Util.Geometry.Duality;
     using Util.Algorithms.Triangulation;
     using Util.Algorithms.Polygon;
 
@@ -15,17 +13,19 @@
     /// </summary>
     public class Polygon2D : IPolygon2D
     {
-        private readonly LinkedList<Vector2> m_vertices;
+        private LinkedList<Vector2> m_vertices;
 
         public ICollection<Vector2> Vertices { get { return m_vertices; } }
+
+        public int VertexCount { get { return m_vertices.Count; } }
 
         public ICollection<LineSegment> Segments
         {
             get
             {
-                if (m_vertices.Count <= 1) return new List<LineSegment>();
+                if (VertexCount <= 1) return new List<LineSegment>();
 
-                var result = new List<LineSegment>(Vertices.Count);
+                var result = new List<LineSegment>(VertexCount);
                 var node = m_vertices.First;
                 while (node.Next != null)
                 {
@@ -57,12 +57,12 @@
 
         public void AddVertex(Vector2 pos)
         {
-            AddVertexAfter(m_vertices.Last, pos);
+            m_vertices.AddLast(pos);
         }
 
         public void AddVertexFirst(Vector2 pos)
         {
-            AddVertexAfter(m_vertices.First, pos);
+            m_vertices.AddFirst(pos);
         }
 
         public void AddVertexAfter(Vector2 after, Vector2 pos)
@@ -76,7 +76,7 @@
 
         private void AddVertexAfter(LinkedListNode<Vector2> node, Vector2 pos)
         {
-            m_vertices.AddAfter(node, pos);
+            if (node == null) throw new GeomException("Adding vertex after null node");
 
             m_vertices.AddAfter(node, pos);
         }
@@ -146,7 +146,7 @@
         {
             //Take the origin as arbitrary point P
 
-            //add up signed areas allong the edges of the polygon
+            //add up signed areas along the edges of the polygon
             var areasum = 0f;
             foreach (LineSegment seg in Segments)
             {
@@ -159,19 +159,22 @@
         }
 
         /// <summary>
-        /// Tests wheter this polygon is clockwise and convex by verifying that each tripple of points constitues a right turn
+        /// Tests wheter this polygon is convex by verifying that each tripplet of points constitues a right turn
         /// </summary>
         public bool IsConvex()
         {
-            if (m_vertices.Count < 3)
+            if (VertexCount < 3)
             {
                 throw new GeomException("Being convex is illdefined for polygons of 2 or less vertices");
             }
 
+            // flip orientation if polygon counter clockwise 
+            var dir = (IsClockwise() ? 1 : -1);
+
             var node = m_vertices.First;
             while(node.Next.Next != null)
             {
-                if (MathUtil.Orient2D(node.Value, node.Next.Value, node.Next.Next.Value) < 0)
+                if (dir * MathUtil.Orient2D(node.Value, node.Next.Value, node.Next.Next.Value) > 0)
                     return false;
                 node = node.Next;
             }
@@ -181,13 +184,13 @@
 
         public bool Contains(Vector2 a_pos)
         {
-            if (m_vertices.Count <= 2) return false; // polygon has no area
+            if (VertexCount <= 2) return false; // polygon has no area
 
             if (Area() == 0) //catch case of "flat" triangle
             {
                 return false;
             }
-            if (IsConvex())
+            if (IsConvex() && IsClockwise())
             {
                 LineSegment segment;
                 var node = m_vertices.First;
@@ -210,7 +213,7 @@
             }
             else
             {
-                Debug.Assert(m_vertices.Count > 3);
+                Debug.Assert(VertexCount > 3);
 
                 foreach (var triangle in Triangulator.Triangulate(this).Triangles)
                 {
@@ -297,6 +300,11 @@
             return false;
         }
 
+        public void Reverse()
+        {
+            m_vertices = new LinkedList<Vector2>(m_vertices.Reverse());
+        }
+
         public override string ToString()
         {
             var str = "Face: {";
@@ -310,6 +318,24 @@
         public bool IsSimple()
         {
             return true; // TODO
+        }
+
+        public bool Equals(IPolygon2D other)
+        {
+            var poly = other as Polygon2D;
+            if (poly == null) return false;
+
+            if (VertexCount != poly.VertexCount) return false;
+
+            var vertices = Vertices.ToList();
+            var otherVertices = poly.Vertices.ToList();
+
+            for (var i = 0; i < VertexCount; i++)
+            {
+                if (vertices[i] != otherVertices[i]) return false;
+            }
+
+            return true;
         }
     }
 }

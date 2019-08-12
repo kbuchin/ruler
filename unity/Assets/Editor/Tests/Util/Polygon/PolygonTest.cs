@@ -100,7 +100,7 @@
 
             var area = LShape.VisibleArea(new Vector2(3.427403f, 3.464213f));
 
-            Debug.Log(area / 12f);
+            //Debug.Log(area / 12f);
             Assert.Greater(0.88f, area/12f);
         }
 

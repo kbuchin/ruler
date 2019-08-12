@@ -6,21 +6,18 @@
 
     public class FloatInterval : IEquatable<FloatInterval>
     {
-        public float Max { get { return m_max; } }
-        public float Min { get { return m_min; } }
-
-        float m_min;
-        float m_max;
+        public float Max { get; private set; }
+        public float Min { get; private set; }
 
         public FloatInterval(float a_val1, float a_val2)
         {
-            m_min = Math.Min(a_val1, a_val2);
-            m_max = Math.Max(a_val1, a_val2);
+            Min = Math.Min(a_val1, a_val2);
+            Max = Math.Max(a_val1, a_val2);
         }
 
         public bool Contains(float a_val)
         {
-            return m_min <= a_val && a_val <= m_max;
+            return Min <= a_val && a_val <= Max;
         }
 
         /// <summary>
@@ -30,8 +27,8 @@
         /// <returns></returns>
         public bool ContainsEpsilon(float a_val)
         {
-            var epsilon = Mathf.Epsilon;
-            return m_min - epsilon <= a_val && a_val <= m_max + epsilon;
+            var epsilon = MathUtil.EPS;
+            return Min - epsilon <= a_val && a_val <= Max + epsilon;
         }
 
         /// <summary>
@@ -56,7 +53,7 @@
 
         public override string ToString()
         {
-            return "Min: " + m_min + " Max: " + m_max;
+            return "Min: " + Min + " Max: " + Max;
         }
 
         public bool Equals(FloatInterval other)

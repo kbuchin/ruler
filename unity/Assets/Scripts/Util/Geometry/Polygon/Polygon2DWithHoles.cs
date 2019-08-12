@@ -29,6 +29,8 @@
             }
         }
 
+        public int VertexCount { get { return Outside.VertexCount + m_holes.Sum(p => p.VertexCount); } }
+
         public ICollection<LineSegment> Segments
         {
             get
@@ -167,18 +169,10 @@
         {
             foreach (var hole in m_holes)
             {
-                if (hole.Contains(a_pos))
-                {
-                    return false;
-                }
+                if (hole.Contains(a_pos)) return false;
             }
 
-            if (Outside.Contains(a_pos))
-            {
-                return true;
-            }
-
-            return false;
+            return Outside.Contains(a_pos);
         }
 
         public bool IsClockwise()
@@ -186,6 +180,32 @@
             bool ret = Outside.IsClockwise();
             foreach (var p in m_holes) ret &= !p.IsClockwise();
             return ret;
+        }
+
+
+        public void Reverse()
+        {
+            Outside.Reverse();
+            foreach (var p in m_holes) p.Reverse();
+        }
+
+        public bool Equals(IPolygon2D other)
+        {
+            var poly = other as Polygon2DWithHoles;
+            if (poly == null) return false;
+
+            if (!Outside.Equals(poly.Outside)) return false;
+            if (Holes.Count != poly.Holes.Count) return false;
+
+            var holes = Holes.ToList();
+            var otherHoles = poly.Holes.ToList();
+
+            for (var i = 0; i < holes.Count; i++)
+            {
+                if (!holes[i].Equals(otherHoles[i])) return false;
+            }
+
+            return true;
         }
     }
 }

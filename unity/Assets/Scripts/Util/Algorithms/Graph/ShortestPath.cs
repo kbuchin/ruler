@@ -1,4 +1,4 @@
-﻿namespace Util.Algorithms
+﻿namespace Util.Algorithms.Graph
 {
     using System;
     using System.Collections;
@@ -68,7 +68,7 @@
                 foreach (var edge in Graph.OutEdgesOf(currentVertex))
                 {
                     var updateVertex = edge.End;
-                    if (ParentDist[updateVertex].Dis < distance + edge.Length)
+                    if (ParentDist[updateVertex].Dis > distance + edge.Length)
                     {
                         ParentDist[updateVertex] = new VertexDist(currentVertex, distance + edge.Length);
                         Queue.Push(new VertexDist(updateVertex, distance + edge.Length));

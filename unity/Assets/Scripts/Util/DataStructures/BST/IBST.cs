@@ -8,7 +8,7 @@
     public interface IBST<T> where T : IComparable<T>, IEquatable<T>
     {
         bool Contains(T data);
-        int ComputeSize();
+        int Count { get; }
 
         bool Insert(T data);
 
@@ -18,5 +18,7 @@
         bool Delete(T data);
         bool DeleteMax();
         bool DeleteMin();
+
+        void Clear();
     }
 }

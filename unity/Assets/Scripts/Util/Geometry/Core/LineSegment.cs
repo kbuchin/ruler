@@ -15,7 +15,9 @@
 
         public Line Line { get { return new Line(m_Point1, m_Point2); } }
 
-        public bool IsVertical { get { return m_Point1.x == m_Point2.x; } }
+        public bool IsVertical { get { return Line.IsVertical; } }
+
+        public bool IsHorizontal { get { return Line.IsHorizontal; } }
 
         public float Magnitude
         {
@@ -28,8 +30,9 @@
 
         public LineSegment(Vector2 a_point1, Vector2 a_point2)
         {
-            m_Point1 = a_point1;
-            m_Point2 = a_point2;
+            // create copy
+            m_Point1 = new Vector2(a_point1.x, a_point1.y);
+            m_Point2 = new Vector2(a_point2.x, a_point2.y);
         }
 
         public bool IsRightOf(Vector2 a_Point)
@@ -40,7 +43,12 @@
 
         public bool IsOnSegment(Vector2 a_Point)
         {
-            return XInterval.Contains(a_Point.x) && MathUtil.EqualsEps(Y(a_Point.x), a_Point.y);
+            return XInterval.Contains(a_Point.x) && Line.IsOnLine(a_Point);
+        }
+
+        public bool IsEndpoint(Vector2 a_Point)
+        {
+            return m_Point1 == a_Point || m_Point2 == a_Point;
         }
 
         public FloatInterval XInterval
@@ -85,13 +93,13 @@
         public static Vector2? Intersect(LineSegment a_seg, Line a_line)
         {
             // cf Interset(LineSegment, LineSegment)
-            if (a_seg.Line.Slope == a_line.Slope)
+            if (MathUtil.EqualsEps(a_seg.Line.Slope, a_line.Slope))
             {
                 return null;
             }
-
+            
             var intersectionpoint = Line.Intersect(a_seg.Line, a_line);
-            if (a_seg.XInterval.Contains(intersectionpoint.x) && a_seg.YInterval.ContainsEpsilon(intersectionpoint.y)) //Double check to handle single vertical segments
+            if (a_seg.XInterval.ContainsEpsilon(intersectionpoint.x) && a_seg.YInterval.ContainsEpsilon(intersectionpoint.y)) //Double check to handle single vertical segments
             {
                 return intersectionpoint;
             }
@@ -115,16 +123,26 @@
         /// <returns></returns>
         internal float DistanceToPoint(Vector2 v)
         {
+            var closest = ClosestPoint(v);
+            return (closest - v).magnitude;
+        }
+
+        /// <summary>
+        /// Computes the distance between this line and the given point 
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        internal Vector2 ClosestPoint(Vector2 v)
+        {
             var normalLine = new Line(v, v + Line.Normal);
             var intersection = Intersect(normalLine);
             if (intersection == null)
             {
-                return Math.Min(Vector2.Distance(Point1, v),
-                                Vector2.Distance(Point2, v));
+                return Vector2.Distance(Point1, v) < Vector2.Distance(Point2, v) ? Point1 : Point2;
             }
             else
             {
-                return Vector2.Distance((Vector2)intersection, v);
+                return (Vector2)intersection;
             }
         }
 
@@ -154,7 +172,6 @@
             return intersections;
         }
 
-
         private int ClosestToPoint1Comparer(Vector2 a_1, Vector2 a_2)
         {
             var dist_1 = Vector2.Distance(Point1, a_1);
@@ -162,7 +179,6 @@
 
             return dist_1.CompareTo(dist_2);
         }
-
 
         /// <summary>
         /// The normal to the right of this segment if we view it as oriented from point1 to point2
@@ -190,7 +206,7 @@
         /// <returns></returns>
         public float X(float a_y)
         {
-            if (YInterval.Contains(a_y))
+            if (YInterval.ContainsEpsilon(a_y))
             {
                 return Line.X(a_y);
             }
@@ -207,7 +223,7 @@
         /// <returns></returns>
         public float Y(float a_x)
         {
-            if (XInterval.Contains(a_x))
+            if (XInterval.ContainsEpsilon(a_x))
             {
                 return Line.Y(a_x);
             }
@@ -219,7 +235,13 @@
 
         public bool Equals(LineSegment other)
         {
-            return Point1 == other.Point1 && Point2 == other.Point2;
+            return MathUtil.EqualsEps(0f, (Point1 - other.Point1).magnitude) &&
+                MathUtil.EqualsEps(0f, (Point2 - other.Point2).magnitude);
+        }
+
+        public override string ToString()
+        {
+            return "Segment: (" + m_Point1 + "," + m_Point2 + ")";
         }
     }
 }

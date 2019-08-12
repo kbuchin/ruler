@@ -1,9 +1,11 @@
-﻿namespace Util.Algorithms
+﻿namespace Util.Algorithms.Graph
 {
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Linq;
     using UnityEngine;
+    using Util.Geometry;
     using Util.Geometry.Graph;
 
     /// <summary>
@@ -48,7 +50,7 @@
             //first determine the possible edges
             var completeGraph = new AdjacencyListGraph(new List<Vertex>(Graph.Vertices));
             completeGraph.MakeComplete();
-            List<Edge> edges = (List<Edge>) completeGraph.Edges;
+            var edges = completeGraph.Edges.ToList();
             edges.Sort();
 
             Vertex Start = null;
@@ -58,8 +60,6 @@
             foreach (var edge in edges)
             {
                 var dist = ShortestPath.ShorthestDistance(Graph, edge.Start, edge.End);
-                if (dist == float.PositiveInfinity)
-                    throw new GeomException("Path does not exist in graph");
 
                 float edgeratio = dist / edge.Length;  // TODO all-pairs shortest path
                 if (edgeratio > a_t)
@@ -86,9 +86,9 @@
         {
             var result = new AdjacencyListGraph(vertices);
             var completeGraph = new AdjacencyListGraph(vertices);
-                
             completeGraph.MakeComplete();
-            var edges = (List<Edge>) completeGraph.Edges;
+
+            var edges = completeGraph.Edges.ToList();
             edges.Sort();
 
             foreach (var edge in edges)
@@ -97,7 +97,7 @@
 
                 if (ShortestPath.ShorthestDistance(result, edge.Start, edge.End) > a_t * directDistance)
                 {
-                    result.AddEdge(edge.Start, edge.End);
+                    result.AddEdge(edge);
                 }
             }
             return result;

@@ -19,9 +19,10 @@
         public Triangulation()
         {
             m_Triangles = new LinkedList<Triangle>();
+            m_Edges = new LinkedList<TriangleEdge>();
         }
 
-        public Triangulation(IEnumerable<Vector2> a_Points)
+        public Triangulation(IEnumerable<Vector2> a_Points) : this()
         { 
             var Points = a_Points.ToList();
             for (var i = 0; i < Points.Count - 2; i++)
@@ -34,7 +35,7 @@
             }
         }
 
-        public Triangulation(Vector2 p0, Vector2 p1, Vector2 p2)
+        public Triangulation(Vector2 p0, Vector2 p1, Vector2 p2) : this()
         {
             V0 = p0;
             V1 = p1;

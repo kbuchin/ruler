@@ -3,6 +3,7 @@
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Linq;
     using UnityEngine;
     using Util.Geometry.Graph;
 
@@ -16,10 +17,10 @@
         public static bool IsHamiltonian(IGraph Graph)
         {
             // fewer than 2 vertices is a degenerate case, always a TSP tour
-            if (Graph.Vertices.Count <= 1) return true;
+            if (Graph.VertexCount <= 1) return true;
 
             // start with random vertex
-            Vertex v = Graph.Vertices.GetEnumerator().Current;
+            Vertex v = Graph.Vertices.First();
             var visited = new HashSet<Vertex>();
 
             while(true)
@@ -45,15 +46,20 @@
             }
 
             // check whether all vertices found
-            return visited.Count == Graph.Vertices.Count;
+            return visited.Count == Graph.VertexCount;
+        }
+
+        public static float ComputeTSPLength(IGraph graph)
+        {
+            if (!IsHamiltonian(graph))
+            {
+                throw new ArgumentException("Graph should be hamiltonian");
+            }
+            return graph.TotalEdgeWeight;
         }
 
         public static float FindTSPLength(IGraph graph)
         {
-            if(!IsHamiltonian(graph))
-            {
-                throw new ArgumentException("Graph should be hamiltonian");
-            }
             return FindTSPLength(graph.Vertices);
         }
 
@@ -65,9 +71,9 @@
         public static float FindTSPLength(IEnumerable<Vertex> vertices)
         {
             //first determine a MST
-            var mst = new AdjacencyListGraph(vertices);
+            IGraph mst = new AdjacencyListGraph(vertices);
             mst.MakeComplete();
-            MST.MinimumSpanningTree(mst);
+            mst = MST.MinimumSpanningTree(mst);
 
             //find odd degree vertices
             var oddDegreePos = new List<Vertex>();
@@ -82,8 +88,8 @@
             //find minimum weight perfect matcing
             var oddDegreeMatching = Matching.MinimumWeightPerfectMatchingOfCompleteGraph(oddDegreePos);
 
-            Debug.Log("mst length: " + mst.totalEdgeWeight + "  om length: " + oddDegreeMatching.totalEdgeWeight);
-            return mst.totalEdgeWeight + oddDegreeMatching.totalEdgeWeight;
+            Debug.Log("mst length: " + mst.TotalEdgeWeight + "  om length: " + oddDegreeMatching.TotalEdgeWeight);
+            return mst.TotalEdgeWeight + oddDegreeMatching.TotalEdgeWeight;
         }
     }
 }

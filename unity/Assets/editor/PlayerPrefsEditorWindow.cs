@@ -79,7 +79,7 @@ public class KeyEditorWindow : EditorWindow
             }
             if (searchResponse_m != null)
             {
-                EditorGUILayout.HelpBox(searchResponse_m.message, searchResponse_m.messageType);
+                EditorGUILayout.HelpBox(searchResponse_m.Message, searchResponse_m.MessageType);
             }
 
             
@@ -105,7 +105,7 @@ public class KeyEditorWindow : EditorWindow
         }
         if (addResponse_m != null)
         {
-            EditorGUILayout.HelpBox(addResponse_m.message, addResponse_m.messageType);
+            EditorGUILayout.HelpBox(addResponse_m.Message, addResponse_m.MessageType);
         }
     }
 
@@ -149,9 +149,9 @@ public class KeyEditorWindow : EditorWindow
     {
         TrySetResponse respone = new TrySetResponse()
         {
-            message = "Key: " + key + " with Value: " + value + " was successfully saved to PlayerPrefs as a " + type,
-            success = true,
-            messageType = MessageType.Info
+            Message = "Key: " + key + " with Value: " + value + " was successfully saved to PlayerPrefs as a " + type,
+            Success = true,
+            MessageType = MessageType.Info
         };
         switch (type)
         {
@@ -220,23 +220,23 @@ public class KeyEditorWindow : EditorWindow
         /// <summary>
         /// True if the value was successfully set, false otherwise.
         /// </summary>
-        public bool success { get; set; }
+        public bool Success { get; set; }
 
         /// <summary>
         /// Message of the value set. May contain error message or success message.
         /// </summary>
-        public string message { get; set; }
+        public string Message { get; set; }
 
         /// <summary>
         /// Message type for showing the message in UI
         /// </summary>
-        public MessageType messageType { get; set; }
+        public MessageType MessageType { get; set; }
 
         public void SetValues(string message, bool success, MessageType messageType)
         {
-            this.message = message;
-            this.success = success;
-            this.messageType = messageType;
+            this.Message = message;
+            this.Success = success;
+            this.MessageType = messageType;
         }
     }
 }

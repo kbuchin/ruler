@@ -1,4 +1,4 @@
-﻿namespace Util.Algorithms
+﻿namespace Util.Algorithms.Graph
 {
     using System.Collections;
     using System.Collections.Generic;
@@ -6,77 +6,59 @@
     using Util.DataStructures.Queue;
     using Util.Geometry.Graph;
     using Util.Geometry;
+    using System;
+    using System.Linq;
 
     public static class MST {
-        public static void MinimumSpanningTree(IGraph Graph)
+        public static IGraph MinimumSpanningTree(IGraph Graph)
         {
             if(Graph.Type.DIRECTED)
             {
                 throw new GeomException("Minimum Spanning Tree is not defined on a directed graph.");
             }
-            
-            // check to see if graph contains any vertices at all
-            if (Graph.Vertices.Count <= 0) return;
-            
+
+            var mst = new AdjacencyListGraph(Graph.Vertices);
+
+            // do nothing with zero or one verticess
+            if (Graph.VertexCount < 2) return mst;
+
             //choose arbitrary starting vertex
-            var root = Graph.Vertices.GetEnumerator().Current;
+            var root = Graph.Vertices.First();
 
             //initialize data structures
             var visitedVertices = new HashSet<Vertex>() { root };
-            var edgesToConsider = new BinaryHeap<Edge>(Graph.EdgesOf(root));
-            var edgesToRemove = new List<Edge>(Graph.Edges); //shallow copy
+            var edgesToConsider = new BinaryHeap<Edge>(Graph.OutEdgesOf(root));
 
-            while (visitedVertices.Count < Graph.Vertices.Count)
+            Debug.Log(edgesToConsider.Count);
+
+            while (visitedVertices.Count < Graph.VertexCount)
             {
+                //Debug.Log("go");
                 var edge = edgesToConsider.Pop();
-                var v1visited = visitedVertices.Contains(edge.Start);
-                var v2visited = visitedVertices.Contains(edge.End);
 
-                if (v1visited && v2visited)
+                if(!visitedVertices.Contains(edge.Start))
                 {
-                    continue;
+                    // should be impossible
+                    throw new GeomException("Start vertex of edge has not been visited");
                 }
-                else if (v1visited)
+
+                if (!visitedVertices.Contains(edge.End))
                 {
-                    //Keep edge
-                    edgesToRemove.Remove(edge);
+                    // add edge
+                    mst.AddEdge(edge);
                     visitedVertices.Add(edge.End);
-                    foreach (Edge newedge in Graph.EdgesOf(edge.End))
+                    foreach (Edge newedge in Graph.OutEdgesOf(edge.End))
                     {
-                        if (visitedVertices.Contains(newedge.Start) && visitedVertices.Contains(newedge.End))
+                        if (visitedVertices.Contains(newedge.End))
                         {
                             continue;
                         }
                         edgesToConsider.Push(newedge);
                     }
-                    continue;
-                }
-                else if (v2visited)
-                {
-                    //keep Edge
-                    edgesToRemove.Remove(edge);
-                    visitedVertices.Add(edge.Start);
-                    foreach (Edge newedge in Graph.EdgesOf(edge.Start))
-                    {
-                        if (visitedVertices.Contains(newedge.Start) && visitedVertices.Contains(newedge.End))
-                        {
-                            continue;
-                        }
-                        edgesToConsider.Push(newedge);
-                    }
-                    continue;
-                }
-                else
-                {
-                    throw new GeomException("Both v1 and v2 are not visited");
                 }
             }
 
-            //update graph
-            foreach (var edge in edgesToRemove)
-            {
-                Graph.RemoveEdge(edge);
-            }
+            return mst;
         }
     }
 }

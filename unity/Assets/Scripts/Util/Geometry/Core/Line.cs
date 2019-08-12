@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using UnityEngine;
+    using Util.Math;
 
     public class Line : IComparable<Line>, IEquatable<Line>
     //Comparing lines sorts them on Slope
@@ -14,6 +15,9 @@
         public Vector2 Point1 { get { return m_point1; } }
         public Vector2 Point2 { get { return m_point2; } }
 
+        public bool IsVertical { get { return MathUtil.EqualsEps(m_point1.x, m_point2.x); } }
+        public bool IsHorizontal { get { return MathUtil.EqualsEps(m_point1.y, m_point2.y); } }
+
         /// <summary>
         /// Gives the angle of the line w.r.t the horizontal x-axis. reports in radians
         /// </summary>
@@ -22,7 +26,10 @@
         /// <summary>
         /// Gives a 2D normal vector to this line
         /// </summary>
-        public Vector2 Normal { get { return new Vector2(Slope, -1); } }
+        public Vector2 Normal
+        {
+            get { return IsVertical ? new Vector2(1f, 0f) : new Vector2(Slope, -1f); }
+        }
 
         public float HeightAtYAxis
         {
@@ -56,8 +63,9 @@
 
         public Line(Vector2 a_point1, Vector2 a_point2)
         {
-            m_point1 = a_point1;
-            m_point2 = a_point2;
+            // create copy
+            m_point1 = new Vector2(a_point1.x, a_point1.y);
+            m_point2 = new Vector2(a_point2.x, a_point2.y);
             m_oriented = true;
         }
 
@@ -76,8 +84,8 @@
         /// <param name="a_angle"></param>
         public Line(Vector2 a_point, float a_angle)
         {
-            m_point1 = a_point;
-            m_point2 = a_point + new Vector2(Mathf.Cos(a_angle), Mathf.Sin(a_angle));
+            m_point1 = new Vector2(a_point.x, a_point.y);
+            m_point2 = m_point1 + new Vector2(Mathf.Cos(a_angle), Mathf.Sin(a_angle));
         }
 
         public float X(float a_y)
@@ -148,6 +156,11 @@
         public int CompareTo(Line a_other)
         {
             return Slope.CompareTo(a_other.Slope);
+        }
+
+        internal bool IsOnLine(Vector2 a_Point)
+        {
+            return float.IsInfinity(Slope) ? MathUtil.EqualsEps(Point1.x, a_Point.x) : MathUtil.EqualsEps(Y(a_Point.x), a_Point.y);
         }
 
         internal bool PointAbove(Vector2 a_point)
@@ -224,7 +237,13 @@
 
         public bool Equals(Line other)
         {
-            return Point1 == other.Point1 && Point2 == other.Point2;
+            return MathUtil.EqualsEps(0f, (Point1 - other.Point1).magnitude) &&
+                MathUtil.EqualsEps(0f, (Point2 - other.Point2).magnitude);
+        }
+
+        public override string ToString()
+        {
+            return "Line: (" + Point1 + "," + Point2 + ")";
         }
     }
 }

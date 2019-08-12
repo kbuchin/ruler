@@ -9,7 +9,7 @@
         // Sentinel.
         protected Node m_Bottom;
         protected Node m_Tree;
-        protected int m_Size = 0;
+        protected int Size { get; private set; }
 
         protected internal class TraversalHistory
         {
@@ -40,66 +40,11 @@
             FIND
         }
 
-        public int Size
-        {
-            get { return m_Size; }
-        }
-
-        protected internal class Node
-        {
-            public Node Left
-            {
-                get;
-                set;
-            }
-
-            public Node Right
-            {
-                get;
-                set;
-            }
-
-            public int Level
-            {
-                get;
-                set;
-            }
-
-            public T Data
-            {
-                get;
-                set;
-            }
-
-            public Node(T a_Data, Node a_Left, Node a_Right, int a_Level)
-            {
-                Data = a_Data;
-                if (EqualityComparer<T>.Default.Equals(a_Data, default(T)))
-                {
-                    Left = this;
-                    Right = this;
-                    if (a_Level != 0)
-                    {
-                        throw new Exception("Cannot use default value for node other than Bottom!");
-                    }
-                }
-                else
-                {
-                    Left = a_Left;
-                    Right = a_Right;
-                    if (a_Level != 1)
-                    {
-                        throw new Exception("Cannot create node with level other than 1!");
-                    }
-                }
-                Level = a_Level;
-            }
-        }
-
         public AATree()
         {
             m_Bottom = new Node(default(T), null, null, 0);
             m_Tree = m_Bottom;
+            Size = 0;
         }
 
         public bool Contains(T data)
@@ -107,9 +52,9 @@
             return FindNodes(data).Length > 0;
         }
 
-        public int ComputeSize()
+        public int Count
         {
-            return ComputeSize(m_Tree);
+            get { return ComputeSize(m_Tree); }
         }
 
         public bool FindMin(out T out_MinValue)
@@ -264,7 +209,7 @@
                 Node currentNode = m_Tree;
                 Node parent = null;
                 int comparisonResult = 0;
-                Stack<TraversalHistory> nodeStack = new Stack<TraversalHistory>((int)Math.Ceiling(Math.Log(m_Size + 1, 2)) + 1);
+                Stack<TraversalHistory> nodeStack = new Stack<TraversalHistory>((int)Math.Ceiling(Math.Log(Size + 1, 2)) + 1);
                 nodeStack.Push(new TraversalHistory(currentNode, parent, TraversalHistory.ECHILDSIDE.ISROOT));
                 while (currentNode != m_Bottom)
                 {
@@ -317,7 +262,7 @@
         private Node CreateNode(T data)
         {
             Node n = new Node(data, m_Bottom, m_Bottom, 1);
-            ++m_Size;
+            ++Size;
             return n;
         }
 
@@ -332,7 +277,7 @@
                 Node currentNode = m_Tree;
                 Node parent = null;
                 Node deleted = m_Bottom;
-                Stack<TraversalHistory> nodeStack = new Stack<TraversalHistory>((int)Math.Ceiling(Math.Log(m_Size + 1, 2)) + 1);
+                Stack<TraversalHistory> nodeStack = new Stack<TraversalHistory>((int)Math.Ceiling(Math.Log(Size + 1, 2)) + 1);
                 nodeStack.Push(new TraversalHistory(currentNode, parent, TraversalHistory.ECHILDSIDE.ISROOT));
                 while (currentNode != m_Bottom)
                 {
@@ -394,7 +339,7 @@
                             m_Tree = m_Bottom;
                         }
                     }
-                    --m_Size;
+                    --Size;
                     didDelete = true;
                 }
 
@@ -606,6 +551,65 @@
         protected virtual bool IsEqual(T a, T b, COMPARISON_TYPE a_ComparisonType)
         {
             return a.Equals(b);
+        }
+
+        public void Clear()
+        {
+            // leave existing nodes for garbage collector
+            m_Bottom = new Node(default(T), null, null, 0);
+            m_Tree = m_Bottom;
+            Size = 0;
+        }
+
+        protected internal class Node
+        {
+            public Node Left
+            {
+                get;
+                set;
+            }
+
+            public Node Right
+            {
+                get;
+                set;
+            }
+
+            public int Level
+            {
+                get;
+                set;
+            }
+
+            public T Data
+            {
+                get;
+                set;
+            }
+
+            public Node(T a_Data, Node a_Left, Node a_Right, int a_Level)
+            {
+                Data = a_Data;
+                if (EqualityComparer<T>.Default.Equals(a_Data, default(T)))
+                {
+                    Left = this;
+                    Right = this;
+                    if (a_Level != 0)
+                    {
+                        throw new Exception("Cannot use default value for node other than Bottom!");
+                    }
+                }
+                else
+                {
+                    Left = a_Left;
+                    Right = a_Right;
+                    if (a_Level != 1)
+                    {
+                        throw new Exception("Cannot create node with level other than 1!");
+                    }
+                }
+                Level = a_Level;
+            }
         }
     }
 }

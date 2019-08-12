@@ -55,15 +55,19 @@
   <ItemGroup>
      <Compile Include="Assets\Editor\PlayerPrefsEditorUtility.cs" />
      <Compile Include="Assets\Editor\PlayerPrefsEditorWindow.cs" />
-     <Compile Include="Assets\Editor\Tests\DCEL\FaceTest.cs" />
-     <Compile Include="Assets\Editor\Tests\DCEL\Vision\VisonDCELTest.cs" />
-     <Compile Include="Assets\Editor\Tests\Graph\GraphTest.cs" />
-     <Compile Include="Assets\Editor\Tests\IntersectionTest.cs" />
-     <Compile Include="Assets\Editor\Tests\LineSegmentTest.cs" />
-     <Compile Include="Assets\Editor\Tests\Polygon\PolygonTest.cs" />
-     <Compile Include="Assets\Editor\Tests\Polygon\VertexSimplePolygonTest.cs" />
-     <Compile Include="Assets\Editor\Tests\Util\MathUtilTest.cs" />
-     <Compile Include="Assets\Editor\Tests\VoronoiTest.cs" />
+     <Compile Include="Assets\Editor\Tests\Algorithms\Graph\MSTTest.cs" />
+     <Compile Include="Assets\Editor\Tests\Algorithms\Graph\ShortestPathTest.cs" />
+     <Compile Include="Assets\Editor\Tests\Algorithms\Graph\SpannerTest.cs" />
+     <Compile Include="Assets\Editor\Tests\Algorithms\Graph\TSPTest.cs" />
+     <Compile Include="Assets\Editor\Tests\Algorithms\Graph\VoronoiTest.cs" />
+     <Compile Include="Assets\Editor\Tests\Algorithms\Polygon\VisibilityTest.cs" />
+     <Compile Include="Assets\Editor\Tests\Util\Core\IntersectionTest.cs" />
+     <Compile Include="Assets\Editor\Tests\Util\Core\LineSegmentTest.cs" />
+     <Compile Include="Assets\Editor\Tests\Util\DCEL\FaceTest.cs" />
+     <Compile Include="Assets\Editor\Tests\Util\Graph\GraphTest.cs" />
+     <Compile Include="Assets\Editor\Tests\Util\Math\MathUtilTest.cs" />
+     <Compile Include="Assets\Editor\Tests\Util\Polygon\PolygonTest.cs" />
+     <Compile Include="Assets\Editor\Tests\Util\Polygon\VertexSimplePolygonTest.cs" />
      <None Include="Assets\Editor\README.txt" />
  <Reference Include="UnityEditor.StandardEvents">
  <HintPath>C:/Users/s151914/Documents/Unity projects/ruler/unity/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>

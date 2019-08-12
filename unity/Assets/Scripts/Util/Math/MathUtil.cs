@@ -4,18 +4,35 @@
     using System.Collections;
     using System.Collections.Generic;
     using UnityEngine;
+    using Util.Geometry;
     using MNMatrix = MathNet.Numerics.LinearAlgebra.Matrix<double>;
 
     public static class MathUtil
     {
         /// <summary>
+        /// Small value used for floating point comparison
+        /// </summary>
+        public static float EPS = 1e-5f;
+
+
+        /// <summary>
         /// Checks whether a float is finite and not NaN
         /// </summary>
         /// <param name="a_float"></param>
         /// <returns> True when <paramref name="a_val1"/> is not infinite or NaN</returns>
-        public static bool isFinite(this float a_float)
+        public static bool IsFinite(this float a_float)
         {
             return !(float.IsInfinity(a_float) || float.IsNaN(a_float));
+        }
+
+        /// <summary>
+        /// Checks whether a vector2 is finite and not NaN
+        /// </summary>
+        /// <param name="a_float"></param>
+        /// <returns> True when <paramref name="a_val1"/> is not infinite or NaN</returns>
+        public static bool IsFinite(this Vector2 a_vector)
+        {
+            return IsFinite(a_vector.x) && IsFinite(a_vector.y);
         }
 
         /// <summary>
@@ -63,8 +80,12 @@
             var va = a - x;
             var vb = b - x;
             var SignedAngle = Math.Atan2(vb.y, vb.x) - Math.Atan2(va.y, va.x);
-            if (SignedAngle >= 0) return (float)SignedAngle;
-            else return (float)(2f * Math.PI + SignedAngle);
+
+            if (SignedAngle < -Math.PI - EPS || SignedAngle > Math.PI + EPS)
+                throw new Exception("Invalid angle");
+
+            if ((float)SignedAngle >= 0) return (float)SignedAngle;
+            else return (float)(2.0 * Math.PI + SignedAngle);
         }
 
         /// <summary>
@@ -163,12 +184,24 @@
 
             double Oy = c.y + numeratorDeterminant / (2 * denomenatorDeterminant);
 
-            if (!isFinite((float)Ox) || !isFinite((float)Oy))
+            if (!IsFinite((float)Ox) || !IsFinite((float)Oy))
             {
                 throw new Exception("Result of CalculateCircumcenterStable was invalid!");
             }
 
             return new Vector2((float)Ox, (float)Oy);
+        }
+
+        /// <summary>
+        /// Checks if three points lie on a single line
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="c"></param>
+        /// <returns>whether the three points are colinear</returns>
+        public static bool Colinear(Vector2 a, Vector2 b, Vector2 c)
+        {
+            return new Line(a, b).IsOnLine(c);
         }
     }
 }

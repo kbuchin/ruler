@@ -2,7 +2,9 @@
 {
     using System.Collections;
     using System.Collections.Generic;
+    using System.Linq;
     using UnityEngine;
+    using Util.Geometry;
     using Util.Geometry.Graph;
 
     public static class Matching
@@ -19,7 +21,7 @@
             //first determine the possible edges and sort them on distance
             var result = new AdjacencyListGraph(vertices);
             result.MakeComplete();
-            var edges = (List<Edge>) result.Edges;
+            var edges = result.Edges.ToList();
             edges.Sort();
 
             //initilize dictiornary

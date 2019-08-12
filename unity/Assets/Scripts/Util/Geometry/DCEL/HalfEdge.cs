@@ -3,6 +3,7 @@
     using System;
     using UnityEngine;
     using Util.Geometry.Graph;
+    using Util.Math;
 
     public class HalfEdge
     {
@@ -39,7 +40,7 @@
         {
             From = from;
             To = to;
-            if (SqrMagnitude < Mathf.Epsilon)
+            if (SqrMagnitude < MathUtil.EPS)
             {
                 throw new GeomException("Creating edge of length zero.");
             }
@@ -54,7 +55,7 @@
         public bool IntersectLine(LineSegment a_Line, out Vector2? a_Point)
         {
             a_Point = Segment.Intersect(a_Line);
-            return a_Point == null;
+            return a_Point != null;
         }
 
         public override string ToString()

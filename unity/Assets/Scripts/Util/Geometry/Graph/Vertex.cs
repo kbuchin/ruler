@@ -12,6 +12,9 @@
         public Vertex() : this(new Vector2())
         { }
 
+        public Vertex(float x, float y) : this(new Vector2(x, y))
+        { }
+
         public Vertex(Vector2 p)
         {
             Pos = p;
@@ -25,6 +28,11 @@
         public override string ToString()
         {
             return Pos.ToString();
+        }
+
+        public override int GetHashCode()
+        {
+            return Pos.GetHashCode();
         }
     }
 }

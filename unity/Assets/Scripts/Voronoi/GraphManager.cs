@@ -483,7 +483,7 @@
                     intersection.IntersectWith(voronoiNodes);
                     foreach (Vertex adjacent in intersection)
                     {
-                        int curCount = vertices.Count;
+                        int curCount = VertexCount;
                         vertices.Add(new Vector3(inputNode.X, 0, inputNode.Y));
                         vertices.Add(new Vector3(voronoiNode.X, 0, voronoiNode.Y));
                         vertices.Add(new Vector3(adjacent.X, 0, adjacent.Y));

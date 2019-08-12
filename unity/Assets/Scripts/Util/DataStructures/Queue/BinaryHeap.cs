@@ -34,12 +34,12 @@
         /// </remarks>
         public void BuildHeap(IEnumerable<T> init)
         {
+            
             Items.Clear();
-
             foreach (T item in init) Items.Add(item);
 
             // heapify starting from the bottom subtrees upwards
-            for (int i = Items.Count / 2 + 1; i > 0; i--) Heapify(i);
+            for (int i = Items.Count / 2 + 1; i >= 0; i--) Heapify(i);
         }
 
 

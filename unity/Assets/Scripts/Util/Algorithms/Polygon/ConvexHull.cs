@@ -16,7 +16,7 @@
         /// <param name="a_points"></param>
         public static Polygon2D ComputeConvexHull(IPolygon2D polygon)
         {
-            if (polygon.Vertices.Count <= 2)
+            if (polygon.VertexCount <= 2)
             {
                 throw new GeomException("Too little points provided");
             }

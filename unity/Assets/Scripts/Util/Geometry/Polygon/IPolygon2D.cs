@@ -4,11 +4,13 @@
     using System.Collections.Generic;
     using UnityEngine;
     
-    public interface IPolygon2D
+    public interface IPolygon2D : IEquatable<IPolygon2D>
     {
         ICollection<Vector2> Vertices { get; }
 
         ICollection<LineSegment> Segments { get; }
+
+        int VertexCount { get; }
 
         Vector2? Next(Vector2 pos);
         Vector2? Prev(Vector2 pos);
@@ -29,5 +31,6 @@
         bool IsSimple();
 
         bool IsClockwise();
+        void Reverse();
     }
 }

@@ -2,8 +2,10 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using UnityEngine;
     using Util.Geometry.Graph;
+    using Util.Geometry.Polygon;
     using Util.Math;
 
     public class DCEL
@@ -15,7 +17,12 @@
         public ICollection<DCELVertex> Vertices { get { return m_Vertices; } }
         public ICollection<HalfEdge> Edges { get { return m_Edges; } }
         public ICollection<Face> Faces { get { return m_Faces; } }
+        public ICollection<Face> InnerFaces { get { return m_Faces.Where(f => !f.IsOuter).ToList(); } }
         public Rect BoundingBox { get; internal set; }
+
+        public int VertexCount { get { return m_Vertices.Count; } }
+        public int EdgeCount { get { return m_Edges.Count; } }
+        public int FaceCount { get { return m_Faces.Count; } }
 
         public Face OuterFace { get; private set; }
 
@@ -27,7 +34,7 @@
             m_Vertices = new LinkedList<DCELVertex>();
             m_Edges = new LinkedList<HalfEdge>();
             m_Faces = new LinkedList<Face>();
-            OuterFace = new Face(null);
+            OuterFace = new Face(null) { IsOuter = true };
             m_Faces.AddLast(OuterFace);
         }
 
@@ -40,6 +47,8 @@
             {
                 //add line
                 AddSegment(segment);
+
+                Debug.Log("Outer: " + OuterFace.OuterComponent);
             }
 
             //debug stuff
@@ -113,7 +122,7 @@
             {
                 throw new ArgumentException("Requested insertion in Edge on To.Pos");
             }
-            if (!MathUtil.isFinite(a_Point.x) || !MathUtil.isFinite(a_Point.y))
+            if (!MathUtil.IsFinite(a_Point.x) || !MathUtil.IsFinite(a_Point.y))
             {
                 throw new ArgumentException("Vertex should have a finite position");
             }
@@ -166,6 +175,11 @@
             // check for intersections
             foreach (var e in m_Edges)
             {
+                // ignore if edges has similar endpoints
+                if (e.From.Pos == segment.Point1 || e.From.Pos == segment.Point2 ||
+                    e.To.Pos == segment.Point1 || e.To.Pos == segment.Point2)
+                    continue;
+
                 Vector2? intersect;
                 if (e.IntersectLine(segment, out intersect))
                 {
@@ -179,66 +193,9 @@
             // find vertices at positions or add them if necessary
             DCELVertex v1, v2;
             if (!FindVertex(segment.Point1, out v1)) v1 = AddVertex(segment.Point1);
-            if (!FindVertex(segment.Point1, out v2)) v2 = AddVertex(segment.Point2);
+            if (!FindVertex(segment.Point2, out v2)) v2 = AddVertex(segment.Point2);
 
-            var face = GetCommonFace(v1, v2);
-            if (face != null)
-            {
-                AddEdgeInFace(v1, v2, face);
-            }
-            else
-            {
-                // we assume one or both of the vertices lies inside a face
-
-                face = GetContainingFace(v1);
-
-                var e1 = new HalfEdge(v1, v2);
-                var e2 = new HalfEdge(v2, v1);
-                m_Edges.AddLast(e1);
-                m_Edges.AddLast(e2);
-                e1.Face = face;
-                e2.Face = face;
-
-                Twin(e1, e2);
-
-                // chain edges adjacent to v1
-                if(v1.Leaving == null)
-                {
-                    v1.Leaving = e1;
-                    Chain(e2, e1);
-                }
-                else
-                {
-                    // search for adjacent edges with same adjacent face
-                    foreach (var e in AdjacentEdges(v1))
-                    {
-                        if(e.Face == face)
-                        {
-                            if (e.To == v1) Chain(e, e1);
-                            else Chain(e2, e);
-                        }
-                    }
-                }
-
-                // chain edges adjacent to v2
-                if(v2.Leaving == null)
-                {
-                    v2.Leaving = e2;
-                    Chain(e1, e2);
-                }
-                else
-                {
-                    // search for adjacent edges with same adjacent face
-                    foreach (var e in AdjacentEdges(v2))
-                    {
-                        if (e.Face == face)
-                        {
-                            if (e.To == v2) Chain(e, e2);
-                            else Chain(e1, e);
-                        }
-                    }
-                }
-            }
+            AddEdge(v1, v2);
         }
 
         /// <summary>
@@ -265,13 +222,15 @@
                 throw new ArgumentException("Vertices should already be part of the DCEL");
             }
 
-            Face a_Face = GetCommonFace(a_Vertex1, a_Vertex2);
-            if (a_Face == null)
-            {
-                throw new ArgumentException("Vertices should have a common adjacent face");
-            }
+            Face face1 = GetSplittingFace(a_Vertex1, a_Vertex2);
+            Face face2 = GetSplittingFace(a_Vertex2, a_Vertex1);
 
-            AddEdgeInFace(a_Vertex1, a_Vertex2, a_Face);
+            if(face1 != face2)
+            {
+                Debug.Log("Edge between vertices not inside a common face");
+            }
+           
+            AddEdgeInFace(a_Vertex1, a_Vertex2, face1);
         }
 
         /// <summary>
@@ -286,60 +245,52 @@
         /// <returns> The new Face </returns>
         private Face AddEdgeInFace(DCELVertex a_Vertex1, DCELVertex a_Vertex2, Face a_Face)
         {
+            var e1 = new HalfEdge(a_Vertex1, a_Vertex2);
+            var e2 = new HalfEdge(a_Vertex2, a_Vertex1);
+
+            Edges.Add(e1);
+            Edges.Add(e2);
+
+            e1.Face = a_Face;
+            e2.Face = a_Face;
+
+            Twin(e1, e2);
+
+            // check whether a new face needs to be added
             var startedge = a_Face.OuterComponent;
-            var workingedge = startedge;
-
-            HalfEdge to1 = null, from1 = null, to2 = null, from2 = null;
-            do
+            bool addNewFace;
+            if (startedge == null)
             {
-                if (workingedge.To.Pos == a_Vertex1.Pos)
-                {
-                    to1 = workingedge;
-                    from1 = to1.Next;
-                }
-                if (workingedge.To.Pos == a_Vertex2.Pos)
-                {
-                    to2 = workingedge;
-                    from2 = to2.Next;
-                }
-                workingedge = workingedge.Next;
-            } while (workingedge != startedge);
-
-            if (to1 == null || from1 == null || to2 == null || from2 == null)
+                a_Face.OuterComponent = e1;
+                addNewFace = false;
+            }
+            else
             {
-                //TODO how can this happen?
-                throw new GeomException(
-                    "Vertices do appear to not lie on the boundary of the provided face"
-                );
+                addNewFace = OnCycle(startedge, a_Vertex1) && OnCycle(startedge, a_Vertex2);
             }
 
-            HalfEdge newedge, newtwinedge;
+            if (!addNewFace && !a_Face.IsOuter)
+            {
+                throw new GeomException("Vertices not on given face");
+            }
 
-            newedge = new HalfEdge(a_Vertex1, a_Vertex2);
-            Edges.Add(newedge);
-            Chain(to1, newedge);
-            Chain(newedge, from2);
-
-            newtwinedge = new HalfEdge(a_Vertex2, a_Vertex1);
-            Edges.Add(newtwinedge);
-            Chain(to2, newtwinedge);
-            Chain(newtwinedge, from1);
-
-            Twin(newedge, newtwinedge);
+            // fix chaining after determining whether face needed to be added
+            FixChaining(a_Vertex1, e1);
+            FixChaining(a_Vertex2, e2);
 
             //update face reference (and add face)
-            var newface = new Face(newtwinedge);
-            Faces.Add(newface);
-            newedge.Face = a_Face;
-            a_Face.OuterComponent = newedge; //Set the old face to be certainly one part  (newedge side of the new edge)
-            UpdateFaceInCycle(newtwinedge, newface); //set the newface to be in the other part (newtwinedge side of the new edge)
-
-            /*
-            if (Faces.Count > 100)
+            Face newface = null;
+            if (addNewFace)
             {
-                throw new System.Exception("More faces then expected");
+                var innerEdge = IsCycleClockwise(e1) ? e1 : e2;
+
+                newface = new Face(innerEdge);
+                AddFace(newface);
+                a_Face.OuterComponent = innerEdge.Twin; //Set the old face edge to be certainly correct (newedge side of the new edge)
+                UpdateFaceInCycle(innerEdge, newface); //set the newface to be in the other part (newtwinedge side of the new edge)
+                UpdateFaceInCycle(innerEdge.Twin, a_Face); //set the newface to be in the other part (newtwinedge side of the new edge)
             }
-            */
+
             return newface;
         }
 
@@ -351,97 +302,34 @@
 
         public IEnumerable<HalfEdge> AdjacentEdges(DCELVertex a_Vertex1)
         {
-            if (a_Vertex1.Leaving == null) return null;
+            var edges = new List<HalfEdge>();
+            foreach (var e in OutgoingEdges(a_Vertex1))
+            {
+                Edges.Add(e);
+                Edges.Add(e.Twin);
+            }
+
+            return edges;
+        }
+
+        public IEnumerable<HalfEdge> OutgoingEdges(DCELVertex a_Vertex1)
+        {
+            if (a_Vertex1.Leaving == null) return new List<HalfEdge>();
 
             var edges = new List<HalfEdge>();
             var e = a_Vertex1.Leaving;
-
             do
             {
                 edges.Add(e);
-                edges.Add(e.Twin);
                 e = e.Twin.Next;
             } while (e != a_Vertex1.Leaving);
 
             return edges;
         }
 
-        private void AssertWellformed()
-        {
-            //TODO add check for edges of length zero
-            //TODO add check vertices to close
-
-
-            //euler formula check
-            //Debug.Log("Faces " + Faces.Count + "HalfEdges" + Edges.Count + "vertices" + Vertices.Count);
-            if (Vertices.Count - (Edges.Count / 2) + Faces.Count != 2)
-            { // divide by two for halfedges
-                throw new GeomException("Malformed graph: Does not satisfy Euler charachteristic");
-            }
-
-            //prev-next check
-            foreach (var e in m_Edges)
-            {
-                if (e.Prev.Next != e)
-                {
-                    throw new GeomException("Malformed graph: Prev/next error in" + e);
-                }
-                if (e.Next.Prev != e)
-                {
-                    throw new GeomException("Malformed graph: nect/prev error in" + e);
-                }
-            }
-
-            //twin defined check
-            foreach (var e in m_Edges)
-            {
-                if (e.Twin.Twin != e)
-                {
-                    throw new GeomException("Malformed graph: no or invalid twin in edge" + e);
-                }
-                if (e.Twin.From.Pos != e.To.Pos)
-                {
-                    throw new GeomException("Malformed graph: invalid twin vertex" + e);
-                }
-                if (e.From.Pos != e.Twin.To.Pos)
-                {
-                    throw new GeomException("Malformed graph: invalid twin vertex" + e);
-                }
-            }
-
-            //cycle around a single face check
-            foreach (var f in m_Faces)
-            {
-                var startedge = f.OuterComponent;
-                var workingedge = startedge;
-                do
-                {
-                    workingedge = workingedge.Next;
-                    if (workingedge.Face != f)
-                    {
-                        throw new GeomException(
-                            "Malformed graph: Unexpected face incident to edge" + workingedge
-                        );
-                    }
-                } while (workingedge != startedge);
-            }
-
-            //control from from/to vertices of next edges
-            foreach (var e in m_Edges)
-            {
-                if (e.Prev.To.Pos != e.From.Pos)
-                {
-                    throw new GeomException("Malformed graph: Prev.to/from error in" + e);
-                }
-                if (e.Next.From.Pos != e.To.Pos)
-                {
-                    throw new GeomException("Malformed graph: next.from/to error in" + e);
-                }
-            }
-        }
-
         private static void Chain(HalfEdge a_First, HalfEdge a_Second)
         {
+            Debug.Log("CHAIN: " + a_First + ", " + a_Second);
             a_First.Next = a_Second;
             a_Second.Prev = a_First;
         }
@@ -450,6 +338,63 @@
         {
             a_Edge1.Twin = a_Edge2;
             a_Edge2.Twin = a_Edge1;
+        }
+
+        private static bool OnCycle(HalfEdge a_startedge, DCELVertex a_Vertex)
+        {
+            var workingedge = a_startedge;
+            do
+            {
+                if (workingedge == null) throw new GeomException("Edge in cycle is null");
+                if (workingedge.To == a_Vertex) return true;
+                workingedge = workingedge.Next;
+            } while (workingedge != a_startedge);
+            return false;
+        }
+
+        private void FixChaining(DCELVertex a_Vertex, HalfEdge a_Edge)
+        {
+            List<HalfEdge> outedges = OutgoingEdges(a_Vertex).ToList();
+
+            if (outedges.Count == 0)
+            {
+                //Chain(a_Edge, a_Edge.Twin);
+                Chain(a_Edge.Twin, a_Edge);
+                a_Vertex.Leaving = a_Edge;
+                return;
+            }
+
+            outedges.Sort(EdgeAngleComparer);
+
+            for (int i = 0; i < outedges.Count; i++)
+            {
+                var curEdge = outedges[i];
+                var angle = MathUtil.Angle(curEdge.From.Pos, curEdge.From.Pos + new Vector2(1f, 0f), curEdge.To.Pos);
+                var angle2 = MathUtil.Angle(a_Edge.From.Pos, a_Edge.From.Pos + new Vector2(1f, 0f), a_Edge.To.Pos);
+
+                if (angle >= angle2)
+                {
+                    var prevEdge = outedges[MathUtil.PositiveMod(i - 1, outedges.Count)];
+                    Chain(a_Edge.Twin, curEdge);
+                    Chain(prevEdge.Twin, a_Edge);
+                    return;
+                }
+            }
+
+            Chain(a_Edge.Twin, outedges.First());
+            Chain(outedges.Last().Twin, a_Edge);
+        }
+
+        private static bool IsCycleClockwise(HalfEdge a_startedge)
+        {
+            var workingedge = a_startedge;
+            var poly = new Polygon2D();
+            do
+            {
+                poly.AddVertex(workingedge.From.Pos);
+                workingedge = workingedge.Next;
+            } while (workingedge != a_startedge);
+            return poly.IsClockwise();
         }
 
         private static void UpdateFaceInCycle(HalfEdge a_startedge, Face a_face)
@@ -490,17 +435,31 @@
             return false;
         }
 
-        private Face GetCommonFace(DCELVertex a_Vertex1, DCELVertex a_Vertex2)
+        private Face GetSplittingFace(DCELVertex a_Vertex1, DCELVertex a_Vertex2)
         {
-            foreach (var e1 in AdjacentEdges(a_Vertex1))
+            List<HalfEdge> outedges = OutgoingEdges(a_Vertex1).ToList();
+
+            if (outedges.Count == 0)
             {
-                foreach (var e2 in AdjacentEdges(a_Vertex2))
+                // a_Vertex1 leaving is null
+                return GetContainingFace(a_Vertex1);
+            }
+
+            outedges.Sort(EdgeAngleComparer);
+
+            for (int i = 0; i < outedges.Count; i++)
+            {
+                var curEdge = outedges[i];
+                var angle = MathUtil.Angle(curEdge.From.Pos, curEdge.From.Pos + new Vector2(1f, 0f), curEdge.To.Pos);
+                var angle2 = MathUtil.Angle(a_Vertex1.Pos, a_Vertex1.Pos + new Vector2(1f, 0f), a_Vertex2.Pos);
+
+                if (angle >= angle2)
                 {
-                    if (e1.Face == e2.Face) return e1.Face;
+                    return curEdge.Face;
                 }
             }
 
-            return null;
+            return outedges.First().Face;
         }
 
         private Face GetContainingFace(DCELVertex a_Vertex)
@@ -510,6 +469,89 @@
                 if (!f.IsOuter && f.Polygon.Contains(a_Vertex.Pos)) return f;
             }
             return OuterFace;
+        }
+
+        private static int EdgeAngleComparer(HalfEdge e1, HalfEdge e2)
+        {
+            var angle = MathUtil.Angle(e1.From.Pos, e1.From.Pos + new Vector2(1f, 0f), e1.To.Pos);
+            var angle2 = MathUtil.Angle(e2.From.Pos, e2.From.Pos + new Vector2(1f, 0f), e2.To.Pos);
+
+            return angle.CompareTo(angle2);
+        }
+
+        private void AssertWellformed()
+        {
+            //TODO add check for edges of length zero
+            //TODO add check vertices to close
+
+            Debug.Log(VertexCount + " " + (EdgeCount / 2) + " " + FaceCount);
+
+            //euler formula check
+            if (VertexCount - (EdgeCount / 2) + FaceCount != 2)
+            { // divide by two for halfedges
+                throw new GeomException("Malformed graph: Does not satisfy Euler charachteristic");
+            }
+
+            //prev-next check
+            foreach (var e in m_Edges)
+            {
+                if (e.Prev.Next != e)
+                {
+                    throw new GeomException("Malformed graph: Prev/next error in" + e);
+                }
+                if (e.Next.Prev != e)
+                {
+                    throw new GeomException("Malformed graph: Next/prev error in" + e);
+                }
+            }
+
+            //twin defined check
+            foreach (var e in m_Edges)
+            {
+                if (e.Twin.Twin != e)
+                {
+                    throw new GeomException("Malformed graph: No or invalid twin in edge" + e);
+                }
+                if (e.Twin.From.Pos != e.To.Pos)
+                {
+                    throw new GeomException("Malformed graph: Invalid twin vertex" + e);
+                }
+                if (e.From.Pos != e.Twin.To.Pos)
+                {
+                    throw new GeomException("Malformed graph: Invalid twin vertex" + e);
+                }
+            }
+
+            //cycle around a single face check
+            foreach (var f in m_Faces)
+            {
+                var startedge = f.OuterComponent;
+                var workingedge = startedge;
+                do
+                {
+                    workingedge = workingedge.Next;
+                    if (workingedge.Face != f)
+                    {
+                        if (!f.IsOuter) Debug.Log(f.Polygon);
+                        throw new GeomException(
+                            "Malformed graph: Unexpected face incident to edge" + workingedge
+                        );
+                    }
+                } while (workingedge != startedge);
+            }
+
+            //control from from/to vertices of next edges
+            foreach (var e in m_Edges)
+            {
+                if (e.Prev.To.Pos != e.From.Pos)
+                {
+                    throw new GeomException("Malformed graph: Prev.to/from error in" + e);
+                }
+                if (e.Next.From.Pos != e.To.Pos)
+                {
+                    throw new GeomException("Malformed graph: next.from/to error in" + e);
+                }
+            }
         }
     }
 }

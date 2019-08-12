@@ -5,15 +5,29 @@
     using System.Collections.Generic;
     using UnityEngine;
 
-    public class Edge : IComparer<Edge>, IEquatable<Edge>
+    public class Edge : IComparable<Edge>, IEquatable<Edge>
     {
+        private bool m_isWeightSet = false;
+        private float m_weight;
+
         public Vertex Start { get; private set; }
 
         public Vertex End { get; private set; }
 
         public float Length { get { return (End.Pos - Start.Pos).magnitude; } }
 
-        public float Weight { get; set; }
+        public float Weight
+        {
+            get
+            {
+                return (m_isWeightSet ? m_weight : Length);
+            }
+            set
+            {
+                m_isWeightSet = true;
+                m_weight = value;
+            }
+        }
 
         internal Edge Twin { get; set; }
 
@@ -21,7 +35,6 @@
         {
             Start = start;
             End = end;
-            Weight = Length;
         }
 
         public Edge(Vertex start, Vertex end, float weight)
@@ -41,14 +54,19 @@
             return "(" + Start + ", " + End + ")";
         }
 
+        public override int GetHashCode()
+        {
+            return 37 * Start.GetHashCode() + 13 * End.GetHashCode() + 59 * Weight.GetHashCode();
+        }
+
         public bool Equals(Edge e)
         {
             return Start.Equals(e.Start) && End.Equals(e.End) && Weight.Equals(e.Weight);
         }
 
-        public int Compare(Edge x, Edge y)
+        public int CompareTo(Edge e)
         {
-            return x.Weight.CompareTo(y.Weight);
+            return Weight.CompareTo(e.Weight);
         }
     }
 }

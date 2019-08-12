@@ -31,42 +31,53 @@
         /// A list of the vertices occuring in the outer component of the face
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<Vertex> OuterVertices()
+        public ICollection<Vertex> OuterVertices
         {
-            var result = new List<Vertex>();
-            result.Add(OuterComponent.From);
-
-            var workinedge = OuterComponent.Next;
-            while (OuterComponent != workinedge)
+            get
             {
-                result.Add(workinedge.From);
-                workinedge = workinedge.Next;
+                if (OuterComponent == null) return new List<Vertex>();
+
+                var result = new List<Vertex>();
+
+                var workinedge = OuterComponent;
+                do
+                {
+                    result.Add(workinedge.From);
+                    workinedge = workinedge.Next;
+                } while (OuterComponent != workinedge);
+
+                return result;
             }
-            return result;
         }
 
         /// <summary>
         /// A list of the halfedges occuring in the outer component of the face
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<HalfEdge> OuterHalfedges()
+        public ICollection<HalfEdge> OuterHalfedges
         {
-            var result = new List<HalfEdge>();
-            result.Add(OuterComponent);
-
-            var workinedge = OuterComponent.Next;
-            while (OuterComponent != workinedge)
+            get
             {
-                result.Add(workinedge);
-                workinedge = workinedge.Next;
+                if (OuterComponent == null) return new List<HalfEdge>();
+
+                var result = new List<HalfEdge>
+                {
+                    OuterComponent
+                };
+
+                var workinedge = OuterComponent.Next;
+                while (OuterComponent != workinedge)
+                {
+                    result.Add(workinedge);
+                    workinedge = workinedge.Next;
+                }
+                return result;
             }
-            return result;
         }
 
-        public IEnumerable<Vector2> OuterPoints()
+        public ICollection<Vector2> OuterPoints
         {
-            return OuterVertices()
-                .Select(v => v.Pos);
+            get { return OuterVertices.Select(v => v.Pos).ToList(); }
         }
 
         /// <summary>
@@ -77,8 +88,8 @@
         {
             get
             {
-                // The vertices of a face are mutable a polygon is not 
-                return new Polygon2D(OuterPoints());
+                if (IsOuter) throw new GeomException("Outer face does not have a well-defined polygon");
+                return new Polygon2D(OuterPoints);
             }
         }
 
@@ -91,30 +102,32 @@
         /// <returns></returns>
         public bool Contains(Vector2 a_pos)
         {
+            if (IsOuter) return !(new Polygon2D(OuterPoints).Contains(a_pos));
             return Polygon.Contains(a_pos);
         }
 
         public List<Vector2> GridPoints(float a_xspacing, float a_xmultiple, float a_yspacingBase)
         {
+            if (IsOuter) throw new GeomException("Not defined for outer face");
+
             //first compute a boundingBox
             var bBox = BoundingBox();
 
             //Then create gridPointsInFace
-            List<float> xcoords = new List<float>();
-            xcoords.Add(0);
+            List<float> xcoords = new List<float>{ 0 };
 
             var xit = a_xspacing;
             while (xit < bBox.xMax)
             {
                 xcoords.Add(xit);
-                xit = xit * a_xmultiple;
+                xit *= a_xmultiple;
             }
 
             xit = -a_xspacing;
             while (xit > bBox.xMin)
             {
                 xcoords.Add(xit);
-                xit = xit * a_xmultiple;
+                xit *= a_xmultiple;
             }
 
             var gridpoints = new List<Vector2>();
@@ -135,6 +148,9 @@
 
         public Rect BoundingBox()
         {
+            if (IsOuter) throw new GeomException("Bounding box is ill-defined for outer face");
+            if (OuterComponent == null) return new Rect();
+
             var bBox = new Rect(OuterComponent.From.Pos, Vector2.zero);
 
             var workingedge = OuterComponent.Next;

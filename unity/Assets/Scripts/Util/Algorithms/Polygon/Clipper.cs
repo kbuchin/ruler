@@ -6,6 +6,7 @@
     using UnityEngine;
     using Util.Geometry;
     using Util.Geometry.Polygon;
+    using Util.Math;
 
     public static class Clipper
     {
@@ -76,7 +77,7 @@
                 {
                     foreach (Vector2 vertex in a_subjectList)
                     {
-                        if (Vector2.Distance(vertex, start) < 2 * Mathf.Epsilon) //more liberal then Equals
+                        if (Vector2.Distance(vertex, start) < 2 * MathUtil.EPS) //more liberal then Equals
                         {
                             startnode = a_subjectList.Find(vertex);
                         }
@@ -101,7 +102,7 @@
                         var iterationvertex = a_clipList.First;
                         while (iterationvertex != null)
                         {
-                            if (Vector2.Distance(workingvertex.Value, iterationvertex.Value) < Mathf.Epsilon)
+                            if (Vector2.Distance(workingvertex.Value, iterationvertex.Value) < MathUtil.EPS)
                             {
                                 intersection = iterationvertex;
                                 break;
@@ -118,7 +119,7 @@
                         var iterationvertex = a_subjectList.First;
                         while (iterationvertex != null)
                         {
-                            if (Vector2.Distance(workingvertex.Value, iterationvertex.Value) < Mathf.Epsilon)
+                            if (Vector2.Distance(workingvertex.Value, iterationvertex.Value) < MathUtil.EPS)
                             {
                                 intersection = iterationvertex;
                                 break;
@@ -217,7 +218,7 @@
             LinkedListNode<Vector2> workingvertex = intersectionList.First;
             while (workingvertex.Next != null)
             {
-                if (Vector2.Distance(workingvertex.Value, workingvertex.Next.Value) < Mathf.Epsilon)
+                if (Vector2.Distance(workingvertex.Value, workingvertex.Next.Value) < MathUtil.EPS)
                 {
                     intersectionList.Remove(workingvertex.Next);
                 }
@@ -226,7 +227,7 @@
                     workingvertex = workingvertex.Next;
                 }
             }
-            if (Vector2.Distance(intersectionList.First.Value, intersectionList.Last.Value) < Mathf.Epsilon &&
+            if (Vector2.Distance(intersectionList.First.Value, intersectionList.Last.Value) < MathUtil.EPS &&
                 intersectionList.Count != 1)
             {
                 intersectionList.RemoveLast();
@@ -268,7 +269,7 @@
             var i = 0;
             while (intersectionList.Count > i + 1)
             {
-                if (Vector2.Distance(intersectionList[i], intersectionList[i + 1]) < Mathf.Epsilon)
+                if (Vector2.Distance(intersectionList[i], intersectionList[i + 1]) < MathUtil.EPS)
                 {
                     intersectionList.RemoveAt(i + 1);
                 }
@@ -278,7 +279,7 @@
                 }
             }
 
-            if (Vector2.Distance(intersectionList[0], intersectionList[intersectionList.Count - 1]) < Mathf.Epsilon &&
+            if (Vector2.Distance(intersectionList[0], intersectionList[intersectionList.Count - 1]) < MathUtil.EPS &&
                 intersectionList.Count != 1)
             {
                 intersectionList.RemoveAt(0);

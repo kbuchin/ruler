@@ -11,8 +11,11 @@
         ICollection<Vertex> Vertices { get; }
         ICollection<Edge> Edges { get; }
 
-        float totalEdgeLength { get; }
-        float totalEdgeWeight { get; }
+        int VertexCount { get; }
+        int EdgeCount { get; }
+
+        float TotalEdgeLength { get; }
+        float TotalEdgeWeight { get; }
 
         void MakeComplete();
 

@@ -52,7 +52,19 @@
             P0 = e0.Start;
             P1 = e1.Start;
             P2 = e2.Start;
-            Circumcenter = MathUtil.CalculateCircumcenter(P0, P1, P2);
+            if (!Degenerate()) {
+                if(IsClockwise()) Circumcenter = MathUtil.CalculateCircumcenter(P0, P1, P2);
+                else Circumcenter = MathUtil.CalculateCircumcenter(P0, P2, P1);
+            }
+            
+        }
+
+        private bool Degenerate()
+        {
+            return !MathUtil.IsFinite(P0) ||
+                   !MathUtil.IsFinite(P1) ||
+                   !MathUtil.IsFinite(P2) ||
+                   MathUtil.Colinear(P0, P1, P2);
         }
 
         public bool ContainsEndpoint(Vector2 x)
@@ -95,6 +107,11 @@
             foreach (var e in Edges)
                 if (e != a && e.ContainsEndpoint(b)) return e;
             return null;
+        }
+
+        public override string ToString()
+        {
+            return "Triangle: {" + P0 + ", " + P1 + ", " + P2 + "}";
         }
     }
 }

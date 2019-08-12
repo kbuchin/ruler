@@ -32,6 +32,7 @@
             m_Vertices = new List<Vertex>();
             m_Edges = new Dictionary<Vertex, List<Edge>>();
             Type = typ;
+            EdgeCount = 0;
             foreach (var v in vertices) AddVertex(v);
             foreach (var e in edges) AddEdge(e);
         }
@@ -47,33 +48,52 @@
         {
             get
             {
-                var edges = new List<Edge>();
+                var edges = new HashSet<Edge>();
                 foreach (var edgelist in m_Edges.Values)
                 {
-                    foreach (var e in edgelist) edges.Add(e);
+                    foreach (var e in edgelist)
+                        if(Type.DIRECTED || !edges.Contains(e.Twin))
+                            edges.Add(e);
                 }
                 return edges;
             }
         }
 
-        public float totalEdgeLength
+        public int VertexCount { get { return m_Vertices.Count; } }
+
+        public int EdgeCount { get; private set; }
+
+        public float TotalEdgeLength
         {
-            get { return Edges.Sum(e => e.Length); }
+            get {
+                var sum = Edges.Sum(e => e.Length);
+                //if (!Type.DIRECTED) sum /= 2f;
+                return sum;
+            }
         }
 
-        public float totalEdgeWeight
+        public float TotalEdgeWeight
         {
-            get { return Edges.Sum(e => e.Weight); }
+            get {
+                var sum = Edges.Sum(e => e.Weight);
+                //if (!Type.DIRECTED) sum /= 2f;
+                return sum;
+            }
         }
 
         public void MakeComplete()
         {
-            // clear all current edges
-            m_Edges.Clear();
-
             // add edge between all vertices
             foreach (var u in m_Vertices)
             {
+                if(!m_Edges.ContainsKey(u))
+                {
+                    throw new GeomException("Vertex is not present in edge dictionary");
+                }
+
+                // clear current edges
+                RemoveAllEdges(m_Edges[u]);
+
                 foreach (var v in m_Vertices)
                 {
                     if (!u.Equals(v)) AddEdge(u, v);
@@ -83,16 +103,27 @@
 
         public Edge AddEdge(Edge e)
         {
+            if(!m_Edges.ContainsKey(e.Start) || !m_Edges.ContainsKey(e.End))
+            {
+                throw new ArgumentException("Edge contains vertices not in the graph");
+            }
+
+            // edge already exists
+            if (Type.SIMPLE && ContainsEdge(e)) return e;
+
             m_Edges[e.Start].Add(e);
+            EdgeCount++;
 
             if (!Type.DIRECTED)
             {
-                Edge e_back = new Edge(e.End, e.Start);
+                Edge e_back = new Edge(e.End, e.Start, e.Weight);
                 e_back.Twin = e;
                 e.Twin = e_back;
-                if (!Type.SIMPLE || !ContainsEdge(e_back))
+
+                // if back edge does not exist or graph isnt simple, add back edge
+                if (!(Type.SIMPLE && ContainsEdge(e_back)))
                 {
-                    m_Edges[e_back.Start].Add(e_back);
+                    m_Edges[e.End].Add(e_back);
                 }
             }
 
@@ -112,6 +143,7 @@
         public Vertex AddVertex(Vertex v)
         {
             m_Vertices.Add(v);
+            m_Edges.Add(v, new List<Edge>());
             return v;
         }
 
@@ -119,8 +151,10 @@
         {
             // remove each vertex/edge individually
             // important to not just clear the lists, since remove method might have other hidden effects
-            foreach (Vertex v in Vertices) RemoveVertex(v);
-            foreach (Edge e in Edges) RemoveEdge(e);
+            var toRemoveVertices = Vertices.ToList();
+            foreach (var v in toRemoveVertices) RemoveVertex(v);
+            var toRemoveEdges = Edges.ToList();
+            foreach (var e in toRemoveEdges) RemoveEdge(e);
 
             // clear just to be sure
             m_Vertices.Clear();
@@ -129,21 +163,30 @@
 
         public bool ContainsEdge(Edge e)
         {
+            if (e == null)
+                throw new ArgumentException("Edge cannot be null");
             return m_Edges[e.Start].Contains(e);
         }
 
         public bool ContainsVertex(Vertex v)
         {
+            if (v == null)
+                throw new ArgumentException("Vertex cannot be null");
             return m_Vertices.Contains(v);
         }
 
         public int DegreeOf(Vertex v)
         {
+            if (v == null || !m_Edges.ContainsKey(v))
+                throw new ArgumentException("Graph does not contain vertex");
             return m_Edges[v].Count;
         }
 
         public IEnumerable<Edge> EdgesOf(Vertex v)
         {
+            if (v == null || !m_Edges.ContainsKey(v))
+                throw new ArgumentException("Graph does not contain vertex");
+
             if (Type.DIRECTED)
             {
                 foreach (var e in Edges)
@@ -162,6 +205,9 @@
 
         public int InDegreeOf(Vertex v)
         {
+            if (v == null || !m_Edges.ContainsKey(v))
+                throw new ArgumentException("Graph does not contain vertex");
+
             if (!Type.DIRECTED) return DegreeOf(v);
 
             int count = 0;
@@ -175,6 +221,9 @@
 
         public IEnumerable<Edge> InEdgesOf(Vertex v)
         {
+            if (v == null || !m_Edges.ContainsKey(v))
+                throw new ArgumentException("Graph does not contain vertex");
+
             if (!Type.DIRECTED) { /* nothing done atm */ }
 
             foreach (var e in Edges)
@@ -185,6 +234,9 @@
 
         public int OutDegreeOf(Vertex v)
         {
+            if (v == null || !m_Edges.ContainsKey(v))
+                throw new ArgumentException("Graph does not contain vertex");
+
             if (!Type.DIRECTED) return DegreeOf(v);
 
             return m_Edges[v].Count;
@@ -192,6 +244,9 @@
 
         public IEnumerable<Edge> OutEdgesOf(Vertex v)
         {
+            if (v == null || !m_Edges.ContainsKey(v))
+                throw new ArgumentException("Graph does not contain vertex");
+
             if (!Type.DIRECTED) return EdgesOf(v);
 
             return m_Edges[v];
@@ -199,7 +254,10 @@
 
         public void RemoveAllEdges(ICollection<Edge> E)
         {
-            foreach (var e in E)
+            // create copy to avoid any concurrent modification error
+            var toRemove = new List<Edge>(E);
+
+            foreach (var e in toRemove)
             {
                 RemoveEdge(e);
             }
@@ -207,7 +265,10 @@
 
         public void RemoveAllVertices(ICollection<Vertex> V)
         {
-            foreach (var v in V)
+            // create copy to avoid any concurrent modification error
+            var toRemove = new List<Vertex>(V);
+
+            foreach (var v in toRemove)
             {
                 RemoveVertex(v);
             }
@@ -215,12 +276,11 @@
 
         public Edge RemoveEdge(Edge e)
         {
-            if (!ContainsEdge(e))
-            {
-                throw new GeomException("Edge cannot be removed, since it is not contained in the graph");
-            }
+            // nothing to do
+            if (!ContainsEdge(e)) return e;
 
             m_Edges[e.Start].Remove(e);
+            EdgeCount--;
 
             if (!Type.DIRECTED) m_Edges[e.End].Remove(e.Twin);
 
@@ -246,6 +306,7 @@
         public Vertex RemoveVertex(Vertex v)
         {
             m_Vertices.Remove(v);
+            m_Edges.Remove(v);
             return v;
         }
 
@@ -260,11 +321,11 @@
         {
             
             //equal size
-            if (Vertices.Count != other.Vertices.Count)
+            if (VertexCount != other.VertexCount)
             {
                 return false;
             }
-            if (Edges.Count != other.Edges.Count)
+            if (EdgeCount != other.EdgeCount)
             {
                 return false;
             }
@@ -285,6 +346,13 @@
                 }
             }
             return true;
+        }
+
+        public override string ToString()
+        {
+            var str = "Edges: {";
+            foreach (var e in Edges) str += e + ", ";
+            return str + "}";
         }
     }
 

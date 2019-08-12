@@ -28,19 +28,14 @@
             if (vertices.Count < 3)
                 return new Triangulation();
 
-            //PERF we can do this faster as a sweepline algorithm
+            if (!polygon.IsClockwise())
+            {
+                vertices.Reverse();
+            }
+
             if (vertices.Count == 3)
             {
-                if (polygon.IsConvex())
-                {
-                    return new Triangulation(vertices);
-                }
-                else
-                {
-                    // make clockwise
-                    vertices.Reverse();
-                    return new Triangulation(vertices);
-                }
+                return new Triangulation(vertices);
             }
 
             var triangulation = new Triangulation();
@@ -49,7 +44,7 @@
             var leftVertex = LeftMost(vertices);
             var index = vertices.IndexOf(leftVertex);
             var prevVertex = vertices[MathUtil.PositiveMod(index - 1, vertices.Count)];
-            var nextVertex = vertices[MathUtil.PositiveMod(index - 1, vertices.Count)];
+            var nextVertex = vertices[MathUtil.PositiveMod(index + 1, vertices.Count)];
 
             //Create triangle with diagonal
             var triangle = new Triangle(prevVertex, leftVertex, nextVertex);
@@ -62,7 +57,6 @@
             for (int i = 0; i < vertices.Count; i++)
             {
                 var v = vertices[i];
-
                 if (triangle.Inside(v))
                 {
                     if (baseline.DistanceToPoint(v) > distance)
@@ -73,39 +67,28 @@
                 }
             }
 
-
             //Do Recursive call
             if (diagonalIndex == -1) //didn't change
             {
-                if (triangle.IsClockwise())
+                if (!triangle.IsClockwise())
                 {
+                    // shouldnt happen but in case it does
                     // reverse triangle
                     triangle = new Triangle(triangle.P0, triangle.P2, triangle.P1);
-                    triangulation.Add(triangle);
                 }
-                else
-                {
-                    triangulation.Add(triangle);
-                }
-                vertices.Remove(leftVertex);
-                vertices.Remove(prevVertex);
-                vertices.Remove(nextVertex);
 
+                triangulation.Add(triangle);
+                vertices.Remove(leftVertex);
                 triangulation.Add(Triangulate(new Polygon2D(vertices)));
             }
             else
             {
-                IEnumerable<Vector2> poly1List, poly2List;
-                if (diagonalIndex < index)
-                {
-                    poly1List = polygon.Vertices.Skip(diagonalIndex).Take(index - diagonalIndex + 1);
-                    poly2List = polygon.Vertices.Take(diagonalIndex + 1).Union(vertices.Skip(index));
-                }
-                else
-                {
-                    poly1List = vertices.Skip(index).Take(diagonalIndex - index + 1);
-                    poly2List = vertices.Take(index + 1).Union(vertices.Skip(diagonalIndex));
-                }
+                var minIndex = Mathf.Min(index, diagonalIndex);
+                var maxIndex = Mathf.Max(index, diagonalIndex);
+
+                var poly1List = polygon.Vertices.Skip(minIndex).Take(maxIndex - minIndex + 1);
+                var poly2List = polygon.Vertices.Take(minIndex + 1).Union(vertices.Skip(maxIndex));
+
                 triangulation.Add(Triangulate(new Polygon2D(poly1List)));
                 triangulation.Add(Triangulate(new Polygon2D(poly2List)));
             }

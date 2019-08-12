@@ -12,6 +12,9 @@
         public DCELVertex(Vertex v) : base(v.Pos)
         { }
 
+        public DCELVertex(float x, float y) : base(x, y)
+        { }
+
         public DCELVertex(Vector2 pos) : base(pos)
         { }
 
