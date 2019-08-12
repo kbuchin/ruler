@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78473542e21b49044b25f677793ebbcb, type: 3}
+  m_Name: mst2
+  m_EditorClassIdentifier: 
+  TSpannerRatio: 1
+  Villages:
+  - {x: 0.8, y: 0.7}
+  - {x: -0.2, y: 1}
+  - {x: 1.3, y: -0.2}
+  - {x: -1.2, y: 1.2}
+  Castles:
+  - {x: 1.4, y: 1.1}

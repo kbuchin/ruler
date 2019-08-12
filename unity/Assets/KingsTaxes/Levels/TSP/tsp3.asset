@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78473542e21b49044b25f677793ebbcb, type: 3}
+  m_Name: tsp3
+  m_EditorClassIdentifier: 
+  TSpannerRatio: 1.4
+  Villages:
+  - {x: -1.46413, y: -0.4956652}
+  - {x: -0.2805569, y: -1.464043}
+  - {x: 1.584466, y: -1.099908}
+  - {x: 0.2932954, y: 0.6879072}
+  - {x: -0.02949715, y: -0.06527531}
+  Castles:
+  - {x: -1.248935, y: 0.6879072}
+  - {x: 1.261673, y: 0.8313706}
+  - {x: -0.1370938, y: -0.7825919}

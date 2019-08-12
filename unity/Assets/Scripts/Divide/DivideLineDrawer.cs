@@ -5,7 +5,7 @@ namespace Divide
     using General.Drawing;
     using UnityEngine;
 
-    class DivideLineDrawer:LineDrawer
+    class DivideLineDrawer : LineDrawer
     {
         public Color ArcherColor = new Color(102f/255,194f/255,165f/255);
         public Color SwordsmenColor = new Color(252f/255,141f/255,98f/255);
@@ -16,6 +16,7 @@ namespace Divide
         private bool m_displaySoldierLines;
         private bool m_displayMageLines;
         private bool m_displayAllLines;
+
         private Solution m_solution;
 
         internal void ToggleArchers()
@@ -69,7 +70,6 @@ namespace Divide
             {
                 AddLines(m_solution.All, AllColor); 
             }
-
         }
     }
 }

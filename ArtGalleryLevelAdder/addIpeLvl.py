@@ -14,7 +14,7 @@ YSIZE=8
 
 description_text = """Add a level from an *.ipe file. \r \n
 
-The procedure to use this script is as follows. First draw a single polygon using ipe with the vertices in a CLOKWISE order.
+The procedure to use this script is as follows. First draw a single polygon using ipe with the vertices in a CLOCKWISE order.
 Save this as a *.ipe or *.xml file.
 Then run this script with as file argument the relative path to this file.
 The script will then search for an open unity window and focus it.

@@ -8,14 +8,17 @@
     using UnityEngine;
     using UnityEngine.SceneManagement;
     using UnityEngine.UI;
-    using Util.Algorithms;
+    using Util.Algorithms.Graph;
+    using General.Model;
 
     class SpannerController : KingsTaxesController
     {
         [SerializeField]
-        private float m_t = 1.5f; //The ratio t in t-spanner
-        [SerializeField]
         private GameObject m_hintRoadPrefab = null;
+        [SerializeField]
+        private Text m_scoreText;
+        [SerializeField]
+        private ButtonContainer m_hintButton;
 
         private float m_thresholdscore;
         private float m_bestPlayerScore;
@@ -24,46 +27,24 @@
         private string m_scorekey;
         private int m_numberOfHints;
 
-        private Text m_text;
-        private DisableButtonContainer m_advanceButton;
-        private DisableButtonContainer m_hintButton;
-        private List<GameObject> m_hintRoads;
+        private List<GameObject> m_hintRoads = new List<GameObject>();
 
-        protected override void Awake()
+        public SpannerController()
+        {
+            m_endlessScoreKey = "spannerscore";
+        }
+
+        public override void Awake()
         {
             base.Awake();
 
         }
-
-        protected override void Start()
+        public override void Start()
         {
             base.Start();
-
-            //references
-            m_text = GameObject.FindGameObjectWithTag(Tags.ScoreText).GetComponent<Text>();
-            m_advanceButton = GameObject.FindGameObjectWithTag(Tags.AdvanceButtonContainer).GetComponent<DisableButtonContainer>();
-            m_hintButton = GameObject.FindGameObjectWithTag(Tags.HintButtonContainer).GetComponent<DisableButtonContainer>(); 
-
-            //variables
-            m_bestPlayerScore = float.PositiveInfinity;
-            m_thresholdscorebeat = false;
-            m_scorekey = SceneManager.GetActiveScene().name + "score";
-            m_highscore = PlayerPrefs.GetFloat(m_scorekey, float.PositiveInfinity);
-            m_numberOfHints = (int) Math.Floor(.1*Math.Pow(m_settlements.Count(), 1.5));
-            m_hintRoads = new List<GameObject>();
-
-            //calculate goal
-            var greedySpanner = Spanner.GreedySpanner(
-                m_settlements.Select<Settlement, Vertex>(go => new Vertex(go.Pos)).ToList(), 
-                m_t
-            );
-            m_thresholdscore = greedySpanner.totalEdgeWeight + 0.0001f;
-
-            //init
-            UpdateHintButton();
         }
 
-        protected override void Update()
+        public override void Update()
         {
             base.Update();
 
@@ -77,6 +58,32 @@
             }
         }
 
+        public override void FinishLevelSetup()
+        {
+            // set variabls
+            m_bestPlayerScore = float.PositiveInfinity;
+            m_thresholdscorebeat = false;
+
+            if (!m_endlessMode)
+            {
+                m_scorekey = SceneManager.GetActiveScene().name + "score" + m_levelCounter;
+                m_highscore = PlayerPrefs.GetFloat(m_scorekey, float.PositiveInfinity);
+            }
+            m_numberOfHints = (int)Math.Floor(.5 * Math.Sqrt(m_settlements.Count()));
+
+            //calculate goal
+            var greedySpanner = Spanner.GreedySpanner(
+                m_settlements.Select<Settlement, Vertex>(go => new Vertex(go.Pos)).ToList(),
+                m_t
+            );
+            m_thresholdscore = greedySpanner.TotalEdgeWeight + 0.0001f;
+
+            //init
+            UpdateHintButton();
+
+            m_scoreText.text = "Information on your graph is displayed here.\nGoal: Find a " + m_t + "-spanner";
+        }
+
         /// <summary>
         /// Updates the text of the textfield
         /// </summary>
@@ -84,34 +91,39 @@
         /// <param name="a_tourlength"> The length of a tour. If there is one. Otherwise just provide some value </param>
         private void UpdateTextField(SpannerVerification a_verification, float a_tourlength)
         {
-            var text = "";
-            text = "Your current graph has ratio " + a_verification.Ratio.ToString("0.##") + " and has length " + a_tourlength.ToString("0.##")+". ";
+            string text;
+            text = "Your current graph has ratio " + a_verification.Ratio.ToString("0.##") + " and has length " + a_tourlength.ToString("0.##")+".\n";
             if (a_verification.IsSpanner)
             {
-                text += "Hence it's a 1.5-spanner.";
+                text += "Hence it's a " + m_t.ToString("0.##") + "-spanner.\n";
             }
             else
             {
-                text += "Hence it's NO 1.5-spanner.";
+                text += "Hence it's NO " + m_t.ToString("0.##") + "-spanner.\n";
             }
 
-            text += "\nThe greedy 1.5-spanner has length: " + m_thresholdscore.ToString("0.##");
-            
+            text += "The greedy 1.5-spanner has length: " + m_thresholdscore.ToString("0.##") + "\n";
+
+
 
             if ( !m_endlessMode)
             {
-                text += "\nThe shorthest 1.5-spanner on this instance had length: " + m_highscore.ToString("0.##");
+                text += "The shorthest 1.5-spanner on this instance had length: " + m_highscore.ToString("0.##");
             }
 
-            m_text.text = text;
+            m_scoreText.text = text;
         }
 
-        protected override void CheckVictory()
+        public override void CheckSolution()
         {
             var spannerVerifier = Spanner.VerifySpanner(m_graph, m_t);
-            float score = m_graph.totalEdgeWeight;
+            float score = m_graph.TotalEdgeWeight;
+
+            Debug.Log("check");
+
             if (spannerVerifier.IsSpanner)
             {
+                Debug.Log("correct");
                 if (score < m_bestPlayerScore)
                 {
                     m_bestPlayerScore = score;
@@ -161,7 +173,7 @@
                 throw new Exception("Hint button could be clicked while no hint is available");
             } else
             {
-                displayHintRoad(spannerVerifier.FalsificationStart, spannerVerifier.FalsificationEnd);
+                DisplayHintRoad(spannerVerifier.FalsificationStart, spannerVerifier.FalsificationEnd);
                 m_numberOfHints -= 1;
                 UpdateHintButton();
             }
@@ -169,6 +181,7 @@
 
         private void EnableAdvanceButton()
         {
+            Debug.Log("advance button");
             m_hintButton.Disable();
             m_advanceButton.Enable();
         }
@@ -193,18 +206,28 @@
             m_advanceButton.Disable();
         }
 
-
-        private void displayHintRoad(Vertex a_start, Vertex a_end)
+        private void DisplayHintRoad(Vertex a_start, Vertex a_end)
         {
-            m_hintRoads.Add(Instantiate(m_hintRoadPrefab, Vector3.forward, Quaternion.identity) as GameObject);
+            var hint = Instantiate(m_hintRoadPrefab, Vector3.forward, Quaternion.identity) as GameObject;
+            hint.transform.parent = this.transform;
+            m_hintRoads.Add(hint);
             var roadmeshScript = m_hintRoads.Last().GetComponent<ReshapingMesh>();
             roadmeshScript.CreateNewMesh(a_start.Pos, a_end.Pos);
         }
 
-        protected override List<Vector2> InitEndlessLevel(int level, float width, float height)
+        public override List<Vector2> InitEndlessLevel(int level, float width, float height)
         {
+            m_t = 1.5f;
             return RandomPos(level + 3, width, height);
         }
-    }
 
+        public new void Clear()
+        {
+            base.Clear();
+
+            foreach (var obj in m_hintRoads) Destroy(obj);
+
+            m_hintRoads.Clear();
+        }
+    }
 }

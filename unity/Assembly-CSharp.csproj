@@ -53,9 +53,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-     <Compile Include="Assets\Scripts\ArtGallery\ArtGalleryController.cs" />
-     <Compile Include="Assets\Scripts\ArtGallery\IslandMesh.cs" />
-     <Compile Include="Assets\Scripts\ArtGallery\LightHouse.cs" />
+     <Compile Include="Assets\Scripts\ArtGallery\Controller\ArtGalleryController.cs" />
+     <Compile Include="Assets\Scripts\ArtGallery\Model\ArtGalleryLevel.cs" />
+     <Compile Include="Assets\Scripts\ArtGallery\Model\ArtGallerySolution.cs" />
+     <Compile Include="Assets\Scripts\ArtGallery\UI\ArtGalleryIsland.cs" />
+     <Compile Include="Assets\Scripts\ArtGallery\UI\ArtGalleryLightHouse.cs" />
      <Compile Include="Assets\Scripts\Divide\ControlsOverlay.cs" />
      <Compile Include="Assets\Scripts\Divide\ControlsOverlayButton.cs" />
      <Compile Include="Assets\Scripts\Divide\DivideLineDrawer.cs" />
@@ -64,27 +66,27 @@
      <Compile Include="Assets\Scripts\Divide\Solution.cs" />
      <Compile Include="Assets\Scripts\Divide\Tags.cs" />
      <Compile Include="Assets\Scripts\Divide\Thing.cs" />
+     <Compile Include="Assets\Scripts\General\Controller\IController.cs" />
      <Compile Include="Assets\Scripts\General\Drawing\ColoredLines.cs" />
      <Compile Include="Assets\Scripts\General\Drawing\DCELDrawer.cs" />
      <Compile Include="Assets\Scripts\General\Drawing\LineDrawer.cs" />
      <Compile Include="Assets\Scripts\General\Menu\Quiter.cs" />
      <Compile Include="Assets\Scripts\General\Menu\SceneLoader.cs" />
-     <Compile Include="Assets\Scripts\General\Mesh\Polygon2DMesh.cs" />
+     <Compile Include="Assets\Scripts\General\Model\ButtonContainer.cs" />
+     <Compile Include="Assets\Scripts\General\Model\Polygon2DMesh.cs" />
+     <Compile Include="Assets\Scripts\General\Model\ReshapingMesh.cs" />
+     <Compile Include="Assets\Scripts\General\Model\Vector2Array.cs" />
      <Compile Include="Assets\Scripts\KingsTaxes\Controllers\KingsTaxesController.cs" />
      <Compile Include="Assets\Scripts\KingsTaxes\Controllers\MSTController.cs" />
      <Compile Include="Assets\Scripts\KingsTaxes\Controllers\SpannerController.cs" />
      <Compile Include="Assets\Scripts\KingsTaxes\Controllers\TSPController.cs" />
-     <Compile Include="Assets\Scripts\KingsTaxes\DisableButtonContainer.cs" />
-     <Compile Include="Assets\Scripts\KingsTaxes\ReshapingMesh.cs" />
-     <Compile Include="Assets\Scripts\KingsTaxes\Road.cs" />
-     <Compile Include="Assets\Scripts\KingsTaxes\RoadBuilder.cs" />
-     <Compile Include="Assets\Scripts\KingsTaxes\Settlement.cs" />
-     <Compile Include="Assets\Scripts\KingsTaxes\Tags.cs" />
+     <Compile Include="Assets\Scripts\KingsTaxes\Controllers\VictoryController.cs" />
+     <Compile Include="Assets\Scripts\KingsTaxes\Model\KingsTaxesLevel.cs" />
      <Compile Include="Assets\Scripts\KingsTaxes\UI\FreeModeButton.cs" />
      <Compile Include="Assets\Scripts\KingsTaxes\UI\LevelCompleteMarker.cs" />
-     <Compile Include="Assets\Scripts\KingsTaxes\UI\MenuController.cs" />
-     <Compile Include="Assets\Scripts\KingsTaxes\UI\NextLevel.cs" />
-     <Compile Include="Assets\Scripts\KingsTaxes\UI\VictoryController.cs" />
+     <Compile Include="Assets\Scripts\KingsTaxes\UI\Road.cs" />
+     <Compile Include="Assets\Scripts\KingsTaxes\UI\RoadBuilder.cs" />
+     <Compile Include="Assets\Scripts\KingsTaxes\UI\Settlement.cs" />
      <Compile Include="Assets\Scripts\Util\Algorithms\BoundingBox.cs" />
      <Compile Include="Assets\Scripts\Util\Algorithms\Graph\Matching.cs" />
      <Compile Include="Assets\Scripts\Util\Algorithms\Graph\MST.cs" />

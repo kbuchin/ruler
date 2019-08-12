@@ -5,7 +5,7 @@
     using UnityEngine.UI;
 
     /// <summary>
-    /// Eanbles a image when m_keyname is satisfied otherwise disables the image
+    /// Enables a image when m_keyname is satisfied otherwise disables the image
     /// </summary>
     public class LevelCompleteMarker : MonoBehaviour {
 
@@ -13,15 +13,10 @@
     
         // Use this for initialization
 	    void Start () {
-	        if ( 0 == PlayerPrefs.GetInt(m_keyName, 0))
+	        if (PlayerPrefs.GetInt(m_keyName, 0) == 0)
             {
                 GetComponent<Image>().enabled = false;
             }
-	    }
-	
-	    // Update is called once per frame
-	    void Update () {
-	
 	    }
     }
 }

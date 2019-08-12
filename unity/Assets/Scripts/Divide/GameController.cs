@@ -13,6 +13,7 @@
     using Util.Geometry.Polygon;
     using Util.Algorithms.Polygon;
     using Util.Math;
+    using Drawing;
 
     public class GameController : MonoBehaviour {
         public string m_nextlevel = "lv1";
@@ -269,9 +270,9 @@
             m_swordsmenDcel = new DCEL(swordsmenlines);
             m_mageDcel = new DCEL(magelines);
 
-            var archerFaces = m_archerDcel.Faces;
-            var swordsmenFaces = m_swordsmenDcel.Faces;
-            var mageFaces = m_mageDcel.Faces;
+            var archerFaces = m_archerDcel.InnerFaces;
+            var swordsmenFaces = m_swordsmenDcel.InnerFaces;
+            var mageFaces = m_mageDcel.InnerFaces;
 
             m_solution = new Solution(FindCutlines(archerFaces), 
                 FindCutlines(swordsmenFaces), 
