@@ -137,7 +137,7 @@
                 GL.Begin(GL.TRIANGLES);
                 GL.Color(FaceColor);
                 var vertices = face.OuterVertices();
-                for(int i=1; i< vertices.Count -1; i++)
+                for(int i=1; i< VertexCount -1; i++)
                 {
                     GL.Vertex(vertices[0].Pos);
                     GL.Vertex(vertices[i].Pos);

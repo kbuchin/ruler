@@ -1,23 +1,35 @@
-﻿namespace General.Mesh
+﻿namespace General.Model
 {
     using System.Linq;
     using UnityEngine;
     using Util.Algorithms.Triangulation;
     using Util.Geometry.Polygon;
 
-    class Polygon2DMesh : MonoBehaviour
+    public class Polygon2DMesh : MonoBehaviour
     {
         private IPolygon2D m_polygon;
 
         private MeshFilter m_meshFilter;
         private Renderer m_renderer;
         private MeshCollider m_collider;
+
         protected float m_scale;
 
         /// <summary>
         /// Seting the Polygon will automatically update the Mesh
         /// </summary>
-        public IPolygon2D Polygon { get { return m_polygon; } set { m_polygon = value; UpdateMesh(); } }
+        public IPolygon2D Polygon
+        {
+            get
+            {
+                return m_polygon;
+            }
+            set
+            {
+                m_polygon = value;
+                UpdateMesh();
+            }
+        }
 
         protected Polygon2DMesh(float scale)
         {
@@ -39,18 +51,22 @@
         /// </summary>
         protected void UpdateMesh()
         {
+            if (m_polygon == null) return;
+
             var oldMesh = m_meshFilter.mesh;
 
             //create triangulation
-            var newPoints = m_polygon.Vertices.ToList();
-            var newVertices = newPoints.Select<Vector2, Vector3>(p => p).ToArray(); //use automatic casting
             var tri = Triangulator.Triangulate(m_polygon);
 
             var mesh = tri.CreateMesh();
+            m_meshFilter.mesh = mesh;
 
             //duplicateMaterial and scale
-            var newMat = new Material(m_renderer.material);
-            newMat.mainTextureScale = new Vector2(mesh.bounds.size.x / m_scale, mesh.bounds.size.y / m_scale);
+            var size = Mathf.Max(mesh.bounds.size.x, mesh.bounds.size.y);
+            var newMat = new Material(m_renderer.material)
+            {
+                mainTextureScale = new Vector2(size / m_scale, size / m_scale)
+            };
             m_renderer.materials = new Material[] { newMat }; //also remove olde material by replacing material array
 
             //set the same mesh to the colider
