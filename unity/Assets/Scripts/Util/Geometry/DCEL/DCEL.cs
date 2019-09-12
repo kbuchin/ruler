@@ -484,6 +484,15 @@
             //TODO add check for edges of length zero
             //TODO add check vertices to close
 
+            if (VertexCount == 0)
+            {
+                if(EdgeCount != 0 || FaceCount != 1)
+                { // divide by two for halfedges
+                    throw new GeomException("Malformed graph: Should have no edges and one face");
+                }
+                return;
+            }
+
             Debug.Log(VertexCount + " " + (EdgeCount / 2) + " " + FaceCount);
 
             //euler formula check

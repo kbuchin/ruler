@@ -4,13 +4,11 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - Archer
-  - Mage
-  - Swordsman
   - Text
   - ScoreText
   - AdvanceButtonContainer
   - HintButtonContainer
+  - Soldier
   layers:
   - Default
   - TransparentFX

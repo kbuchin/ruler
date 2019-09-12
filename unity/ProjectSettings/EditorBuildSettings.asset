@@ -7,131 +7,218 @@ EditorBuildSettings:
   m_Scenes:
   - enabled: 1
     path: Assets/Menu/mainMenu.unity
+    guid: 6729f412dd8dcab47b7f97123b1e7800
   - enabled: 0
-    path: Assets/Scenes/Vorokoi.unity
-  - enabled: 1
-    path: Assets/TheDivide/DivideGame.unity
+    path: 
+    guid: 00000000000000000000000000000000
   - enabled: 0
-    path: Assets/Vorokoi/Scenes/Vorokoi.unity
-  - enabled: 1
-    path: Assets/TheDivide/DivideMenu.unity
-  - enabled: 1
-    path: Assets/TheDivide/DivideControls.unity
-  - enabled: 1
-    path: Assets/TheDivide/lv2.unity
-  - enabled: 1
-    path: Assets/TheDivide/lv3.unity
-  - enabled: 1
-    path: Assets/TheDivide/lv4.unity
-  - enabled: 1
-    path: Assets/TheDivide/lv7.unity
-  - enabled: 1
-    path: Assets/TheDivide/lv6.unity
-  - enabled: 1
-    path: Assets/TheDivide/lv5.unity
-  - enabled: 1
-    path: Assets/TheDivide/finish.unity
-  - enabled: 1
-    path: Assets/KingsTaxes/mst1.unity
-  - enabled: 1
-    path: Assets/KingsTaxes/mst3.unity
-  - enabled: 1
-    path: Assets/KingsTaxes/mst2.unity
-  - enabled: 1
-    path: Assets/KingsTaxes/mst4.unity
-  - enabled: 1
-    path: Assets/KingsTaxes/tsp2.unity
-  - enabled: 1
-    path: Assets/KingsTaxes/tsp3.unity
-  - enabled: 1
-    path: Assets/KingsTaxes/tsp1.unity
-  - enabled: 1
-    path: Assets/KingsTaxes/tspanner1.unity
-  - enabled: 1
-    path: Assets/KingsTaxes/tspanner3.unity
-  - enabled: 1
-    path: Assets/KingsTaxes/kingsTaxesMenu.unity
-  - enabled: 1
-    path: Assets/KingsTaxes/tspannerstart.unity
-  - enabled: 1
-    path: Assets/KingsTaxes/mststart.unity
-  - enabled: 1
-    path: Assets/KingsTaxes/tspstart.unity
-  - enabled: 1
-    path: Assets/KingsTaxes/tspanner4.unity
-  - enabled: 1
-    path: Assets/KingsTaxes/tspanner2.unity
-  - enabled: 1
-    path: Assets/KingsTaxes/tspannervictory.unity
-  - enabled: 1
-    path: Assets/KingsTaxes/tspvictory.unity
-  - enabled: 1
-    path: Assets/KingsTaxes/mstvictory.unity
-  - enabled: 1
-    path: Assets/KingsTaxes/tspendless.unity
-  - enabled: 1
-    path: Assets/KingsTaxes/tspannerendless.unity
-  - enabled: 1
-    path: Assets/KingsTaxes/mstendless.unity
-  - enabled: 1
-    path: Assets/ArtGallery/ag2.unity
-  - enabled: 1
-    path: Assets/ArtGallery/ag11.unity
-  - enabled: 1
-    path: Assets/ArtGallery/agMenu.unity
+    path: 
+    guid: 00000000000000000000000000000000
   - enabled: 0
-    path: Assets/ArtGallery/ag3.unity
-  - enabled: 1
-    path: Assets/ArtGallery/agvictory.unity
+    path: 
+    guid: 00000000000000000000000000000000
   - enabled: 0
-    path: Assets/ArtGallery/ag5.unity
+    path: 
+    guid: 00000000000000000000000000000000
   - enabled: 0
-    path: Assets/ArtGallery/ag4.unity
-  - enabled: 1
-    path: Assets/TheDivide/DivideExplanation.unity
-  - enabled: 1
-    path: Assets/ArtGallery/agExplanation.unity
-  - enabled: 1
-    path: Assets/KingsTaxes/kingsTaxesExplanation.unity
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
   - enabled: 1
     path: Assets/Voronoi/voronoiLongGame.unity
+    guid: 33c44f1a9560f7744bfbcd8867b33ba7
   - enabled: 1
     path: Assets/Menu/credits.unity
-  - enabled: 1
-    path: Assets/ArtGallery/ag-1.unity
-  - enabled: 1
-    path: Assets/ArtGallery/ag0.unity
-  - enabled: 1
-    path: Assets/ArtGallery/ag10.unity
-  - enabled: 1
-    path: Assets/ArtGallery/ag7.unity
-  - enabled: 1
-    path: Assets/ArtGallery/ag6.unity
-  - enabled: 1
-    path: Assets/ArtGallery/ag9.unity
+    guid: 6709c4ecc12eda04eafd9201abb7fac0
   - enabled: 0
-    path: Assets/ArtGallery/ag8.unity
-  - enabled: 1
-    path: Assets/ArtGallery/agControls.unity
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
   - enabled: 1
     path: Assets/Voronoi/voronoiMenu.unity
+    guid: e820c880d338d754796e51fd12c85693
   - enabled: 1
     path: Assets/Voronoi/voronoiExplanation.unity
+    guid: ade196cb31761724ea2525fdfb2a8f3c
   - enabled: 1
     path: Assets/Voronoi/voronoiShortGame.unity
+    guid: d8257bcb5f8a5bb469ee49f631eb16a8
   - enabled: 1
     path: Assets/Voronoi/voronoiControls.unity
+    guid: eb93ccdb9f113be4aa3998479e319977
   - enabled: 1
     path: Assets/Voronoi/redVictory.unity
+    guid: 2d24295ee1e14004787103f659f4430a
   - enabled: 1
     path: Assets/Voronoi/blueVictory.unity
+    guid: b0686dbf6c206a8468752d323ef51ea1
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
   - enabled: 1
-    path: Assets/ArtGallery/ag12.unity
+    path: Assets/TheDivide/Scenes/DivideMenu.unity
+    guid: 6faa8aa1247c15d4f8c403a37bce0444
   - enabled: 1
-    path: Assets/ArtGallery/ag13.unity
+    path: Assets/TheDivide/Scenes/DivideGame.unity
+    guid: 314fe9f570388134fb9b06e00dfd3b86
   - enabled: 1
-    path: Assets/ArtGallery/ag14.unity
+    path: Assets/TheDivide/Scenes/DivideExplanation.unity
+    guid: e31b66371028b6c45aa63c73569a2a15
   - enabled: 1
-    path: Assets/TheDivide/lv8.unity
+    path: Assets/TheDivide/Scenes/DivideControls.unity
+    guid: a50bfeaaf59da4f41a85c08452971de8
   - enabled: 1
-    path: Assets/TheDivide/lv9.unity
+    path: Assets/TheDivide/Scenes/DivideVictory.unity
+    guid: 1413e6ce0f20fe145b8db276b072567c
+  - enabled: 1
+    path: Assets/ArtGallery/Scenes/agControls.unity
+    guid: 86be4a400b3e6a243b530d63e155132f
+  - enabled: 1
+    path: Assets/ArtGallery/Scenes/agExplanation.unity
+    guid: 19ae147cf9d666c42b11b37fb0400d1a
+  - enabled: 1
+    path: Assets/ArtGallery/Scenes/agLevel.unity
+    guid: 64ca2ce407867c84981fd4ff7153c312
+  - enabled: 1
+    path: Assets/ArtGallery/Scenes/agMenu.unity
+    guid: a19d854029057a744b14bbccd3802998
+  m_configObjects: {}

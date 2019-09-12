@@ -15,10 +15,10 @@
     public class ArtGalleryController : MonoBehaviour, IController
     {
         [SerializeField]
-        private string m_victoryScreen = "agVictory";
+        private List<ArtGalleryLevel> m_levels;
 
         [SerializeField]
-        private List<ArtGalleryLevel> m_levels;
+        private string m_victoryScreen = "agVictory";
 
         [SerializeField]
         private GameObject m_lighthousePrefab;
@@ -103,7 +103,6 @@
             worldlocation.z = -2f;
 
             var go = Instantiate(m_lighthousePrefab, worldlocation, Quaternion.identity) as GameObject;
-            go.transform.parent = this.transform;
 
             m_solution.AddLighthouse(go);
             UpdateLighthouseText();
