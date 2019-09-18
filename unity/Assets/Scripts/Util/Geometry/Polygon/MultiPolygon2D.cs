@@ -24,6 +24,18 @@
 
         public int VertexCount { get { return m_Polygons.Sum(p => p.VertexCount); } }
 
+        /// <summary>
+        /// Computes the area spanned by this multi polygon
+        /// </summary>
+        /// <remarks>
+        /// Assumes the polygons do not overlap
+        /// </remarks>
+        /// <returns></returns>
+        public float Area
+        {
+            get { return m_Polygons.Sum(p => p.Area); }
+        }
+
         public ICollection<LineSegment> Segments
         {
             get
@@ -134,19 +146,6 @@
         public MultiPolygon2D(IEnumerable<Polygon2D> a_polygons) : this()
         {
             foreach (var p in a_polygons) AddPolygon(p);
-        }
-
-
-        /// <summary>
-        /// Computes the area spanned by this multi polygon
-        /// </summary>
-        /// <remarks>
-        /// Assumes the polygons do not overlap
-        /// </remarks>
-        /// <returns></returns>
-        public float Area()
-        {
-            return m_Polygons.Sum(p => p.Area());
         }
 
         /// <summary>

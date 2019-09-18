@@ -120,7 +120,7 @@
             result.CutOut(area2);
             result.Add(area2);
 
-            Assert.AreEqual(12f, result.Area());
+            Assert.AreEqual(12f, result.Area);
         }
 
         private bool AllAreTriangles(List<VertexSimplePolygon> a_triangulation)

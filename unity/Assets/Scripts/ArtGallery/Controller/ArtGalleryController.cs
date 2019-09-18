@@ -127,7 +127,7 @@
 
         public void CheckSolution()
         {
-            var ratio = m_solution.Area() / LevelPolygon.Area();
+            var ratio = m_solution.Area / LevelPolygon.Area;
             Debug.Log(ratio + " part is visible");
             if (ratio > 1 - m_eps)
             {

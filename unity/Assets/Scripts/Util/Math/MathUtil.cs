@@ -155,7 +155,6 @@
         /// <returns>the circumcenter of circle abc.</returns>
         public static Vector2 CalculateCircumcenter(Vector2 a, Vector2 b, Vector2 c)
         {
-
             double[,] numerator = new double[,]
             {
                 { Mathf.Pow(a.x - c.x, 2) + Mathf.Pow(a.y - c.y, 2), a.y - c.y },

@@ -31,6 +31,28 @@
 
         public int VertexCount { get { return Outside.VertexCount + m_holes.Sum(p => p.VertexCount); } }
 
+
+        /// <summary>
+        /// Computes the area of this polygon minus it's holes
+        /// </summary>
+        /// <returns></returns>
+        public float Area
+        {
+            get
+            {
+                var result = Outside.Area;
+                foreach (var hole in m_holes)
+                {
+                    result -= hole.Area;
+                }
+                if (result < 0)
+                {
+                    throw new GeomException("Somehow ended up with negative area");
+                }
+                return result;
+            }
+        }
+
         public ICollection<LineSegment> Segments
         {
             get
@@ -140,24 +162,6 @@
         public bool IsSimple()
         {
             return false; // TODO
-        }
-
-        /// <summary>
-        /// Computes the area of this polygon minus it's holes
-        /// </summary>
-        /// <returns></returns>
-        public float Area()
-        {
-            var result = Outside.Area();
-            foreach (var hole in m_holes)
-            {
-                result -= hole.Area();
-            }
-            if (result < 0)
-            {
-                throw new GeomException("Somehow ended up with negative area");
-            }
-            return result;
         }
 
         /// <summary>

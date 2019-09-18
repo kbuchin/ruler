@@ -125,12 +125,6 @@ EditorBuildSettings:
   - enabled: 0
     path: 
     guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
   - enabled: 1
     path: Assets/Voronoi/voronoiLongGame.unity
     guid: 33c44f1a9560f7744bfbcd8867b33ba7
@@ -221,4 +215,37 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/ArtGallery/Scenes/agMenu.unity
     guid: a19d854029057a744b14bbccd3802998
+  - enabled: 1
+    path: Assets/KingsTaxes/Scenes/kingsTaxesExplanation.unity
+    guid: 8171f98be334e56429a5fc2b03673386
+  - enabled: 1
+    path: Assets/KingsTaxes/Scenes/kingsTaxesMenu.unity
+    guid: fb2785f340d1e6640b67df2eb4cf0672
+  - enabled: 1
+    path: Assets/KingsTaxes/Scenes/prefabscene.unity
+    guid: 88fd4d0bbbad92847a1d5bd686719b84
+  - enabled: 1
+    path: Assets/KingsTaxes/Scenes/MST/mstlevel.unity
+    guid: a7133ca0eaf92d54181e4807323af521
+  - enabled: 1
+    path: Assets/KingsTaxes/Scenes/MST/mststart.unity
+    guid: 05d83c350feec614faa8a3a6eae36304
+  - enabled: 1
+    path: Assets/KingsTaxes/Scenes/MST/mstvictory.unity
+    guid: d8fe20ef69c966545b16ef2b4c84d732
+  - enabled: 1
+    path: Assets/KingsTaxes/Scenes/MST/mstendless.unity
+    guid: feced4bb1a19522458c46c07c43ce9e6
+  - enabled: 1
+    path: Assets/KingsTaxes/Scenes/Spanner/tspannerendless.unity
+    guid: 7e61b1565a5120649b5e5dcf0e285ac2
+  - enabled: 1
+    path: Assets/KingsTaxes/Scenes/Spanner/tspannerlevel.unity
+    guid: 9b2a36420a5e2d64c9ae345cbab07c02
+  - enabled: 1
+    path: Assets/KingsTaxes/Scenes/Spanner/tspannerstart.unity
+    guid: 229256236dc7a4a4ba78b4841b13c750
+  - enabled: 1
+    path: Assets/KingsTaxes/Scenes/Spanner/tspannervictory.unity
+    guid: 7977132ba6ea02741a74b9ab34709826
   m_configObjects: {}

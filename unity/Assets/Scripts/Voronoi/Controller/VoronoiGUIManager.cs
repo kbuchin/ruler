@@ -1,8 +1,8 @@
-﻿namespace Voronoi
+﻿namespace Voronoi.Controller
 {
     using UnityEngine;
 
-    public sealed class GUIManager : MonoBehaviour {
+    public sealed class VoronoiGUIManager : MonoBehaviour {
 
 	    public GameObject m_StartPanel;
 	    public GameObject m_RedPanel;

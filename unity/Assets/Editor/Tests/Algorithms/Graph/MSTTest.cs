@@ -16,8 +16,6 @@
         private readonly IGraph m_complete4;
         private readonly List<Vertex> m_level2pos;
 
-        private static float eps = MathUtil.EPS;
-
         public MSTTest()
         {
             m_complete4pos = new List<Vertex>() {

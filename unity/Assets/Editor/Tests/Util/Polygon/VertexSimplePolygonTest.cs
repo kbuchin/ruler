@@ -81,8 +81,8 @@
         [Test]
         public void AreaTest()
         {
-            Assert.AreEqual(1, m_arrow.Area());
-            Assert.AreEqual(2, m_diamond.Area());
+            Assert.AreEqual(1, m_arrow.Area);
+            Assert.AreEqual(2, m_diamond.Area);
         }
 
 
@@ -105,14 +105,14 @@
         public void CutOutTest1()
         {
             var cutout = VertexSimplePolygon.CutOut(m_verticalRect, m_horizontalRect);
-            Assert.AreEqual(2f, cutout.Area());
+            Assert.AreEqual(2f, cutout.Area);
         }
 
         [Test]
         public void CutOutTest2()
         {
             var cutout = VertexSimplePolygon.CutOut(m_horizontalRect, m_verticalRect);
-            Assert.AreEqual(6f, cutout.Area());
+            Assert.AreEqual(6f, cutout.Area);
         }
 
         static List<Vector2> m_2by1RectVertices = new List<Vector2>()
@@ -131,42 +131,42 @@
         public void CutOutRectFromSquareCollinearTest1()
         {
             var remainder = VertexSimplePolygon.CutOut(m_unitSquare, m_2by1rect);
-            Assert.AreEqual(0f, remainder.Area());
+            Assert.AreEqual(0f, remainder.Area);
         }
 
         [Test]
         public void CutOutSquareFromRectCollinearTest1()
         {
             var remainder = VertexSimplePolygon.CutOut(m_2by1rect, m_unitSquare);
-            Assert.AreEqual(1f, remainder.Area());
+            Assert.AreEqual(1f, remainder.Area);
         }
 
         [Test]
         public void CutOutRectFromSquareCollinearTest2()
         {
             var remainder = VertexSimplePolygon.CutOut(m_unitSquare, m_1by2rect);
-            Assert.AreEqual(0f, remainder.Area());
+            Assert.AreEqual(0f, remainder.Area);
         }
 
         [Test]
         public void CutOutSquareFromRectCollinearTest2()
         {
             var remainder = VertexSimplePolygon.CutOut(m_1by2rect, m_unitSquare);
-            Assert.AreEqual(1f, remainder.Area());
+            Assert.AreEqual(1f, remainder.Area);
         }
 
         [Test]
         public void CutOutRectFromRectCollinearTest1()
         {
             var remainder = VertexSimplePolygon.CutOut(m_1by2rect, m_2by1rect);
-            Assert.AreEqual(1f, remainder.Area());
+            Assert.AreEqual(1f, remainder.Area);
         }
 
         [Test]
         public void CutOutRectFromRectCollinearTest2()
         {
             var remainder = VertexSimplePolygon.CutOut(m_2by1rect, m_1by2rect);
-            Assert.AreEqual(1f, remainder.Area());
+            Assert.AreEqual(1f, remainder.Area);
         }
 
         [Test]
@@ -185,10 +185,10 @@
             VertexSimplePolygon square = new VertexSimplePolygon(squareVertices);
 
             var cutout = VertexSimplePolygon.CutOut(square, horizontalRect);
-            Assert.AreEqual(1f, cutout.Area());
+            Assert.AreEqual(1f, cutout.Area);
 
             cutout = VertexSimplePolygon.CutOut(horizontalRect, square);
-            Assert.AreEqual(2f, cutout.Area());
+            Assert.AreEqual(2f, cutout.Area);
         }
 
 

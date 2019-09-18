@@ -19,6 +19,30 @@
 
         public int VertexCount { get { return m_vertices.Count; } }
 
+        /// <summary>
+        /// Computes the area spanned by this polygon
+        /// </summary>
+        /// The theory behind this method is documented in the docs folder.
+        /// <returns></returns>
+        public float Area
+        {
+            get
+            {                 
+                //Take the origin as arbitrary point P
+                //add up signed areas along the edges of the polygon
+                var areasum = 0f;
+                foreach (LineSegment seg in Segments)
+                {
+                    var v1 = seg.Point1;
+                    var v2 = seg.Point2;
+                    areasum += v1.x * v2.y - v2.x * v1.y;
+                }
+
+                return Math.Abs(areasum) / 2;
+            }
+        }
+
+
         public ICollection<LineSegment> Segments
         {
             get
@@ -136,28 +160,6 @@
             foreach (var v in a_vertices) AddVertex(v);
         }
 
-
-        /// <summary>
-        /// Computes the area spanned by this polygon
-        /// </summary>
-        /// The theory behind this method is documented in the docs folder.
-        /// <returns></returns>
-        public float Area()
-        {
-            //Take the origin as arbitrary point P
-
-            //add up signed areas along the edges of the polygon
-            var areasum = 0f;
-            foreach (LineSegment seg in Segments)
-            {
-                var v1 = seg.Point1;
-                var v2 = seg.Point2;
-                areasum += v1.x * v2.y - v2.x * v1.y;
-            }
-
-            return Math.Abs(areasum) / 2;
-        }
-
         /// <summary>
         /// Tests wheter this polygon is convex by verifying that each tripplet of points constitues a right turn
         /// </summary>
@@ -186,7 +188,7 @@
         {
             if (VertexCount <= 2) return false; // polygon has no area
 
-            if (Area() == 0) //catch case of "flat" triangle
+            if (Area == 0) //catch case of "flat" triangle
             {
                 return false;
             }

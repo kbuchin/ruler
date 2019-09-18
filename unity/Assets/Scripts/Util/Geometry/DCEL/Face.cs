@@ -93,7 +93,7 @@
             }
         }
 
-        public float Area { get { return Polygon.Area(); } }
+        public float Area { get { return Polygon.Area; } }
 
         /// <summary>
         /// This assumes the face is convex
@@ -169,7 +169,10 @@
 
         public override string ToString()
         {
-            return Polygon.ToString();
+            var result = "";
+            foreach (var halfEdge in OuterHalfedges)
+                result += halfEdge + ", ";
+            return result;
         }
     }
 }

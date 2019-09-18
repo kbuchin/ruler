@@ -11,6 +11,7 @@
         ICollection<LineSegment> Segments { get; }
 
         int VertexCount { get; }
+        float Area { get; }
 
         Vector2? Next(Vector2 pos);
         Vector2? Prev(Vector2 pos);
@@ -25,7 +26,6 @@
 
         void Clear();
 
-        float Area();
         bool Contains(Vector2 pos);
         bool IsConvex();
         bool IsSimple();

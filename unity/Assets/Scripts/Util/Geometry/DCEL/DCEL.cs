@@ -48,7 +48,7 @@
                 //add line
                 AddSegment(segment);
 
-                Debug.Log("Outer: " + OuterFace.OuterComponent);
+                //Debug.Log("Outer: " + OuterFace.OuterComponent);
             }
 
             //debug stuff
@@ -183,6 +183,12 @@
                 Vector2? intersect;
                 if (e.IntersectLine(segment, out intersect))
                 {
+                    // check for degenerate intersection
+                    if (intersect == segment.Point1 || intersect == segment.Point2) continue;
+
+                    Debug.Log(segment);
+                    Debug.Log(intersect);
+
                     // split line segment into two
                     AddSegment(new LineSegment(segment.Point1, (Vector2)intersect));
                     AddSegment(new LineSegment((Vector2)intersect, segment.Point2));
@@ -222,8 +228,8 @@
                 throw new ArgumentException("Vertices should already be part of the DCEL");
             }
 
-            Face face1 = GetSplittingFace(a_Vertex1, a_Vertex2);
-            Face face2 = GetSplittingFace(a_Vertex2, a_Vertex1);
+            Face face1 = GetSplittingFace(a_Vertex1, a_Vertex2.Pos);
+            Face face2 = GetSplittingFace(a_Vertex2, a_Vertex1.Pos);
 
             if(face1 != face2)
             {
@@ -329,7 +335,7 @@
 
         private static void Chain(HalfEdge a_First, HalfEdge a_Second)
         {
-            Debug.Log("CHAIN: " + a_First + ", " + a_Second);
+            //Debug.Log("CHAIN: " + a_First + ", " + a_Second);
             a_First.Next = a_Second;
             a_Second.Prev = a_First;
         }
@@ -349,6 +355,7 @@
                 if (workingedge.To == a_Vertex) return true;
                 workingedge = workingedge.Next;
             } while (workingedge != a_startedge);
+
             return false;
         }
 
@@ -435,23 +442,29 @@
             return false;
         }
 
-        private Face GetSplittingFace(DCELVertex a_Vertex1, DCELVertex a_Vertex2)
+        /// <summary>
+        /// Given a initial vertex and a new point, finds the face that is split by a new edge in this direction
+        /// </summary>
+        /// <param name="a_vertex"></param>
+        /// <param name="a_point"></param>
+        /// <returns></returns>
+        private Face GetSplittingFace(DCELVertex a_vertex, Vector2 a_point)
         {
-            List<HalfEdge> outedges = OutgoingEdges(a_Vertex1).ToList();
+            List<HalfEdge> outedges = OutgoingEdges(a_vertex).ToList();
 
             if (outedges.Count == 0)
             {
                 // a_Vertex1 leaving is null
-                return GetContainingFace(a_Vertex1);
+                // unconnected vertex in the DCEL, likely just added
+                return GetContainingFace(a_vertex.Pos);
             }
 
             outedges.Sort(EdgeAngleComparer);
 
-            for (int i = 0; i < outedges.Count; i++)
+            foreach (var curEdge in outedges)
             {
-                var curEdge = outedges[i];
                 var angle = MathUtil.Angle(curEdge.From.Pos, curEdge.From.Pos + new Vector2(1f, 0f), curEdge.To.Pos);
-                var angle2 = MathUtil.Angle(a_Vertex1.Pos, a_Vertex1.Pos + new Vector2(1f, 0f), a_Vertex2.Pos);
+                var angle2 = MathUtil.Angle(a_vertex.Pos, a_vertex.Pos + new Vector2(1f, 0f), a_point);
 
                 if (angle >= angle2)
                 {
@@ -462,12 +475,20 @@
             return outedges.First().Face;
         }
 
-        private Face GetContainingFace(DCELVertex a_Vertex)
+        /// <summary>
+        /// Finds the face that contains the given point
+        /// </summary>
+        /// <param name="a_point"></param>
+        /// <returns></returns>
+        public Face GetContainingFace(Vector2 a_point)
         {
+            // find if contained in any inner face
             foreach (var f in m_Faces)
             {
-                if (!f.IsOuter && f.Polygon.Contains(a_Vertex.Pos)) return f;
+                if (!f.IsOuter && f.Polygon.Contains(a_point)) return f;
             }
+
+            // else point in outer face
             return OuterFace;
         }
 
@@ -494,11 +515,16 @@
             }
 
             Debug.Log(VertexCount + " " + (EdgeCount / 2) + " " + FaceCount);
+            
+            foreach (var vertex in m_Vertices)
+            {
+                Debug.Log(vertex);
+            }
 
             //euler formula check
             if (VertexCount - (EdgeCount / 2) + FaceCount != 2)
             { // divide by two for halfedges
-                throw new GeomException("Malformed graph: Does not satisfy Euler charachteristic");
+                throw new GeomException("Malformed graph: Does not satisfy Euler characteristic");
             }
 
             //prev-next check

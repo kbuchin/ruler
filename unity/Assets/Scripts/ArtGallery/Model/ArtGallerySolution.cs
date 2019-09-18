@@ -15,6 +15,23 @@
 
         public int Count { get { return m_lighthouses.Count; } }
 
+        public float Area
+        {
+            get
+            {
+                if (Count <= 0) return 0f;
+
+                var visiblePolygon = new MultiPolygon2D(m_lighthouses[0].VisionArea);
+                foreach (ArtGalleryLightHouse lighthouse in m_lighthouses.Skip(1))
+                {
+                    Clipper.CutOut(visiblePolygon, lighthouse.VisionArea);
+                    visiblePolygon.AddPolygon(lighthouse.VisionArea);
+                }
+
+                return visiblePolygon.Area;
+            }
+        }
+
         public ArtGallerySolution()
         {
             m_objects = new List<GameObject>();
@@ -51,20 +68,6 @@
         public void OnDestroy()
         {
             Clear();
-        }
-
-        public float Area()
-        {
-            if (Count <= 0) return 0f;
-
-            var visiblePolygon = new MultiPolygon2D(m_lighthouses[0].VisionArea);
-            foreach (ArtGalleryLightHouse lighthouse in m_lighthouses.Skip(1))
-            {
-                Clipper.CutOut(visiblePolygon, lighthouse.VisionArea);
-                visiblePolygon.AddPolygon(lighthouse.VisionArea);
-            }
-
-            return visiblePolygon.Area();
         }
     }
 }

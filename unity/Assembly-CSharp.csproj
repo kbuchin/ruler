@@ -128,9 +128,10 @@
      <Compile Include="Assets\Scripts\Util\Geometry\Triangulation\TriangleEdge.cs" />
      <Compile Include="Assets\Scripts\Util\Geometry\Triangulation\Triangulation.cs" />
      <Compile Include="Assets\Scripts\Util\Math\MathUtil.cs" />
-     <Compile Include="Assets\Scripts\Voronoi\FishManager.cs" />
-     <Compile Include="Assets\Scripts\Voronoi\GraphManager.cs" />
-     <Compile Include="Assets\Scripts\Voronoi\GUIManager.cs" />
+     <Compile Include="Assets\Scripts\Voronoi\Controller\FishManager.cs" />
+     <Compile Include="Assets\Scripts\Voronoi\Controller\VoronoiController.cs" />
+     <Compile Include="Assets\Scripts\Voronoi\Controller\VoronoiGUIManager.cs" />
+     <Compile Include="Assets\Scripts\Voronoi\UI\VoronoiDrawer.cs" />
      <None Include="Assets\Scripts\tree_refactored.txt" />
      <None Include="Assets\Menu\credits.txt" />
      <None Include="Assets\Libs\redist.txt" />

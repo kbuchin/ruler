@@ -6,15 +6,17 @@
     using UnityEngine;
     using Util.Geometry.Triangulation;
     using Util.Geometry;
+    using System.Linq;
 
     public static class Delaunay {
 
+        private const float m_farAway = 999f;
+
         public static Triangulation Create()
         {
-            const float farAway = 10000; // 500000
-            var v0 = new Vector2(-farAway, -farAway);
-            var v1 = new Vector2(farAway, -farAway);
-            var v2 = new Vector2(0, farAway);
+            var v0 = new Vector2(-m_farAway, -m_farAway);
+            var v1 = new Vector2(m_farAway, -m_farAway);
+            var v2 = new Vector2(0, m_farAway);
 
             return new Triangulation(v0, v1, v2);
         }
@@ -83,10 +85,6 @@
             var t1 = new Triangle(a_Triangle.E1, e2x, ex1);
             var t2 = new Triangle(a_Triangle.E2, e0x, ex2);
 
-            ex0.T = e1x.T = a_Triangle.E0.T = t0;
-            ex1.T = e2x.T = a_Triangle.E1.T = t1;
-            ex2.T = e0x.T = a_Triangle.E2.T = t2;
-
             T.Add(t0);
             T.Add(t1);
             T.Add(t2);
@@ -94,10 +92,20 @@
 
         private static void LegalizeEdge(Triangulation T, Vector2 a_Vertex, TriangleEdge a_Edge)
         {
-            var a_Triangle = a_Edge.T;
-            var a_Twin = a_Edge.OtherTriangle();
+            var a_triangle = a_Edge.T;
+            if(a_triangle == null)
+            {
+                throw new GeomException("Invalid TriangleEdge, cannot legalize");
+            }
 
-            if (a_Triangle == null || a_Twin == null)
+            if (a_Edge.IsOuter)
+            {
+                // never legalize the initial triangle
+                return;
+            }
+
+            var a_Twin = a_Edge.Twin.T;
+            if (a_Twin == null)
             {
                 throw new GeomException("Cannot legalize edge if neighbouring triangles don't exist");
             }
@@ -106,19 +114,19 @@
             var u = (Vector2)a_Edge.T.OtherVertex(a_Edge);
             var v = (Vector2)a_Edge.Twin.T.OtherVertex(a_Edge.Twin);
 
-            if (a_Triangle.InsideCircumcircle(v) || a_Twin.InsideCircumcircle(u))
+            if (a_triangle.InsideCircumcircle(v) || a_Twin.InsideCircumcircle(u))
             {
                 Flip(T, a_Edge);
 
-                LegalizeEdge(T, a_Vertex, a_Twin.OtherEdge(a_Edge.Twin, a_Edge.Start));
-                LegalizeEdge(T, a_Vertex, a_Twin.OtherEdge(a_Edge.Twin, a_Edge.End));
+                LegalizeEdge(T, a_Vertex, a_Twin.OtherEdge(a_Edge.Twin, a_Edge.Point1));
+                LegalizeEdge(T, a_Vertex, a_Twin.OtherEdge(a_Edge.Twin, a_Edge.Point2));
             }
         }
 
         private static void Flip(Triangulation T, TriangleEdge a_Edge)
         {
             var a_Triangle = a_Edge.T;
-            var a_Twin = a_Edge.OtherTriangle();
+            var a_Twin = a_Edge.Twin.T;
 
             if (a_Triangle == null || a_Twin == null)
             {
@@ -129,20 +137,20 @@
             T.Remove(a_Triangle);
             T.Remove(a_Twin);
 
-            var e0 = a_Triangle.OtherEdge(a_Edge, a_Edge.Start);
-            var e2 = a_Twin.OtherEdge(a_Edge.Twin, a_Edge.Start);
-            var e5 = a_Triangle.OtherEdge(a_Edge, a_Edge.End);
-            var e3 = a_Twin.OtherEdge(a_Edge.Twin, a_Edge.End);
+            var e0 = a_Triangle.OtherEdge(a_Edge, a_Edge.Point1);
+            var e1 = a_Triangle.OtherEdge(a_Edge, a_Edge.Point2);
+            var e2 = a_Twin.OtherEdge(a_Edge.Twin, a_Edge.Point1);
+            var e3 = a_Twin.OtherEdge(a_Edge.Twin, a_Edge.Point2);
 
-            var euv = new TriangleEdge(e0.End, e2.Start, null, null);
-            var evu = new TriangleEdge(e2.Start, e0.End, euv, null);
+            var euv = new TriangleEdge(e0.Point1, e2.Point2, null, null);
+            var evu = new TriangleEdge(e2.Point2, e0.Point1, euv, null);
             euv.Twin = evu;
 
             var t0 = new Triangle(e0, e2, evu);
-            var t1 = new Triangle(e3, e5, euv);
+            var t1 = new Triangle(e3, e1, euv);
 
-            e0.T = e2.T = evu.T = t0;
-            e3.T = e5.T = euv.T = t1;
+            T.Add(t0);
+            T.Add(t1);
         }
     }
 }

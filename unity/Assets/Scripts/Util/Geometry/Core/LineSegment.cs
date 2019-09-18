@@ -12,8 +12,17 @@
 
         public Vector2 Point1 { get { return m_Point1; } }
         public Vector2 Point2 { get { return m_Point2; } }
+        public Vector2 Midpoint { get { return (m_Point1 + m_Point2) / 2f; } }
 
         public Line Line { get { return new Line(m_Point1, m_Point2); } }
+
+        public Line Bissector {
+            get
+            {
+                var perp = Vector2.Perpendicular(m_Point2 - m_Point1);
+                return new Line(Midpoint, Midpoint + perp);
+            }
+        }
 
         public bool IsVertical { get { return Line.IsVertical; } }
 
@@ -116,6 +125,34 @@
             return Intersect(this, a_line);
         }
 
+        internal List<Vector2> Intersect(Rect a_rect)
+        {
+            var intersections = new List<Vector2>();
+            Vector2? intersection;
+
+            // left side
+            var left = new LineSegment(new Vector2(a_rect.xMin, a_rect.yMin), new Vector2(a_rect.xMin, a_rect.yMax));
+            intersection = Intersect(left);
+            if (intersection != null) intersections.Add((Vector2)intersection);
+
+            // bottom side
+            var bottom = new LineSegment(new Vector2(a_rect.xMin, a_rect.yMin), new Vector2(a_rect.xMax, a_rect.yMin));
+            intersection = Intersect(bottom);
+            if (intersection != null) intersections.Add((Vector2)intersection);
+
+            // right side
+            var right = new LineSegment(new Vector2(a_rect.xMax, a_rect.yMin), new Vector2(a_rect.xMax, a_rect.yMax));
+            intersection = Intersect(right);
+            if (intersection != null) intersections.Add((Vector2)intersection);
+
+            // top side
+            var top = new LineSegment(new Vector2(a_rect.xMin, a_rect.yMax), new Vector2(a_rect.xMax, a_rect.yMax));
+            intersection = Intersect(top);
+            if (intersection != null) intersections.Add((Vector2)intersection);
+
+            return intersections;
+        }
+
         /// <summary>
         /// Computes the distance between this line and the given point 
         /// </summary>
@@ -153,7 +190,7 @@
         /// <returns></returns>
         public List<Vector2> IntersectionWithSegments(IEnumerable<LineSegment> a_segments)
         {
-            List<Vector2> intersections = new List<Vector2>();
+            var intersections = new List<Vector2>();
 
             //find all intersections
             foreach (LineSegment segment in a_segments)

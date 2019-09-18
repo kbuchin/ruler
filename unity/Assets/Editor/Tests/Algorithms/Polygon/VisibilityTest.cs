@@ -56,10 +56,10 @@
             var vision = Visibility.Vision(arrowPoly, new Vector2(1.5f, 0));
             Debug.Log(arrowPoly.Outside);
             Debug.Log(vision);
-            Assert.AreEqual(arrowPoly.Area(), vision.Area());
+            Assert.AreEqual(arrowPoly.Area, vision.Area);
 
             vision = Visibility.Vision(diamondPoly, Vector2.zero);
-            Assert.AreEqual(diamondPoly.Area(), vision.Area());
+            Assert.AreEqual(diamondPoly.Area, vision.Area);
         }
 
         [Test]

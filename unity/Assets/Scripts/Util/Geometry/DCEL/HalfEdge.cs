@@ -42,7 +42,7 @@
             To = to;
             if (SqrMagnitude < MathUtil.EPS)
             {
-                throw new GeomException("Creating edge of length zero.");
+                throw new GeomException(string.Format("Creating edge of length zero: {0}, {1}", from, to));
             }
         }
 
