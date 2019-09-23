@@ -7,7 +7,6 @@
     using Util.Geometry.DCEL;
     using Util.Algorithms.Triangulation;
     using Util.Geometry.Triangulation;
-    using Util.Math;
     using UnityEngine.SceneManagement;
     using Util.Geometry.Polygon;
     using Util.Algorithms.Graph;
@@ -179,9 +178,6 @@
 
         private void OnRenderObject()
         {
-            // Apply the line material
-            //m_Delaunay.LineMaterial.SetPass(0);
-
             GL.PushMatrix();
 
             // Set transformation matrix for drawing to

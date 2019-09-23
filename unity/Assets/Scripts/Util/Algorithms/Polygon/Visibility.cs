@@ -104,8 +104,6 @@
                 throw new GeomException("Event should be of type SweepSegment");
             }
 
-            Debug.Log(sweepEv);
-
             StatusLine minItem;
             if (!status.FindMin(out minItem))
             {

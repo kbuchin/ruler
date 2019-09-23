@@ -8,6 +8,7 @@
     using UnityEngine;
     using UnityEngine.SceneManagement;
     using Util.Geometry.Graph;
+    using KingsTaxes.Model;
 
     public abstract class KingsTaxesController : MonoBehaviour, IController
     {

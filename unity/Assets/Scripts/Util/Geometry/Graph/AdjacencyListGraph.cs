@@ -252,7 +252,7 @@
             return m_Edges[v];
         }
 
-        public void RemoveAllEdges(ICollection<Edge> E)
+        public void RemoveAllEdges(IEnumerable<Edge> E)
         {
             // create copy to avoid any concurrent modification error
             var toRemove = new List<Edge>(E);
@@ -263,7 +263,7 @@
             }
         }
 
-        public void RemoveAllVertices(ICollection<Vertex> V)
+        public void RemoveAllVertices(IEnumerable<Vertex> V)
         {
             // create copy to avoid any concurrent modification error
             var toRemove = new List<Vertex>(V);
@@ -289,18 +289,14 @@
 
         public void RemoveEdges(Vertex u, Vertex v)
         {
-            foreach (var e in m_Edges[u])
-            {
-                if (e.End.Equals(v)) RemoveEdge(e);
-            }
+            var toRemove = m_Edges[u].FindAll(e => e.End.Equals(v));
 
             if (!Type.DIRECTED)
             {
-                foreach (var e in m_Edges[v])
-                {
-                    if (e.End.Equals(u)) RemoveEdge(e);
-                }
+                toRemove.AddRange(m_Edges[v].FindAll(e => e.End.Equals(u)));
             }
+
+            RemoveAllEdges(toRemove);
         }
 
         public Vertex RemoveVertex(Vertex v)

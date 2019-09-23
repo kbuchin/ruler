@@ -1,4 +1,4 @@
-﻿namespace KingsTaxes
+﻿namespace KingsTaxes.Model
 {
     using System;
     using System.Collections;

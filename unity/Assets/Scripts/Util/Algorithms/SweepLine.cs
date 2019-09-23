@@ -93,6 +93,7 @@
 
                 Line = new Line(a_pos, ev.Pos);
 
+                /*
                 if (ev.IsEnd)
                 {
                     Debug.Log("remove:" + ev.StatusItem + " " + Status.Delete(ev.StatusItem));
@@ -101,6 +102,7 @@
                 {
                     Debug.Log("insert: " + ev.StatusItem + " " + Status.Insert(ev.StatusItem));
                 }
+                */
 
                 eventHandler(Events, Status, ev);
             }

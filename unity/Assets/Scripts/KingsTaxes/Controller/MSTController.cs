@@ -21,11 +21,8 @@
 
         public override void FinishLevelSetup()
         {
-            m_goalgraph = new AdjacencyListGraph(m_settlements.Select<Settlement, Vertex>(go => new Vertex(go.Pos)).ToList());
-            m_goalgraph.MakeComplete();
-            m_goalgraph = MST.MinimumSpanningTree((AdjacencyListGraph)m_goalgraph);
-
-            Debug.Log(m_goalgraph);
+            var vertices = m_settlements.Select<Settlement, Vertex>(go => new Vertex(go.Pos)).ToList();
+            m_goalgraph = MST.MinimumSpanningTree(vertices);
         }
 
 

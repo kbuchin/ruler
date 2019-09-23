@@ -37,10 +37,10 @@
         bool ContainsEdge(Edge e);
 
         Vertex RemoveVertex(Vertex v);
-        void RemoveAllVertices(ICollection<Vertex> V);
+        void RemoveAllVertices(IEnumerable<Vertex> V);
         Edge RemoveEdge(Edge e);
         void RemoveEdges(Vertex u, Vertex v);
-        void RemoveAllEdges(ICollection<Edge> E);
+        void RemoveAllEdges(IEnumerable<Edge> E);
 
         void Clear();
     }

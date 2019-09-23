@@ -9,7 +9,26 @@
     using System;
     using System.Linq;
 
-    public static class MST {
+    public static class MST
+    {
+        /// <summary>
+        /// Creates a miminum spanning tree of the given list of vertices
+        /// </summary>
+        /// <param name="vertices"></param>
+        /// <returns>A graph representing the minimum spanning tree</returns>
+        public static IGraph MinimumSpanningTree(IEnumerable<Vertex> vertices)
+        {
+            var graph = new AdjacencyListGraph(vertices);
+            graph.MakeComplete();
+            return MinimumSpanningTree(graph);
+        }
+
+        /// <summary>
+        /// Finds a minimum spanning tree of the given graph.
+        /// Only uses edges that are present in the given graph.
+        /// </summary>
+        /// <param name="Graph"></param>
+        /// <returns>A graph representing the minimum spanning tree</returns>
         public static IGraph MinimumSpanningTree(IGraph Graph)
         {
             if(Graph.Type.DIRECTED)
@@ -27,9 +46,7 @@
 
             //initialize data structures
             var visitedVertices = new HashSet<Vertex>() { root };
-            var edgesToConsider = new BinaryHeap<Edge>(Graph.OutEdgesOf(root));
-
-            Debug.Log(edgesToConsider.Count);
+            var edgesToConsider = new BinaryHeap<Edge>( Graph.OutEdgesOf(root) );
 
             while (visitedVertices.Count < Graph.VertexCount)
             {

@@ -39,7 +39,7 @@
         private ArtGalleryIsland m_levelMesh;
         private ArtGalleryLightHouse m_selectedLighthouse;
 
-        internal Polygon2DWithHoles LevelPolygon { get; private set; }
+        internal Polygon2D LevelPolygon { get; private set; }
 
         public void Start()
         {
@@ -59,7 +59,7 @@
             var level = m_levels[m_levelCounter];
             LevelPolygon = level.Polygon;
             m_maxNumberOfLighthouses = level.MaxNumberOfLighthouses;
-            m_levelMesh.Polygon = LevelPolygon.Outside;
+            m_levelMesh.Polygon = LevelPolygon;
 
             // update text box
             UpdateLighthouseText();

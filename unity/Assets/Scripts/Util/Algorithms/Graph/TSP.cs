@@ -71,9 +71,7 @@
         public static float FindTSPLength(IEnumerable<Vertex> vertices)
         {
             //first determine a MST
-            IGraph mst = new AdjacencyListGraph(vertices);
-            mst.MakeComplete();
-            mst = MST.MinimumSpanningTree(mst);
+            var mst = MST.MinimumSpanningTree(vertices);
 
             //find odd degree vertices
             var oddDegreePos = new List<Vertex>();

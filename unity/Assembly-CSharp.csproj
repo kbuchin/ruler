@@ -80,10 +80,7 @@
      <Compile Include="Assets\Scripts\KingsTaxes\Controller\MSTController.cs" />
      <Compile Include="Assets\Scripts\KingsTaxes\Controller\SpannerController.cs" />
      <Compile Include="Assets\Scripts\KingsTaxes\Controller\TSPController.cs" />
-     <Compile Include="Assets\Scripts\KingsTaxes\Controller\VictoryController.cs" />
      <Compile Include="Assets\Scripts\KingsTaxes\Model\KingsTaxesLevel.cs" />
-     <Compile Include="Assets\Scripts\KingsTaxes\UI\FreeModeButton.cs" />
-     <Compile Include="Assets\Scripts\KingsTaxes\UI\LevelCompleteMarker.cs" />
      <Compile Include="Assets\Scripts\KingsTaxes\UI\Road.cs" />
      <Compile Include="Assets\Scripts\KingsTaxes\UI\RoadBuilder.cs" />
      <Compile Include="Assets\Scripts\KingsTaxes\UI\Settlement.cs" />

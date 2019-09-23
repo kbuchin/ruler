@@ -53,8 +53,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\Editor\LoadLevelEditor.cs" />
      <Compile Include="Assets\Editor\PlayerPrefsEditorUtility.cs" />
      <Compile Include="Assets\Editor\PlayerPrefsEditorWindow.cs" />
+     <Compile Include="Assets\Editor\Tests\Algorithms\Graph\MatchingTest.cs" />
      <Compile Include="Assets\Editor\Tests\Algorithms\Graph\MSTTest.cs" />
      <Compile Include="Assets\Editor\Tests\Algorithms\Graph\ShortestPathTest.cs" />
      <Compile Include="Assets\Editor\Tests\Algorithms\Graph\SpannerTest.cs" />
