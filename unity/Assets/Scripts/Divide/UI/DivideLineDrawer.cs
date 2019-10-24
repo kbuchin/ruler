@@ -50,15 +50,15 @@
         private void UpdateLines()
         {
             ClearLines();
+            
+            
             if (m_displayArcherLines)
             {
                 AddLines(m_solution.Archers, ArcherColor);
             }
-
             if (m_displaySoldierLines)
             {
                 AddLines(m_solution.Soldiers, SwordsmenColor);
-
             }
             if (m_displayMageLines)
             {

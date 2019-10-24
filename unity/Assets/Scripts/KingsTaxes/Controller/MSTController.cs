@@ -16,7 +16,8 @@
 
         public MSTController()
         {
-            m_endlessScoreKey = "mstscore";
+            m_endlessScoreKey = "mst_score";
+            m_beatKey = "mst_beat";
         }
 
         public override void FinishLevelSetup()

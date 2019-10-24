@@ -77,10 +77,10 @@
             Outside = a_outside;
         }
 
-        public Polygon2DWithHoles(Polygon2D a_outside, List<Polygon2D> a_holes)
+        public Polygon2DWithHoles(Polygon2D a_outside, IEnumerable<Polygon2D> a_holes)
         {
             Outside = a_outside;
-            m_holes = a_holes;
+            m_holes = a_holes.ToList();
         }
 
         public Vector2? Next(Vector2 pos)
@@ -173,7 +173,7 @@
         {
             foreach (var hole in m_holes)
             {
-                if (hole.Contains(a_pos)) return false;
+                if (hole.Contains(a_pos)) { Debug.Log(a_pos); Debug.Log("Inside hole + " + hole); return false; }
             }
 
             return Outside.Contains(a_pos);

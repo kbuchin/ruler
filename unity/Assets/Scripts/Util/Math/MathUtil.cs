@@ -5,6 +5,7 @@
     using System.Collections.Generic;
     using UnityEngine;
     using Util.Geometry;
+    using Util.Geometry.Triangulation;
     using MNMatrix = MathNet.Numerics.LinearAlgebra.Matrix<double>;
 
     public static class MathUtil
@@ -14,6 +15,11 @@
         /// </summary>
         public static float EPS = 1e-5f;
 
+        /// <summary>
+        /// Some constants (based on Mathf)
+        /// </summary>
+        public static float PI { get { return Mathf.PI; } }
+        public static float PI2 { get { return 2 * Mathf.PI; } }
 
         /// <summary>
         /// Checks whether a float is finite and not NaN
@@ -43,7 +49,38 @@
         /// <returns> True when the difference between <paramref name="a_val1"/> and <paramref name="a_val2"/> is less then a small Epsilon</returns>
         public static bool EqualsEps(float a_val1, float a_val2)
         {
-            return Mathf.Approximately(a_val1, a_val2);
+            return Mathf.Abs(a_val1 - a_val2) < EPS;
+        }
+
+        /// <summary>
+        /// Compares two vectors to see if they are within Epsilon distance of each other
+        /// </summary>
+        /// <param name="a_val1"></param>
+        /// <param name="a_val2"></param>
+        /// <returns></returns>
+        public static bool EqualsEps(Vector2 a_val1, Vector2 a_val2)
+        {
+            return (a_val1 - a_val2).sqrMagnitude < EPS;
+        }
+
+        public static bool GEQEps(float a, float b)
+        {
+            return EqualsEps(a, b) || (a > b);
+        }
+
+        public static bool LEQEps(float a, float b)
+        {
+            return EqualsEps(a, b) || (a < b);
+        }
+
+        public static bool GreaterEps(float a, float b)
+        {
+            return a > b && !EqualsEps(a, b);
+        }
+
+        public static bool LessEps(float a, float b)
+        {
+            return a < b && !EqualsEps(a, b);
         }
 
         /// <summary>
@@ -88,6 +125,16 @@
             else return (float)(2.0 * Math.PI + SignedAngle);
         }
 
+        public static Vector2 Rotate(Vector2 a_Point, float a)
+        {
+            var s = Mathf.Sin(a);
+            var c = Mathf.Cos(a);
+            return new Vector2(
+                a_Point.x * c - a_Point.y * s,
+                a_Point.y * c + a_Point.x * s
+            );
+        }
+
         /// <summary>
         /// Returns a positive value if the points a, b, and c are arranged in
         /// counterclockwise order, a negative value if the points are in clockwise order,
@@ -97,8 +144,9 @@
         /// <param name="b"></param>
         /// <param name="c"></param>
         /// <returns></returns>
-        public static double Orient2D(Vector2 a, Vector2 b, Vector2 c)
+        public static int Orient2D(Vector2 a, Vector2 b, Vector2 c)
         {
+            // get cross product
             var orientArray = new double[,]
                 {
                     { a.x - c.x, a.y - c.y },
@@ -106,7 +154,7 @@
                 };
 
             MNMatrix orientMatrix = MNMatrix.Build.DenseOfArray(orientArray);
-            return orientMatrix.Determinant();
+            return (int)Math.Sign(orientMatrix.Determinant());
         }
 
         /// <summary>
@@ -185,6 +233,12 @@
 
             if (!IsFinite((float)Ox) || !IsFinite((float)Oy))
             {
+                Debug.Log(a);
+                Debug.Log(b);
+                Debug.Log(c);
+                Debug.Log((a - b).magnitude);
+                Debug.Log((b - c).magnitude);
+                Debug.Log(new Triangle(a, b, c).Degenerate());
                 throw new Exception("Result of CalculateCircumcenterStable was invalid!");
             }
 

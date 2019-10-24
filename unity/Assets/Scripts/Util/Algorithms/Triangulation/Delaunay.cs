@@ -31,6 +31,41 @@
             return T;
         }
 
+        /// <summary>
+        /// Checks if the Delaunay property holds for the triangulation.
+        /// </summary>
+        /// <param name="T"></param>
+        /// <returns>Whether the triangulation is a Delaunay triangulation.</returns>
+        public static bool IsValid(Triangulation T)
+        {
+            return T.Edges.All(e => IsValid(e));
+        }
+
+        /// <summary>
+        /// Checks if the Delaunay property holds for the edge.
+        /// </summary>
+        /// <param name="T"></param>
+        /// <returns>Whether the triangle edge is valid for a Delaunay triangulation.</returns>
+        public static bool IsValid(TriangleEdge a_Edge)
+        {
+            // outer edge always valid
+            if (a_Edge != null && a_Edge.IsOuter) return true;
+
+            if (a_Edge == null || a_Edge.T == null || a_Edge.Twin == null || a_Edge.Twin.T == null)
+            {
+                throw new GeomException("Invalid triangle edge - Cannot legalize edge");
+            }
+
+            var a_triangle = a_Edge.T;
+            var a_Twin = a_Edge.Twin.T;
+
+            // Points to test
+            var u = (Vector2)a_Edge.T.OtherVertex(a_Edge);
+            var v = (Vector2)a_Edge.Twin.T.OtherVertex(a_Edge.Twin);
+
+            return !a_triangle.InsideCircumcircle(v) && !a_Twin.InsideCircumcircle(u);
+        }
+
         public static bool AddVertex(Triangulation T, Vector2 X)
         {
             var triangle = FindTriangle(T, X);
@@ -92,29 +127,18 @@
 
         private static void LegalizeEdge(Triangulation T, Vector2 a_Vertex, TriangleEdge a_Edge)
         {
+            // do not legalize outer edge
+            if (a_Edge != null && a_Edge.IsOuter) return;
+
+            if (a_Edge == null || a_Edge.T == null || a_Edge.Twin == null || a_Edge.Twin.T == null)
+            {
+                throw new GeomException("Invalid triangle edge - Cannot legalize edge");
+            }
+
             var a_triangle = a_Edge.T;
-            if(a_triangle == null)
-            {
-                throw new GeomException("Invalid TriangleEdge, cannot legalize");
-            }
-
-            if (a_Edge.IsOuter)
-            {
-                // never legalize the initial triangle
-                return;
-            }
-
             var a_Twin = a_Edge.Twin.T;
-            if (a_Twin == null)
-            {
-                throw new GeomException("Cannot legalize edge if neighbouring triangles don't exist");
-            }
 
-            // Points to test
-            var u = (Vector2)a_Edge.T.OtherVertex(a_Edge);
-            var v = (Vector2)a_Edge.Twin.T.OtherVertex(a_Edge.Twin);
-
-            if (a_triangle.InsideCircumcircle(v) || a_Twin.InsideCircumcircle(u))
+            if (!IsValid(a_Edge))
             {
                 Flip(T, a_Edge);
 

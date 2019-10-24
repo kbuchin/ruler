@@ -4,6 +4,7 @@
     using System.Collections;
     using System.Collections.Generic;
     using UnityEngine;
+    using Util.Math;
 
     public class Vertex : IEquatable<Vertex>
     {
@@ -22,7 +23,7 @@
 
         public bool Equals(Vertex e)
         {
-            return Pos == e.Pos;
+            return MathUtil.EqualsEps(Pos, e.Pos);
         }
 
         public override string ToString()

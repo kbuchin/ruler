@@ -122,7 +122,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 50458735}
-  - component: {fileID: 50458734}
   m_Layer: 0
   m_Name: VictoryController
   m_TagString: Untagged
@@ -130,19 +129,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &50458734
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 11418806, guid: bfc4fd6b895de9a4cb10e27522bb5313,
-    type: 2}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 50458733}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fbac6a75aa9b6f547b24d91c468b0dac, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_victorykey: spannerbeat
 --- !u!4 &50458735
 Transform:
   m_ObjectHideFlags: 0

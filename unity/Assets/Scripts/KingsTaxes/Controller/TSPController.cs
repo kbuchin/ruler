@@ -22,7 +22,8 @@
         
         public TSPController()
         {
-            m_endlessScoreKey = "tspscore";
+            m_endlessScoreKey = "tsp_score";
+            m_beatKey = "tsp_beat";
         }
 
         public override void Awake()

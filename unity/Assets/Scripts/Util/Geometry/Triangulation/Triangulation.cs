@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using UnityEngine;
     using Util.Algorithms;
+    using Util.Math;
 
     public class Triangulation
     {
@@ -153,12 +154,12 @@
                 {
                     if (e1 == e2) continue;
 
-                    if(e1.T == null || e2.T == null || (e1.Point1 == e2.Point1 && e1.Point2 == e2.Point2))
+                    if (e1.T == null || e2.T == null || (MathUtil.EqualsEps(e1.Point1, e2.Point1) && MathUtil.EqualsEps(e1.Point2, e2.Point2)))
                     {
                         throw new GeomException("Triangulation is misformed");
                     }
 
-                    if(e1.Point1 == e2.Point2 || e1.Point2 == e2.Point1)
+                    if (MathUtil.EqualsEps(e1.Point1, e2.Point2) || MathUtil.EqualsEps(e1.Point2, e2.Point1))
                     {
                         e1.Twin = e2;
                         e2.Twin = e1;
@@ -182,7 +183,7 @@
             var vertexList = vertices.Keys.ToList();
             
             // Calculate UV's
-            var bbox = BoundingBox.FromVector2(vertexList);
+            var bbox = BoundingBoxComputer.FromVector2(vertexList, 0.1f);
             var newUV = vertexList.Select<Vector2, Vector2>(p => Rect.PointToNormalized(bbox, p));
 
             // Calculate mesh triangles

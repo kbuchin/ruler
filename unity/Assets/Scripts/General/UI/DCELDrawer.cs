@@ -6,6 +6,8 @@
     using General;
     using Util.Geometry.DCEL;
     using System;
+    using Util.Algorithms.Triangulation;
+    using Util.Algorithms.DCEL;
 
     public class DCELDrawer : MonoBehaviour
     {
@@ -38,10 +40,10 @@
             m_rightText.GetComponent<Text>().enabled = a_enable;
         }
 
-        public Color FaceColor = Color.yellow;
-        public float Pointradius = 2f;
-
-        public Color m_color = Color.red;
+        private Color FaceColor = Color.yellow;
+        private Color EdgeColor = Color.grey;
+        private Color VertexColor = Color.black;
+        private float VertexRadius = 0.15f;
 
         private Transform m_MyTransform;
         private Material m_LineMaterial;
@@ -82,7 +84,7 @@
         {
             var bbox = Graph.BoundingBox;
 
-            //Everything is a unexplained constant
+            // Some unexplained constants
             var xscale = 500 / (Graph.BoundingBox.width * 65);
             var yscale = 375 / (Graph.BoundingBox.height * 65);
 
@@ -106,7 +108,7 @@
 
             foreach (HalfEdge edge in m_graph.Edges)
             {
-                GL.Color(m_color);
+                GL.Color(EdgeColor);
                 GL.Vertex3(edge.From.Pos.x, edge.From.Pos.y, 0);
                 GL.Vertex3(edge.To.Pos.x, edge.To.Pos.y, 0);
             }
@@ -115,42 +117,38 @@
 
         private void DrawVertices()
         {
-            GL.Begin(GL.LINES);
-            GL.Color(Color.black);
-
             foreach (var vertex in m_graph.Vertices)
             {
+                GL.Begin(GL.TRIANGLE_STRIP);
+                GL.Color(VertexColor);
+
                 float step = (2 * Mathf.PI / 200);
                 for (float a = 0; a < (2 * Mathf.PI + step); a += step)
                 {
                     //midpoint of the circle.
-                    GL.Vertex3(vertex.Pos.x, vertex.Pos.y, 0);
                     GL.Vertex3(
-                        (Mathf.Cos(a) * Pointradius / transform.localScale.x) + vertex.Pos.x,
-                        (Mathf.Sin(a) * Pointradius / transform.localScale.y) + vertex.Pos.y,
-                        0);
-                }
-            }
-            GL.End();
-        }
-        /*
-        private void DrawMiddleFaces()
-        {
-            foreach(Face face in m_graph.middleFaces())
-            {
-                GL.Begin(GL.TRIANGLES);
-                GL.Color(FaceColor);
-                var vertices = face.OuterVertices();
-                for(int i=1; i< VertexCount -1; i++)
-                {
-                    GL.Vertex(vertices[0].Pos);
-                    GL.Vertex(vertices[i].Pos);
-                    GL.Vertex(vertices[i+1].Pos);
+                        Mathf.Cos(a) * VertexRadius + vertex.Pos.x,
+                        Mathf.Sin(a) * VertexRadius + vertex.Pos.y,
+                        0f);
+
+                    GL.Vertex(vertex.Pos);
                 }
                 GL.End();
             }
         }
-        */
+        
+        private void DrawMiddleFaces()
+        {
+            GL.Begin(GL.TRIANGLES);
+            GL.Color(FaceColor);
+            foreach (var triangle in Triangulator.Triangulate(HamSandwich.MiddleFaces(m_graph)).Triangles)
+            {
+                GL.Vertex(triangle.P0);
+                GL.Vertex(triangle.P1);
+                GL.Vertex(triangle.P2);
+            }
+            GL.End();
+        }
 
         private void OnRenderObject()
         {
@@ -164,20 +162,24 @@
                 // match our transform
                 GL.MultMatrix(m_MyTransform.localToWorldMatrix);
 
-                //Backgorund
-                GL.Begin(GL.QUADS);
-                GL.Color(new Color(0, 0, 0, .3f));
-                var bbox = m_graph.BoundingBox;
-                GL.Vertex3(bbox.xMin, bbox.yMin, 0);
-                GL.Vertex3(bbox.xMin, bbox.yMax, 0);
-                GL.Vertex3(bbox.xMax, bbox.yMax, 0);
-                GL.Vertex3(bbox.xMax, bbox.yMin, 0);
-                GL.End();
-
-                //DrawMiddleFaces();
+                DrawMiddleFaces();
                 DrawEdges();
                 DrawVertices();
 
+                //Background
+                if (m_graph.InitBoundingBox != null)
+                {
+                    var bbox = (Rect)m_graph.InitBoundingBox;
+
+                    GL.Begin(GL.QUADS);
+                    GL.Color(new Color(0, 0, 0, .3f));
+                    GL.Vertex3(bbox.xMin, bbox.yMin, 0);
+                    GL.Vertex3(bbox.xMin, bbox.yMax, 0);
+                    GL.Vertex3(bbox.xMax, bbox.yMax, 0);
+                    GL.Vertex3(bbox.xMax, bbox.yMin, 0);
+                    GL.End();
+                }
+                
                 GL.PopMatrix();
             }
         }

@@ -7,7 +7,7 @@
 
     public class Polygon2DMesh : MonoBehaviour
     {
-        private IPolygon2D m_polygon;
+        private Polygon2D m_polygon;
 
         private MeshFilter m_meshFilter;
         private Renderer m_renderer;
@@ -18,7 +18,7 @@
         /// <summary>
         /// Seting the Polygon will automatically update the Mesh
         /// </summary>
-        public IPolygon2D Polygon
+        public Polygon2D Polygon
         {
             get
             {
@@ -51,12 +51,16 @@
         /// </summary>
         protected void UpdateMesh()
         {
-            if (m_polygon == null) return;
+            if (m_polygon == null || m_polygon.Vertices.Count < 3)
+            {
+                Debug.Log("Polygon is not correctly set");
+                return;
+            }
 
             var oldMesh = m_meshFilter.mesh;
 
             //create triangulation
-            var tri = Triangulator.Triangulate(m_polygon);
+            var tri = Triangulator.Triangulate(Polygon2D.RemoveDanglingEdges(m_polygon));
 
             var mesh = tri.CreateMesh();
             m_meshFilter.mesh = mesh;

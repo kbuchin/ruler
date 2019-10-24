@@ -17,6 +17,7 @@
         public Face(HalfEdge a_outerComponent)
         {
             OuterComponent = a_outerComponent;
+            InnerComponents = new List<HalfEdge>();
             IsOuter = false;
         }
 
@@ -31,65 +32,53 @@
         /// A list of the vertices occuring in the outer component of the face
         /// </summary>
         /// <returns></returns>
-        public ICollection<Vertex> OuterVertices
+        public IEnumerable<DCELVertex> OuterVertices
         {
-            get
-            {
-                if (OuterComponent == null) return new List<Vertex>();
-
-                var result = new List<Vertex>();
-
-                var workinedge = OuterComponent;
-                do
-                {
-                    result.Add(workinedge.From);
-                    workinedge = workinedge.Next;
-                } while (OuterComponent != workinedge);
-
-                return result;
-            }
+            get { return OuterHalfEdges.Select(e => e.From); }
         }
 
         /// <summary>
         /// A list of the halfedges occuring in the outer component of the face
         /// </summary>
         /// <returns></returns>
-        public ICollection<HalfEdge> OuterHalfedges
+        public IEnumerable<HalfEdge> OuterHalfEdges
         {
             get
             {
                 if (OuterComponent == null) return new List<HalfEdge>();
 
-                var result = new List<HalfEdge>
-                {
-                    OuterComponent
-                };
-
-                var workinedge = OuterComponent.Next;
-                while (OuterComponent != workinedge)
-                {
-                    result.Add(workinedge);
-                    workinedge = workinedge.Next;
-                }
-                return result;
+                return DCEL.Cycle(OuterComponent);
             }
         }
 
-        public ICollection<Vector2> OuterPoints
+        public IEnumerable<Vector2> OuterPoints
         {
-            get { return OuterVertices.Select(v => v.Pos).ToList(); }
+            get { return OuterVertices.Select(v => v.Pos); }
+        }
+
+        public IEnumerable<HalfEdge> InnerHalfEdges
+        {
+            get { return InnerComponents.SelectMany(e => DCEL.Cycle(e)); }
         }
 
         /// <summary>
         ///  Returns a the Polygon given by the endpoints of the edges of the face
         /// </summary>
         /// <returns></returns>
-        public Polygon2D Polygon
+        public Polygon2DWithHoles Polygon
         {
             get
             {
                 if (IsOuter) throw new GeomException("Outer face does not have a well-defined polygon");
-                return new Polygon2D(OuterPoints);
+                return new Polygon2DWithHoles(new Polygon2D(OuterPoints), InnerPolygons.Select(f => f.Outside));
+            }
+        }
+
+        public IEnumerable<Polygon2DWithHoles> InnerPolygons
+        {
+            get
+            {
+                return InnerComponents.Select(f => f.Twin.Face.Polygon);
             }
         }
 
@@ -102,7 +91,11 @@
         /// <returns></returns>
         public bool Contains(Vector2 a_pos)
         {
-            if (IsOuter) return !(new Polygon2D(OuterPoints).Contains(a_pos));
+            if (IsOuter)
+            {
+                return !InnerComponents.Exists(e => new Polygon2D(DCEL.Cycle(e).Select(ee => ee.From.Pos)).Contains(a_pos));
+            }
+
             return Polygon.Contains(a_pos);
         }
 
@@ -169,10 +162,30 @@
 
         public override string ToString()
         {
-            var result = "";
-            foreach (var halfEdge in OuterHalfedges)
-                result += halfEdge + ", ";
-            return result;
+            if (IsOuter)
+            {
+                var result = "Outer face: ";
+                foreach (var comp in InnerComponents)
+                {
+                    result += "\nComponent: ";
+                    foreach (var halfEdge in DCEL.Cycle(comp))
+                    {
+                        result += halfEdge.From + ", ";
+                    }
+                }
+                return result;
+            }
+            else
+            {
+                var result = "Face: ";
+                foreach (var halfEdge in OuterHalfEdges)
+                {
+                    result += halfEdge.From + ", ";
+                }
+                return result;
+            }
+
+            
         }
     }
 }

@@ -31,7 +31,8 @@
 
         public SpannerController()
         {
-            m_endlessScoreKey = "spannerscore";
+            m_endlessScoreKey = "spanner_score";
+            m_beatKey = "spanner_beat";
         }
 
         public override void Awake()

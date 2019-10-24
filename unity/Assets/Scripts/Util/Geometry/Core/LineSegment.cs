@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using UnityEngine;
+    using Util.Geometry.Core;
     using Util.Math;
 
     public class LineSegment : IEquatable<LineSegment>
@@ -40,8 +41,13 @@
         public LineSegment(Vector2 a_point1, Vector2 a_point2)
         {
             // create copy
-            m_Point1 = new Vector2(a_point1.x, a_point1.y);
-            m_Point2 = new Vector2(a_point2.x, a_point2.y);
+            m_Point1 = a_point1; // new Vector2(a_point1.x, a_point1.y);
+            m_Point2 = a_point2; // new Vector2(a_point2.x, a_point2.y);
+        }
+        public LineSegment(PolarPoint2D a_point1, PolarPoint2D a_point2) 
+        {
+            m_Point1 = a_point1.Cartesian;
+            m_Point2 = a_point2.Cartesian;
         }
 
         public bool IsRightOf(Vector2 a_Point)
@@ -52,7 +58,7 @@
 
         public bool IsOnSegment(Vector2 a_Point)
         {
-            return XInterval.Contains(a_Point.x) && Line.IsOnLine(a_Point);
+            return XInterval.ContainsEpsilon(a_Point.x) && Line.IsOnLine(a_Point);
         }
 
         public bool IsEndpoint(Vector2 a_Point)
@@ -98,6 +104,23 @@
             return null;
         }
 
+        public static Vector2? IntersectProper(LineSegment a_seg1, LineSegment a_seg2)
+        {
+            if (MathUtil.EqualsEps(a_seg1.Point1, a_seg2.Point1) || MathUtil.EqualsEps(a_seg1.Point1, a_seg2.Point2) ||
+                MathUtil.EqualsEps(a_seg1.Point2, a_seg2.Point1) || MathUtil.EqualsEps(a_seg1.Point2, a_seg2.Point2))
+                return null;
+
+            var intersect = Intersect(a_seg1, a_seg2);
+            if (intersect == null) return null;
+
+            var x = (Vector2)intersect;
+
+            if (MathUtil.EqualsEps(x, a_seg1.Point1) || MathUtil.EqualsEps(x, a_seg1.Point2) ||
+                MathUtil.EqualsEps(x, a_seg2.Point1) || MathUtil.EqualsEps(x, a_seg2.Point2))
+                return null;
+
+            return intersect;
+        }
 
         public static Vector2? Intersect(LineSegment a_seg, Line a_line)
         {
@@ -115,14 +138,58 @@
             return null;
         }
 
+        public static Vector2? IntersectProper(LineSegment a_seg, Line a_line)
+        {
+            var intersect = Intersect(a_seg, a_line);
+            if (intersect == null) return null;
+
+            var x = (Vector2)intersect;
+
+            if (MathUtil.EqualsEps(x, a_seg.Point1) || MathUtil.EqualsEps(x, a_seg.Point2))
+            {
+                return null;
+            }
+
+            return intersect;
+        }
+
+        public static Vector2? Intersect(LineSegment a_seg, Ray2D a_ray)
+        {
+            var rayTarget = a_ray.origin + a_ray.direction;
+            var ret = Intersect(a_seg, new Line(a_ray.origin, rayTarget));
+
+            if (ret == null || MathUtil.EqualsEps(MathUtil.Angle(a_ray.origin, a_ray.origin + new Vector2(1, 0), rayTarget),
+                MathUtil.Angle(a_ray.origin, a_ray.origin + new Vector2(1, 0), (Vector2)ret)))
+            {
+                return null;
+            }
+
+            return ret;
+        }
+
         internal Vector2? Intersect(LineSegment a_seg)
         {
             return Intersect(this, a_seg);
         }
 
+        internal Vector2? IntersectProper(LineSegment a_seg)
+        {
+            return IntersectProper(this, a_seg);
+        }
+
         internal Vector2? Intersect(Line a_line)
         {
             return Intersect(this, a_line);
+        }
+
+        internal Vector2? IntersectProper(Line a_line)
+        {
+            return IntersectProper(this, a_line);
+        }
+
+        internal Vector2? Intersect(Ray2D a_ray)
+        {
+            return Intersect(this, a_ray);
         }
 
         internal List<Vector2> Intersect(Rect a_rect)

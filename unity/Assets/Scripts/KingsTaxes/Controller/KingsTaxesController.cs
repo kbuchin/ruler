@@ -29,10 +29,11 @@
 
         [SerializeField]
         protected bool m_endlessMode = false;
-        protected string m_endlessScoreKey = "taxesscore";
+        protected string m_endlessScoreKey = "taxes_score";
+        protected string m_beatKey = "taxes_beat";
 
         protected int m_endlessDifficulty;
-        protected readonly float m_settlementRadius = 0.5f; // estimated radius of a settlement in unity units 
+        protected readonly float m_settlementRadius = 0.6f; // estimated radius of a settlement in unity units 
         protected bool m_solutionMode = false;
 
         protected List<GameObject> instantObjects = new List<GameObject>();
@@ -99,8 +100,8 @@
             //Make vertex list
             m_settlements = FindObjectsOfType<Settlement>();
 
-            //init empty grap
-            m_graph = new AdjacencyListGraph(m_settlements.Select<Settlement, Vertex>(go => go.Vertex));
+            //init empty graph
+            m_graph = new AdjacencyListGraph(m_settlements.Select(go => go.Vertex));
 
             FinishLevelSetup();
 
@@ -149,6 +150,7 @@
 
             if (m_levelCounter >= m_levels.Count && !m_endlessMode)
             {
+                PlayerPrefs.SetInt(m_beatKey, 1);
                 SceneManager.LoadScene(m_victoryScene);
             }
             else

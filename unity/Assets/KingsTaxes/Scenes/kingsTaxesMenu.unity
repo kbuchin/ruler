@@ -321,11 +321,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 222018483}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 898b387eaa44d5047ad9593b0a252648, type: 3}
+  m_Script: {fileID: 11500000, guid: e9f267aaf58195347bb0cac46c50a24e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_beatkey: spannerbeat
-  m_numberOfLevelsKey: spannerscore
+  m_beatkey: spanner_beat
+  m_numberOfLevelsKey: spanner_score
 --- !u!1 &282642887
 GameObject:
   m_ObjectHideFlags: 0
@@ -872,11 +872,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 549472836}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 898b387eaa44d5047ad9593b0a252648, type: 3}
+  m_Script: {fileID: 11500000, guid: e9f267aaf58195347bb0cac46c50a24e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_beatkey: tspbeat
-  m_numberOfLevelsKey: tspscore
+  m_beatkey: tsp_beat
+  m_numberOfLevelsKey: tsp_score
 --- !u!1 &662396032
 GameObject:
   m_ObjectHideFlags: 0
@@ -955,10 +955,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 662396032}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cb8da1ec4403d8e46b804cdd1590bb15, type: 3}
+  m_Script: {fileID: 11500000, guid: ce6e4aa46c7aa56419738d6b96111d83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_keyName: tspbeat
+  m_keyName: tsp_beat
 --- !u!1 &671196318
 GameObject:
   m_ObjectHideFlags: 0
@@ -1358,7 +1358,6 @@ GameObject:
   - component: {fileID: 1140526023}
   - component: {fileID: 1140526022}
   - component: {fileID: 1140526021}
-  - component: {fileID: 1140526024}
   m_Layer: 5
   m_Name: TSPButton
   m_TagString: Untagged
@@ -1472,17 +1471,6 @@ CanvasRenderer:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1140526019}
   m_CullTransparentMesh: 0
---- !u!114 &1140526024
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1140526019}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f48df79832aa2bb49b34d154192e59ba, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &1436948440
 Prefab:
   m_ObjectHideFlags: 0
@@ -2210,11 +2198,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1826146809}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 898b387eaa44d5047ad9593b0a252648, type: 3}
+  m_Script: {fileID: 11500000, guid: e9f267aaf58195347bb0cac46c50a24e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_beatkey: mstbeat
-  m_numberOfLevelsKey: mstscore
+  m_beatkey: mst_beat
+  m_numberOfLevelsKey: mst_score
 --- !u!1 &1903913416
 GameObject:
   m_ObjectHideFlags: 0
@@ -2438,10 +2426,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1993554721}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cb8da1ec4403d8e46b804cdd1590bb15, type: 3}
+  m_Script: {fileID: 11500000, guid: ce6e4aa46c7aa56419738d6b96111d83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_keyName: mstbeat
+  m_keyName: mst_beat
 --- !u!1 &2018283487
 GameObject:
   m_ObjectHideFlags: 0
@@ -2670,7 +2658,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2145844038}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cb8da1ec4403d8e46b804cdd1590bb15, type: 3}
+  m_Script: {fileID: 11500000, guid: ce6e4aa46c7aa56419738d6b96111d83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_keyName: spannerbeat
+  m_keyName: spanner_beat

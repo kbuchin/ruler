@@ -154,13 +154,19 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 11446982, guid: 0f457870426536744b56e915b42f13f8, type: 2}
       propertyPath: m_Text
-      value: "For the minimum Spanning Tree game we implemented Prim's algorithm.\r\n\r\nIn
-        the t-spanner game we let the player win if they beat a greedy algorithm that
-        orders the edges of the complete graph on length and keeps adding the shortest
-        one while the two nodes connected by this edge do not yet have a connection
-        of length 1.5 times the direct distance.\r\n\r\nIn the Traveling Salesman
-        Problem we challenge the player to find a tour that is shorter than the distance
-        of the tour provided by Christofides algorithm."
+      value: "This game is actually a collection of three mini-games centered around
+        some simple graph theory concepts. These concepts are the \u2018mininum spanning
+        tree (MST)\u2019, the \u2018t-spanner\u2019 and the \u2018traveling salesman
+        problem (TSP)\u2019.\n\r\nFor the minimum Spanning Tree game we implemented
+        Prim's algorithm. This algorithm starts from an arbitrary vertex and builds
+        a minimum spanning tree by extending the tree iteratively with the edge which
+        has lowest weight and connects a new vertex.\r\n\nIn the t-spanner game the
+        player needs to construct a t-spanner that beats a greedy algorithm in terms
+        of total edge length. The greedy algorithm orders the edges of the complete
+        graph on length and keeps adding the shortest one while the two nodes do not
+        satisfy the t-spanner constraint (path is larger than t x Euclidean distance)\r\n\nIn
+        the Traveling Salesman Problem we challenge the player to find a tour that
+        is shorter than the distance of the tour provided by Christofides algorithm.\r\n"
       objectReference: {fileID: 0}
     - target: {fileID: 11474440, guid: 0f457870426536744b56e915b42f13f8, type: 2}
       propertyPath: m_Text

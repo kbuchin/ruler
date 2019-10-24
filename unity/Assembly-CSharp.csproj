@@ -81,10 +81,12 @@
      <Compile Include="Assets\Scripts\KingsTaxes\Controller\SpannerController.cs" />
      <Compile Include="Assets\Scripts\KingsTaxes\Controller\TSPController.cs" />
      <Compile Include="Assets\Scripts\KingsTaxes\Model\KingsTaxesLevel.cs" />
+     <Compile Include="Assets\Scripts\KingsTaxes\UI\FreeModeButton.cs" />
+     <Compile Include="Assets\Scripts\KingsTaxes\UI\LevelCompleteMarker.cs" />
      <Compile Include="Assets\Scripts\KingsTaxes\UI\Road.cs" />
      <Compile Include="Assets\Scripts\KingsTaxes\UI\RoadBuilder.cs" />
      <Compile Include="Assets\Scripts\KingsTaxes\UI\Settlement.cs" />
-     <Compile Include="Assets\Scripts\Util\Algorithms\BoundingBox.cs" />
+     <Compile Include="Assets\Scripts\Util\Algorithms\BoundingBoxComputer.cs" />
      <Compile Include="Assets\Scripts\Util\Algorithms\DCEL\HamSandwich.cs" />
      <Compile Include="Assets\Scripts\Util\Algorithms\Graph\Matching.cs" />
      <Compile Include="Assets\Scripts\Util\Algorithms\Graph\MST.cs" />
@@ -106,6 +108,7 @@
      <Compile Include="Assets\Scripts\Util\Geometry\Core\FloatInterval.cs" />
      <Compile Include="Assets\Scripts\Util\Geometry\Core\Line.cs" />
      <Compile Include="Assets\Scripts\Util\Geometry\Core\LineSegment.cs" />
+     <Compile Include="Assets\Scripts\Util\Geometry\Core\PolarPoint2.cs" />
      <Compile Include="Assets\Scripts\Util\Geometry\DCEL\DCEL.cs" />
      <Compile Include="Assets\Scripts\Util\Geometry\DCEL\DCELVertex.cs" />
      <Compile Include="Assets\Scripts\Util\Geometry\DCEL\Face.cs" />
@@ -129,7 +132,6 @@
      <Compile Include="Assets\Scripts\Voronoi\Controller\VoronoiController.cs" />
      <Compile Include="Assets\Scripts\Voronoi\Controller\VoronoiGUIManager.cs" />
      <Compile Include="Assets\Scripts\Voronoi\UI\VoronoiDrawer.cs" />
-     <None Include="Assets\Scripts\tree_refactored.txt" />
      <None Include="Assets\Menu\credits.txt" />
      <None Include="Assets\Libs\redist.txt" />
      <None Include="Assets\Libs\System.Threading.xml" />

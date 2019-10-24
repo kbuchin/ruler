@@ -13,14 +13,19 @@
     {
         /// <summary>
         /// Return the Line that gives the greatest distance from all points in the dual. We calculate true seperation and not vertical seperation
-        /// No error cheking occurs for boundingbox faces/polygons
+        /// No error checking occurs for bounding box faces/polygons
         /// </summary>
         /// <returns>Line with greatest distance to the points encoded by the polygon boundary </returns>
         public static LineSeperationTuple LineOfGreatestMinimumSeperationInTheDual(Polygon2D polygon, bool a_isBoundingBoxFace)
         {
             if (!polygon.IsConvex())
             {
-                throw new GeomException();
+                throw new GeomException("Only support computing lines of greatest seperation for convex polygons");
+            }
+            
+            if (!polygon.IsClockwise())
+            {
+                polygon = new Polygon2D(polygon.Vertices.Reverse());
             }
 
             var upperhull = ConvexHull.ComputeUpperHull(polygon).ToList();
@@ -29,29 +34,26 @@
             if (a_isBoundingBoxFace)
             {
                 //Check if the boundingboxface has only 2 real neighbouring lines(in the dual) and return the bisector (in the primal) in this case 
-                var reallines = new List<Line>();
-                foreach (var seg in polygon.Segments)
-                {
-                    if (!(float.IsInfinity(seg.Line.Slope) || MathUtil.EqualsEps(seg.Line.Slope, 0f)))
-                    {
-                        reallines.Add(seg.Line);
-                    }
-                }
+                var reallines = polygon.Segments.Where(seg => 
+                        !(float.IsInfinity(seg.Line.Slope) || MathUtil.EqualsEps(seg.Line.Slope, 0f)))
+                    .Select(seg => seg.Line)
+                    .ToList();
 
                 if (reallines.Count < 2)
                 {
+                    Debug.Log(polygon);
                     throw new GeomException("Found impossibly low amount of real lines");
                 }
                 else if (reallines.Count == 2)
                 {
                     //The two reallines are two points in the primal plane
-                    var averagepoint = (reallines[0].Dual() + reallines[1].Dual()) / 2;
-                    var lineTroughBothPoints = reallines[0].Intersect(reallines[1]).Dual();
+                    var averagepoint = (PointLineDual.Dual(reallines[0]) + PointLineDual.Dual(reallines[1])) / 2;
+                    var lineTroughBothPoints = PointLineDual.Dual((Vector2)reallines[0].Intersect(reallines[1]));
                     var perpLineSlope = -1 / lineTroughBothPoints.Slope;
                     var perpPoint = averagepoint + Vector2.right + Vector2.up * perpLineSlope;
                     return new LineSeperationTuple(new Line(averagepoint, perpPoint), 0);
 
-                    //we choose separtion 0 because a line with three constraints in the outer boundingboxface is more importnat?
+                    //we choose separtion 0 because a line with three constraints in the outer boundingboxface is more important?
                     //TODO this seems untrue, explictly calculate seperation (Wrt to all soldier??)
                 }
                 //Otherwise we return the regular bisector
@@ -64,7 +66,7 @@
             Vector2 candidatePoint = new Vector2(0, 0); //dummy value
             var currentSeparation = 0f;
 
-            float currentx = upperhull.GetEnumerator().Current.x;
+            float currentx = upperhull[0].x;
             float nextx;
             float currentheight = 0;
             float nextheight;
@@ -84,7 +86,7 @@
             };
 
             //initialize segments
-            lowerSegment = new LineSegment(lowerhull[0], upperhull[1]);
+            lowerSegment = new LineSegment(lowerhull[0], lowerhull[1]);
             upperSegment = new LineSegment(upperhull[0], upperhull[1]);
 
             //Break when one of the two lists is completly traversed
@@ -110,7 +112,6 @@
 
                 nextx = Mathf.Min(upperSegment.XInterval.Max, lowerSegment.XInterval.Max);
 
-
                 nextheight = upperSegment.Y(nextx) - lowerSegment.Y(nextx);
                 if (nextheight < 0)
                 {
@@ -132,7 +133,6 @@
                 //save variables for next iteration
                 currentheight = nextheight;
                 currentx = nextx;
-
             }
 
             return new LineSeperationTuple(PointLineDual.Dual(candidatePoint), currentSeparation);

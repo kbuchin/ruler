@@ -5,7 +5,7 @@
     using Util.Geometry.Graph;
     using Util.Math;
 
-    public class HalfEdge
+    public class HalfEdge 
     {
         public Face Face { get; internal set; }
         public HalfEdge Next { get; internal set; }
@@ -40,10 +40,12 @@
         {
             From = from;
             To = to;
-            if (SqrMagnitude < MathUtil.EPS)
+            /*
+            if (Magnitude < MathUtil.EPS)
             {
                 throw new GeomException(string.Format("Creating edge of length zero: {0}, {1}", from, to));
             }
+            */
         }
 
         public bool PointIsRightOf(Vector2 a_Point)
@@ -52,11 +54,6 @@
             return line.PointRightOfLine(a_Point);
         }
 
-        public bool IntersectLine(LineSegment a_Line, out Vector2? a_Point)
-        {
-            a_Point = Segment.Intersect(a_Line);
-            return a_Point != null;
-        }
 
         public override string ToString()
         {

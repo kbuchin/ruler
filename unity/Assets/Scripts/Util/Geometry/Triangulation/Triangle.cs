@@ -24,6 +24,14 @@
         public TriangleEdge E1 { get; private set; }
         public TriangleEdge E2 { get; private set; }
 
+        public float Area {
+            get
+            {
+                // herons formula
+                float s = (E0.Magnitude + E1.Magnitude + E2.Magnitude) / 2f;
+                return Mathf.Sqrt(s * (s - E0.Magnitude) * (s - E1.Magnitude) * (s - E2.Magnitude));
+            }
+        }
         public Vector2 Circumcenter { get; private set; }
 
         public bool IsOuter { get { return E0.IsOuter || E1.IsOuter || E2.IsOuter; } }
@@ -59,7 +67,7 @@
             }
         }
 
-        private bool Degenerate()
+        public bool Degenerate()
         {
             return !MathUtil.IsFinite(P0) ||
                    !MathUtil.IsFinite(P1) ||

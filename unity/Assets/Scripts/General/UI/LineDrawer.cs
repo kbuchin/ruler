@@ -29,17 +29,21 @@
 
         private void DrawLines()
         {
-            GL.Begin(GL.LINES);
-            foreach (ColoredLines colored_lines in m_lines)
+            foreach (var colored_lines in m_lines)
             {
+                if (colored_lines.Lines == null) continue;
+
+                GL.Begin(GL.LINES);
                 GL.Color(colored_lines.Color);
-                foreach (Line line in colored_lines.Lines)
+
+                foreach (var line in colored_lines.Lines)
                 {
-                    GL.Vertex3(0, line.Y(0), 0);
+                    GL.Vertex3(-16, line.Y(-16), 0);
                     GL.Vertex3(16, line.Y(16), 0);
                 }
+
+                GL.End();
             }
-            GL.End();
         }
 
         private void OnRenderObject()

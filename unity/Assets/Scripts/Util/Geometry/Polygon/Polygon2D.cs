@@ -27,7 +27,10 @@
         public float Area
         {
             get
-            {                 
+            {
+                // no area polygon
+                if (VertexCount <= 2) return 0f;
+
                 //Take the origin as arbitrary point P
                 //add up signed areas along the edges of the polygon
                 var areasum = 0f;
@@ -186,27 +189,25 @@
 
         public bool Contains(Vector2 a_pos)
         {
-            if (VertexCount <= 2) return false; // polygon has no area
-
-            if (Area == 0) //catch case of "flat" triangle
+            // cannot contain without area
+            if (Area == 0) return false;
+            
+            if (IsConvex())
             {
-                return false;
-            }
-            if (IsConvex() && IsClockwise())
-            {
+                bool inv = IsClockwise();
                 LineSegment segment;
                 var node = m_vertices.First;
                 while(node.Next != null)
                 {
                     segment = new LineSegment(node.Value, node.Next.Value);
-                    if (!segment.IsRightOf(a_pos))
+                    if (inv != segment.IsRightOf(a_pos))
                     {
                         return false;
                     }
                     node = node.Next;
                 }
                 segment = new LineSegment(m_vertices.Last.Value, m_vertices.First.Value);
-                if (!segment.IsRightOf(a_pos))
+                if (inv != segment.IsRightOf(a_pos))
                 {
                     return false;
                 }
@@ -217,7 +218,9 @@
             {
                 Debug.Assert(VertexCount > 3);
 
-                foreach (var triangle in Triangulator.Triangulate(this).Triangles)
+                var poly = RemoveDanglingEdges(this);
+
+                foreach (var triangle in Triangulator.Triangulate(poly).Triangles)
                 {
                     if (triangle.Inside(a_pos))
                     {
@@ -226,6 +229,11 @@
                 }
                 return false;
             }
+        }
+
+        public void ShiftToOrigin(Vector2 a_point)
+        {
+            m_vertices = new LinkedList<Vector2>(m_vertices.Select(v => v - a_point));
         }
 
         /// <summary>
@@ -245,23 +253,10 @@
                 throw new GeomException("Method not defined for nonconvex polygons" + a_poly2);
             }
 
-            var resultVertices = new List<Vector2>();
+            var resultVertices = a_poly1.Vertices.Where(v => a_poly2.Contains(v))
+                .Concat(a_poly2.Vertices.Where(v => a_poly1.Contains(v)))
+                .ToList();
 
-            foreach (Vector2 vertex in a_poly1.Vertices)
-            {
-                if (a_poly2.Contains(vertex))
-                {
-                    resultVertices.Add(vertex);
-                }
-            }
-
-            foreach (Vector2 vertex in a_poly2.Vertices)
-            {
-                if (a_poly1.Contains(vertex))
-                {
-                    resultVertices.Add(vertex);
-                }
-            }
 
             foreach (LineSegment seg1 in a_poly1.Segments)
             {
@@ -276,7 +271,9 @@
             }
             if (resultVertices.Count >= 3)
             {
-                return ConvexHull.ComputeConvexHull(new Polygon2D(resultVertices));
+                var poly = ConvexHull.ComputeConvexHull(new Polygon2D(resultVertices));
+                Debug.Assert(poly.IsConvex());
+                return poly;
             }
             return null;
 
@@ -294,7 +291,7 @@
                 sum += (seg.Point2.x - seg.Point1.x) * (seg.Point2.y + seg.Point1.y);
             }
 
-            if (sum > 0)
+            if (MathUtil.GreaterEps(sum, 0f))
             {
                 return true;
             }
@@ -319,7 +316,45 @@
 
         public bool IsSimple()
         {
-            return true; // TODO
+            foreach (var seg1 in Segments)
+            {
+                foreach (var seg2 in Segments)
+                {
+                    if (seg1 != seg2 && seg1.IntersectProper(seg2) != null) { Debug.Log(seg1); Debug.Log(seg2); return false; }
+                }
+            }
+            return true;
+        }
+
+        public static Polygon2D RemoveDanglingEdges(Polygon2D poly)
+        {
+            var result = new Polygon2D(poly.Vertices);
+
+            bool containsDanglingEdge = true;
+            while (containsDanglingEdge)
+            {
+                containsDanglingEdge = false;
+
+                // find dangling edge
+                Vector2? toRemove = null;
+                foreach (var vertex in result.Vertices)
+                {
+                    if (vertex == result.Next(vertex) || vertex == result.Prev(vertex) || result.Prev(vertex) == result.Next(vertex))
+                    {
+                        containsDanglingEdge = true;
+                        toRemove = vertex;
+                        break;
+                    }
+                }
+                
+                // remove dangling edge
+                if (containsDanglingEdge)
+                {
+                    result.Vertices.Remove(toRemove.Value);
+                }
+            }
+
+            return result;
         }
 
         public bool Equals(IPolygon2D other)

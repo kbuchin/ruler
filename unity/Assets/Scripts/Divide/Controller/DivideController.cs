@@ -14,8 +14,10 @@
     using Divide.UI;
     using General.Menu;
     using Util.Algorithms.DCEL;
+    using Util.Algorithms;
+    using General.Controller;
 
-    public class DivideController : MonoBehaviour
+    public class DivideController : MonoBehaviour, IController
     {
         [Header("Levels")]
         [SerializeField]
@@ -74,12 +76,12 @@
             m_lineDrawer = FindObjectOfType<DivideLineDrawer>();
             m_graphDrawer = FindObjectOfType<DCELDrawer>();
 
-            m_victoryOverlay.Callback = NextLevel;
+            m_victoryOverlay.Callback = AdvanceLevel;
 
             InitLevel();
         }
 
-        private void InitLevel()
+        public void InitLevel()
         {
             if (m_levelCounter >= m_levels.Count)
             {
@@ -125,7 +127,7 @@
 
             UpdateSwapText();
             UpdateArmyPos();
-            FindSolution();
+            CheckSolution();
         }
 
         private void UpdateArmyPos()
@@ -161,7 +163,7 @@
             m_victoryOverlay.Activate();
         }
 
-        public void NextLevel()
+        public void AdvanceLevel()
         {
             m_mouseLine.DisableLine();
 
@@ -184,7 +186,6 @@
             //handle input
             if (Input.GetKeyDown("q"))
             {
-                Debug.Log("hello");
                 m_lineDrawer.ToggleArchers();
             }
             if (Input.GetKeyDown("w"))
@@ -244,27 +245,19 @@
 
             if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.Keypad4))
             {
-                var pos = m_graphDrawer.transform.localPosition;
-                pos.Set(pos.x - 0.5f, pos.y, pos.z);
-                m_graphDrawer.transform.localPosition = pos;
+                m_graphDrawer.transform.localPosition += new Vector3(-0.5f, 0f, 0f); ;
             }
             if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.Keypad6))
             {
-                var pos = m_graphDrawer.transform.localPosition;
-                pos.Set(pos.x + 0.5f, pos.y, pos.z);
-                m_graphDrawer.transform.localPosition = pos;
+                m_graphDrawer.transform.localPosition += new Vector3(0.5f, 0f, 0f); ;
             }
             if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.Keypad8))
             {
-                var pos = m_graphDrawer.transform.localPosition;
-                pos.Set(pos.x , pos.y+ 0.5f, pos.z);
-                m_graphDrawer.transform.localPosition = pos;
+                m_graphDrawer.transform.localPosition += new Vector3(0f, 0.5f, 0f); ;
             }
             if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.Keypad2))
             {
-                var pos = m_graphDrawer.transform.localPosition;
-                pos.Set(pos.x , pos.y -0.5f, pos.z);
-                m_graphDrawer.transform.localPosition = pos;
+                m_graphDrawer.transform.localPosition += new Vector3(0f, -0.5f, 0f);
             }
         }
 
@@ -299,7 +292,7 @@
             UpdateSwapText();
 
             UpdateArmyPos();
-            FindSolution();
+            CheckSolution();
         }
 
         /// <summary>
@@ -307,21 +300,22 @@
         /// 
         /// NOTE: only works if the x coords of all things are all positive or all negative
         /// </summary>
-        private void FindSolution()
+        public void CheckSolution()
         {
             var archerlines = PointLineDual.Dual(m_archersPos);
             var swordsmenlines = PointLineDual.Dual(m_spearmenPos);
             var magelines = PointLineDual.Dual(m_magesPos);
 
-            //var allLines = archerlines.Concat(swordsmenlines.Concat(magelines)).ToList();
+            var allLines = archerlines.Concat(swordsmenlines.Concat(magelines));
 
-            m_archerDcel = new DCEL(archerlines);
-            m_spearmenDcel = new DCEL(swordsmenlines);
-            m_mageDcel = new DCEL(magelines);
+            Rect bBox = BoundingBoxComputer.FromLines(allLines, 10f);
+            m_archerDcel = new DCEL(archerlines, bBox);
+            m_spearmenDcel = new DCEL(swordsmenlines, bBox);
+            m_mageDcel = new DCEL(magelines, bBox);
 
-            var archerFaces = m_archerDcel.InnerFaces;
-            var swordsmenFaces = m_spearmenDcel.InnerFaces;
-            var mageFaces = m_mageDcel.InnerFaces;
+            var archerFaces = HamSandwich.MiddleFaces(m_archerDcel);
+            var swordsmenFaces = HamSandwich.MiddleFaces(m_spearmenDcel);
+            var mageFaces = HamSandwich.MiddleFaces(m_mageDcel);
 
             m_solution = new DivideSolution(HamSandwich.FindCutlines(archerFaces),
                 HamSandwich.FindCutlines(swordsmenFaces),

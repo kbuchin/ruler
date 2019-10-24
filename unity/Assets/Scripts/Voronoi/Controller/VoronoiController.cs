@@ -97,8 +97,11 @@
                 };
                 m_meshFilter.mesh.MarkDynamic();
             }
-
-            var mesh = m_meshFilter.mesh;
+            else
+            {
+                m_meshFilter.mesh.Clear();
+                m_meshFilter.mesh.subMeshCount = 2;
+            }
 
             // build vertices and triangle list
             var vertices = new List<Vector3>();
@@ -116,56 +119,55 @@
 
                 var face = m_DCEL.GetContainingFace(inputNode);
 
-                if (!face.IsOuter)
+                // cant triangulate outer face
+                if (face.IsOuter)
                 {
-                    // triangulate face polygon
-                    var triangulation = Triangulator.Triangulate(face.Polygon);
+                    continue;
+                }
 
-                    // add triangles to correct list
-                    foreach (var triangle in triangulation.Triangles)
+                // triangulate face polygon
+                var triangulation = Triangulator.Triangulate(face.Polygon.Outside);
+
+                // add triangles to correct list
+                foreach (var triangle in triangulation.Triangles)
+                {
+                    int curCount = vertices.Count;
+
+                    vertices.Add(new Vector3(triangle.P0.x, 0, triangle.P0.y));
+                    vertices.Add(new Vector3(triangle.P1.x, 0, triangle.P1.y));
+                    vertices.Add(new Vector3(triangle.P2.x, 0, triangle.P2.y));
+
+                    if (unowned)
                     {
-                        int curCount = vertices.Count;
-
-                        vertices.Add(new Vector3(triangle.P0.x, 0, triangle.P0.y));
-                        vertices.Add(new Vector3(triangle.P1.x, 0, triangle.P1.y));
-                        vertices.Add(new Vector3(triangle.P2.x, 0, triangle.P2.y));
-
-                        if (unowned)
-                        {
-                            triangles[0].Add(curCount);
-                            triangles[0].Add(curCount + 1);
-                            triangles[0].Add(curCount + 2);
-                            triangles[1].Add(curCount);
-                            triangles[1].Add(curCount + 1);
-                            triangles[1].Add(curCount + 2);
-                        }
-                        else
-                        {
-                            triangles[playerIndex].Add(curCount);
-                            triangles[playerIndex].Add(curCount + 1);
-                            triangles[playerIndex].Add(curCount + 2);
-                            triangles[playerIndex].Add(curCount);
-                            triangles[playerIndex].Add(curCount + 2);
-                            triangles[playerIndex].Add(curCount + 1);
-                        }
+                        triangles[0].Add(curCount);
+                        triangles[0].Add(curCount + 1);
+                        triangles[0].Add(curCount + 2);
+                        triangles[1].Add(curCount);
+                        triangles[1].Add(curCount + 1);
+                        triangles[1].Add(curCount + 2);
                     }
-                    
-                    if (!unowned)
+                    else
                     {
-                        m_playerArea[playerIndex] += Polygon2D.IntersectConvex(m_meshRect, face.Polygon).Area;
+                        triangles[playerIndex].Add(curCount);
+                        triangles[playerIndex].Add(curCount + 1);
+                        triangles[playerIndex].Add(curCount + 2);
+                        triangles[playerIndex].Add(curCount);
+                        triangles[playerIndex].Add(curCount + 2);
+                        triangles[playerIndex].Add(curCount + 1);
                     }
                 }
-                else
+                    
+                if (!unowned)
                 {
-                    Debug.Log("IsOuter");
+                    m_playerArea[playerIndex] += Polygon2D.IntersectConvex(m_meshRect, face.Polygon.Outside).Area;
                 }
             }
 
             // update mesh
-            mesh.vertices = vertices.ToArray();
-            mesh.SetTriangles(triangles[0], 0);
-            mesh.SetTriangles(triangles[1], 1);
-            mesh.RecalculateBounds();
+            m_meshFilter.mesh.vertices = vertices.ToArray();
+            m_meshFilter.mesh.SetTriangles(triangles[0], 0);
+            m_meshFilter.mesh.SetTriangles(triangles[1], 1);
+            m_meshFilter.mesh.RecalculateBounds();
 
             // set correct uv
             var newUVs = new List<Vector2>();
@@ -173,7 +175,7 @@
             {
                 newUVs.Add(new Vector2(vertex.x, vertex.z));
             }
-            mesh.uv = newUVs.ToArray();
+            m_meshFilter.mesh.uv = newUVs.ToArray();
         }
 
         private void OnRenderObject()
@@ -182,7 +184,7 @@
 
             // Set transformation matrix for drawing to
             // match our transform
-            //GL.MultMatrix(transform.localToWorldMatrix);
+            GL.MultMatrix(transform.localToWorldMatrix);
 
             VoronoiDrawer.Draw(m_delaunay);
 
@@ -198,7 +200,6 @@
 
             if (Input.GetKeyDown("e"))
             {
-                Debug.Log("e press");
                 VoronoiDrawer.EdgesOn = !VoronoiDrawer.EdgesOn;
             }
 
@@ -235,7 +236,16 @@
             {
                 var pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 pos.y = 0;
+
+                // add randomness to achieve general positions
+
                 var me = new Vector2(pos.x, pos.z);
+
+                if (m_ownership.ContainsKey(me))
+                {
+                    Debug.Log("Cannot click on existing vertex");
+                    return;
+                }
                 m_ownership.Add(me, player1Turn ? EOwnership.PLAYER1 : EOwnership.PLAYER2);
 
                 Delaunay.AddVertex(m_delaunay, me);

@@ -8,9 +8,51 @@
     using Util.Geometry.Polygon;
     using Util.Geometry.Triangulation;
     using Util.Math;
+    using Util.Geometry.DCEL;
 
     public static class Triangulator
     {
+
+        /// <summary>
+        /// Triangulates this dcel by triangulating each inner face.
+        /// </summary>
+        /// <returns>A list of clockwise triangles whose disjoint union is this dcel</returns>
+        public static Triangulation Triangulate(DCEL m_dcel)
+        {
+            return Triangulate(m_dcel.InnerFaces);
+        }
+
+        /// <summary>
+        /// Triangulate a collection of dcel faces.
+        /// </summary>
+        /// <param name="faces"></param>
+        /// <returns></returns>
+        public static Triangulation Triangulate(IEnumerable<Face> faces)
+        {
+            var T = new Triangulation();
+            foreach (var face in faces)
+            {
+                T.Add(Triangulate(face));
+            }
+            return T;
+        }
+
+        /// <summary>
+        /// Triangulate DCEL face
+        /// Cannot yet handle faces inside faces.
+        /// </summary>
+        /// <param name="face"></param>
+        /// <returns></returns>
+        public static Triangulation Triangulate(Face face)
+        {
+            if (face.InnerComponents.Count > 0)
+            {
+                throw new GeomException("Cannot triangulate DCEL with faces inside faces");
+            }
+
+            return Triangulate(face.Polygon.Outside);
+        }
+
         /// <summary>
         /// Triangulates this polygon using the two ears theorem. This is O(n^2).
         /// </summary>
@@ -20,6 +62,7 @@
         {
             if(!polygon.IsSimple())
             {
+                Debug.Log(polygon);
                 throw new ArgumentException("Polygon must be simple");
             }
 
@@ -47,6 +90,9 @@
             var nextVertex = vertices[MathUtil.PositiveMod(index + 1, vertices.Count)];
 
             //Create triangle with diagonal
+
+            if (leftVertex == prevVertex || leftVertex == nextVertex || prevVertex == nextVertex) { Debug.Log("ERROR : " + polygon); }
+
             var triangle = new Triangle(prevVertex, leftVertex, nextVertex);
 
             //check for other vertices inside the candidate triangle

@@ -2,6 +2,7 @@
 {
     using UnityEngine;
     using System.Collections.Generic;
+    using System.Linq;
 
     //class generating projective duals
     public static class PointLineDual
@@ -16,24 +17,14 @@
             return new Vector2(a_line.Slope, -a_line.HeightAtYAxis);
         }
 
-        public static List<Line> Dual(IList<Vector2> a_list)
+        public static IEnumerable<Line> Dual(IList<Vector2> a_list)
         {
-            var result = new List<Line>();
-            foreach (Vector2 point in a_list)
-            {
-                result.Add(Dual(point));
-            }
-            return result;
+            return a_list.Select(p => Dual(p));
         }
 
-        static List<Vector2> Dual(IList<Line> a_list)
+        public static IEnumerable<Vector2> Dual(IList<Line> a_list)
         {
-            var result = new List<Vector2>();
-            foreach (Line line in a_list)
-            {
-                result.Add(Dual(line));
-            }
-            return result;
+            return a_list.Select(l => Dual(l));
         }
     }
 }
