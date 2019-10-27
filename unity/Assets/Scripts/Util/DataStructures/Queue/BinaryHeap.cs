@@ -4,6 +4,11 @@
     using System.Collections;
     using System.Collections.Generic;
 
+    /// <summary>
+    /// Simple binary heap implementation of a priority queue.
+    /// Can set comparer to switch between min/max or other orderings.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class BinaryHeap<T> : IPriorityQueue<T>
     {
         private readonly IComparer<T> Comparer;
@@ -27,6 +32,14 @@
         }
 
         /// <summary>
+        /// Get a count of the number of items in the collection.
+        /// </summary>
+        public int Count
+        {
+            get { return Items.Count; }
+        }
+
+        /// <summary>
         /// Builds new heap from list of items
         /// </summary>
         /// <remarks>
@@ -43,37 +56,13 @@
         }
 
 
-        /// <summary>
-        /// Removes all items from the collection.
-        /// </summary>
-        public void Clear()
-        {
-            Items.Clear();
-        }
-
-        /// <summary>
-        /// Sets the capacity to the actual number of elements in the BinaryHeap,
-        /// if that number is less than a threshold value.
-        /// </summary>
-        /// <remarks>
-        /// The current threshold value is 90% (.NET 3.5), but might change in a future release.
-        /// </remarks>
-        public void TrimExcess()
-        {
-            Items.TrimExcess();
-        }
-
-        /// <summary>
-        /// Inserts an item onto the heap.
-        /// </summary>
-        /// <param name="newItem">The item to be inserted.</param>
         public void Push(T newItem)
         {
             // add item at bottom of heap
             Items.Add(newItem);
 
             // move item upwards
-            int i = Count - 1;
+            var i = Count - 1;
             while (i > 0 && Comparer.Compare(Items[(i - 1) / 2], newItem) > 0)
             {
                 Items[i] = Items[(i - 1) / 2];
@@ -83,10 +72,6 @@
             Items[i] = newItem;
         }
 
-        /// <summary>
-        /// Return the root item from the collection, without removing it.
-        /// </summary>
-        /// <returns>Returns the item at the root of the heap.</returns>
         public T Peek()
         {
             if (Items.Count == 0)
@@ -96,10 +81,6 @@
             return Items[0];
         }
 
-        /// <summary>
-        /// Removes and returns the root item from the collection.
-        /// </summary>
-        /// <returns>Returns the item at the root of the heap.</returns>
         public T Pop()
         {
             if (Items.Count == 0)
@@ -108,12 +89,36 @@
             }
 
             // Get the first item
-            T rslt = Items[0];
+            var rslt = Items[0];
 
             // Remove head and satisfy heap 
             RemoveAt(0);
 
             return rslt;
+        }
+
+        public bool Contains(T val)
+        {
+            return Items.Contains(val);
+        }
+
+        public void Remove(T val)
+        {
+            var i = Items.FindIndex(item => Comparer.Compare(item, val) == 0);
+            if (i != -1)
+            {
+                RemoveAt(i);
+            }
+        }
+
+        public void RemoveAll(T val)
+        {
+            Items.RemoveAll(item => Comparer.Compare(item, val) == 0);
+        }
+
+        public void Clear()
+        {
+            Items.Clear();
         }
 
         IEnumerator<T> IEnumerable<T>.GetEnumerator()
@@ -124,55 +129,6 @@
         public IEnumerator GetEnumerator()
         {
             return GetEnumerator();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="val"></param>
-        /// <returns>Whether heap contains value.</returns>
-        public bool Contains(T val)
-        {
-            return Items.Contains(val);
-        }
-
-        /// <summary>
-        /// Removes first node with given value.
-        /// </summary>
-        /// <param name="val"></param>
-        public void Remove(T val)
-        {
-            for (int i = 0; i < Items.Count; i++)
-            {
-                if (Comparer.Compare(Items[i], val) == 0)
-                {
-                    RemoveAt(i);
-                    return;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Remove all nodes with given value.
-        /// </summary>
-        /// <param name="val"></param>
-        public void RemoveAll(T val)
-        {
-            for (int i = 0; i < Items.Count; i++)
-            {
-                if (Comparer.Compare(Items[i], val) == 0)
-                {
-                    RemoveAt(i);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Get a count of the number of items in the collection.
-        /// </summary>
-        public int Count
-        {
-            get { return Items.Count; }
         }
 
         /// <summary>
@@ -221,6 +177,18 @@
                 // recurse on child
                 Heapify(largest);
             }
+        }
+
+        /// <summary>
+        /// Sets the capacity to the actual number of elements in the BinaryHeap,
+        /// if that number is less than a threshold value.
+        /// </summary>
+        /// <remarks>
+        /// The current threshold value is 90% (.NET 3.5), but might change in a future release.
+        /// </remarks>
+        public void TrimExcess()
+        {
+            Items.TrimExcess();
         }
     }
 }

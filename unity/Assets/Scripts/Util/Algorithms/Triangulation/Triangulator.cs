@@ -10,13 +10,15 @@
     using Util.Math;
     using Util.Geometry.DCEL;
 
+    /// <summary>
+    /// Collection of algorithms related to the creation of Triangulations for various concepts.
+    /// </summary>
     public static class Triangulator
     {
-
         /// <summary>
         /// Triangulates this dcel by triangulating each inner face.
         /// </summary>
-        /// <returns>A list of clockwise triangles whose disjoint union is this dcel</returns>
+        /// <returns> A list of clockwise triangles whose disjoint union is this dcel</returns>
         public static Triangulation Triangulate(DCEL m_dcel)
         {
             return Triangulate(m_dcel.InnerFaces);
@@ -32,7 +34,7 @@
             var T = new Triangulation();
             foreach (var face in faces)
             {
-                T.Add(Triangulate(face));
+                T.AddTriangulation(Triangulate(face));
             }
             return T;
         }
@@ -60,6 +62,7 @@
         /// <returns>A list of clockwise triangles whose disjoint union is this polygon</returns>
         public static Triangulation Triangulate(IPolygon2D polygon)
         {
+            // cannot yet triangulate non-simple polygons
             if(!polygon.IsSimple())
             {
                 Debug.Log(polygon);
@@ -69,8 +72,11 @@
             var vertices = polygon.Vertices.ToList();
 
             if (vertices.Count < 3)
+            {
                 return new Triangulation();
+            }
 
+            // make clockwise
             if (!polygon.IsClockwise())
             {
                 vertices.Reverse();
@@ -91,7 +97,7 @@
 
             //Create triangle with diagonal
 
-            if (leftVertex == prevVertex || leftVertex == nextVertex || prevVertex == nextVertex) { Debug.Log("ERROR : " + polygon); }
+            Debug.Assert(leftVertex != prevVertex && leftVertex != nextVertex && prevVertex != nextVertex);
 
             var triangle = new Triangle(prevVertex, leftVertex, nextVertex);
 
@@ -103,7 +109,7 @@
             for (int i = 0; i < vertices.Count; i++)
             {
                 var v = vertices[i];
-                if (triangle.Inside(v))
+                if (triangle.Contains(v))
                 {
                     if (baseline.DistanceToPoint(v) > distance)
                     {
@@ -123,9 +129,9 @@
                     triangle = new Triangle(triangle.P0, triangle.P2, triangle.P1);
                 }
 
-                triangulation.Add(triangle);
+                triangulation.AddTriangle(triangle);
                 vertices.Remove(leftVertex);
-                triangulation.Add(Triangulate(new Polygon2D(vertices)));
+                triangulation.AddTriangulation(Triangulate(new Polygon2D(vertices)));
             }
             else
             {
@@ -133,15 +139,20 @@
                 var maxIndex = Mathf.Max(index, diagonalIndex);
 
                 var poly1List = polygon.Vertices.Skip(minIndex).Take(maxIndex - minIndex + 1);
-                var poly2List = polygon.Vertices.Take(minIndex + 1).Union(vertices.Skip(maxIndex));
+                var poly2List = vertices.Skip(maxIndex).Concat(polygon.Vertices.Take(minIndex + 1));
 
-                triangulation.Add(Triangulate(new Polygon2D(poly1List)));
-                triangulation.Add(Triangulate(new Polygon2D(poly2List)));
+                triangulation.AddTriangulation(Triangulate(new Polygon2D(poly1List)));
+                triangulation.AddTriangulation(Triangulate(new Polygon2D(poly2List)));
             }
 
             return triangulation;
         }
 
+        /// <summary>
+        /// Finds the left most vertex.
+        /// </summary>
+        /// <param name="vertices"></param>
+        /// <returns></returns>
         private static Vector2 LeftMost(IEnumerable<Vector2> vertices)
         {
             return vertices.Aggregate(

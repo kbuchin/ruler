@@ -5,24 +5,30 @@
     using UnityEngine;
     using General.Model;
 
+    /// <summary>
+    /// Represents the level island (2D polygon).
+    /// Handles user clicks on the polygon
+    /// </summary>
     public class ArtGalleryIsland : Polygon2DMesh
     {
         private ArtGalleryController m_controller;
 
-        protected ArtGalleryIsland()
+        public ArtGalleryIsland()
         {
             m_scale = 4f;
         }
 
-        new void Awake()
+        // Use this for initialization
+        public new void Start()
         {
-            base.Awake();
+            base.Start();
             m_controller = FindObjectOfType<ArtGalleryController>();
         }
 
         void OnMouseUpAsButton()
         {
-            m_controller.IslandClick();
+            // call the relevant controller method
+            m_controller.HandleIslandClick();
         }
     }
 }

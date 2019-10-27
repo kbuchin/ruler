@@ -1,26 +1,35 @@
-﻿using UnityEngine;
-using System.Collections;
-using UnityEngine.UI;
-
-namespace General.Model
+﻿namespace General.Model
 {
+    using UnityEngine;
+    using System;
+    using System.Collections;
+    using UnityEngine.UI;
+
     /// <summary>
-    /// Container for a button that allows the button to be toglled on/of
+    /// Container for a button that allows the button to be toggled on/of.
     /// </summary>
-    public class ButtonContainer : MonoBehaviour {
+    public class ButtonContainer : MonoBehaviour
+    {
         private GameObject m_child;
         private Text m_text;
 
-        private void Awake()
+        // Use this for initialization
+        void Awake()
         {
-            m_child = transform.Find("Button").gameObject; //Hackily get child
+            // find the button and text contained in the game object
+            m_child = transform.Find("Button").gameObject;
             m_text = m_child.transform.Find("Text").gameObject.GetComponent<Text>();
+
+            if(m_child == null || m_text == null)
+            {
+                throw new Exception("Could not find child button and corresponding text");
+            }
         }
 
         /// <summary>
         /// Enables the contained button
         /// </summary>
-        internal void Enable()
+        public void Enable()
         {
             m_child.SetActive(true);
         }
@@ -28,7 +37,7 @@ namespace General.Model
         /// <summary>
         /// Disables the contained button
         /// </summary>
-        internal void Disable()
+        public void Disable()
         {
             m_child.SetActive(false);
         }
@@ -37,7 +46,7 @@ namespace General.Model
         /// Sets the text of the button
         /// </summary>
         /// <param name="text"></param>
-        internal void SetText(string text)
+        public void SetText(string text)
         {
             m_text.text = text;
         }

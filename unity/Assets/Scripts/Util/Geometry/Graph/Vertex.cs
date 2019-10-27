@@ -6,19 +6,26 @@
     using UnityEngine;
     using Util.Math;
 
+    /// <summary>
+    /// Simple vertex class that encapsulates a Vector2 point.
+    /// </summary>
     public class Vertex : IEquatable<Vertex>
     {
         public Vector2 Pos { get; private set; }
 
-        public Vertex() : this(new Vector2())
-        { }
+        public Vertex()
+        {
+            Pos = Vector2.zero;
+        }
 
-        public Vertex(float x, float y) : this(new Vector2(x, y))
-        { }
+        public Vertex(float x, float y)
+        {
+            Pos = new Vector2(x, y);
+        }
 
         public Vertex(Vector2 p)
         {
-            Pos = p;
+            Pos = new Vector2(p.x, p.y);
         }
 
         public bool Equals(Vertex e)

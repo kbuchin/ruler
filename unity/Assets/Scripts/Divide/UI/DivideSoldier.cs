@@ -5,9 +5,15 @@
     using System;
     using Divide.Controller;
 
+    /// <summary>
+    /// Class for the game objects (archer, spearmen, mage) that need to be divided.
+    /// Can be selected in order to swap.
+    /// </summary>
     public class DivideSoldier : MonoBehaviour
     {
-        bool m_selected;
+        // whether the soldier is currently selected
+        private bool m_selected;
+
         private DivideController controller;
 
         // Use this for initialization
@@ -26,10 +32,13 @@
             gameObject.GetComponentsInChildren<SpriteRenderer>()[1].enabled = m_selected;
 
             //inform controller
-            controller.SoldierClick(this);
+            controller.HandleSoldierClick(this);
         }
 
-        internal void Deselect()
+        /// <summary>
+        /// Soldier is deselected, either due to double selection or a swap 
+        /// </summary>
+        public void Deselect()
         {
             m_selected = false;
 

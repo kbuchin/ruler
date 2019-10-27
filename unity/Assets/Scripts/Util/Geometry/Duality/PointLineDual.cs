@@ -4,25 +4,47 @@
     using System.Collections.Generic;
     using System.Linq;
 
-    //class generating projective duals
+    /// <summary>
+    /// Class generating projective duals from point to line and vice versa.
+    /// </summary>
     public static class PointLineDual
     {
+        /// <summary>
+        /// Calculate line dual from point.
+        /// </summary>
+        /// <param name="a_point"></param>
+        /// <returns></returns>
         public static Line Dual(this Vector2 a_point)
         {
             return new Line(a_point.x, -a_point.y);
         }
 
+        /// <summary>
+        /// Calculate point dual from line.
+        /// </summary>
+        /// <param name="a_line"></param>
+        /// <returns></returns>
         public static Vector2 Dual(this Line a_line)
         {
             return new Vector2(a_line.Slope, -a_line.HeightAtYAxis);
         }
 
-        public static IEnumerable<Line> Dual(IList<Vector2> a_list)
+        /// <summary>
+        /// Generates line duals for each point in collection.
+        /// </summary>
+        /// <param name="a_list"></param>
+        /// <returns></returns>
+        public static IEnumerable<Line> Dual(IEnumerable<Vector2> a_list)
         {
             return a_list.Select(p => Dual(p));
         }
 
-        public static IEnumerable<Vector2> Dual(IList<Line> a_list)
+        /// <summary>
+        /// Generates point duals for each line in collection.
+        /// </summary>
+        /// <param name="a_list"></param>
+        /// <returns></returns>
+        public static IEnumerable<Vector2> Dual(IEnumerable<Line> a_list)
         {
             return a_list.Select(l => Dual(l));
         }

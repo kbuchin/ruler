@@ -9,8 +9,17 @@
     using Util.Algorithms.Triangulation;
     using Util.Algorithms.DCEL;
 
+    /// <summary>
+    /// Draws a DCEL made from a collection of intersecting lines.
+    /// Draws the faces in the middle of the line yellow.
+    /// Used in the Divide game for visualization.
+    /// </summary>
     public class DCELDrawer : MonoBehaviour
     {
+        /// <summary>
+        /// The DCEl to be drawn.
+        /// Whenever updated, redraw the graph.
+        /// </summary>
         public DCEL Graph
         {
             get
@@ -32,6 +41,10 @@
             }
         }
 
+        /// <summary>
+        /// Enable text boxes to display additioanl information
+        /// </summary>
+        /// <param name="a_enable"></param>
         private void EnableText(bool a_enable)
         {
             m_topText.GetComponent<Text>().enabled = a_enable;
@@ -59,6 +72,7 @@
         [SerializeField]
         private GameObject m_rightText;
 
+        // Use this for initialization
         void Awake()
         {
             m_MyTransform = this.gameObject.transform;
@@ -80,6 +94,9 @@
             m_LineMaterial.SetInt("_ZWrite", 0);
         }
 
+        /// <summary>
+        /// Fit the graph to the given screen
+        /// </summary>
         private void FitToScreen()
         {
             var bbox = Graph.BoundingBox;
@@ -102,6 +119,9 @@
 
         }
 
+        /// <summary>
+        /// Draw the edges of the DCEL.
+        /// </summary>
         private void DrawEdges()
         {
             GL.Begin(GL.LINES);
@@ -115,6 +135,9 @@
             GL.End();
         }
 
+        /// <summary>
+        /// Draws the vertices of the DCEL.
+        /// </summary>
         private void DrawVertices()
         {
             foreach (var vertex in m_graph.Vertices)
@@ -137,16 +160,22 @@
             }
         }
         
+        /// <summary>
+        /// Draws the faces in between the lines.
+        /// </summary>
         private void DrawMiddleFaces()
         {
             GL.Begin(GL.TRIANGLES);
             GL.Color(FaceColor);
-            foreach (var triangle in Triangulator.Triangulate(HamSandwich.MiddleFaces(m_graph)).Triangles)
+            var triangles = Triangulator.Triangulate(HamSandwich.MiddleFaces(m_graph)).Triangles;
+
+            foreach (var triangle in triangles)
             {
                 GL.Vertex(triangle.P0);
                 GL.Vertex(triangle.P1);
                 GL.Vertex(triangle.P2);
             }
+
             GL.End();
         }
 
@@ -162,6 +191,7 @@
                 // match our transform
                 GL.MultMatrix(m_MyTransform.localToWorldMatrix);
 
+                // draw graph components
                 DrawMiddleFaces();
                 DrawEdges();
                 DrawVertices();

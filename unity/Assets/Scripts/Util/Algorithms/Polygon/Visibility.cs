@@ -9,8 +9,19 @@
     using Util.Math;
     using Util.Geometry.Core;
 
+    /// <summary>
+    /// Collection of algorithms related to visibility polygons.
+    /// </summary>
     public static class Visibility
     {
+        /// <summary>
+        /// Computes the visibility polygon from the given point 
+        /// inside of a simple polygon (given as n vertices in CCW order) in O(n) time.
+        /// Based on: https://cs.uwaterloo.ca/research/tr/1985/CS-85-38.pdf
+        /// </summary>
+        /// <param name="polygon"></param>
+        /// <param name="z"></param>
+        /// <returns></returns>
         public static Polygon2D Vision(Polygon2D polygon, Vector2 z)
         {
             if (polygon.VertexCount < 3)
@@ -48,6 +59,14 @@
             return Postprocess(s, vs, z, initAngle);
         }
 
+        /// <summary>
+        /// Preprocess polygon such that z is at origin and vertices are stored as polar points with angular displacements.
+        /// Orders vertices based on angle to z.
+        /// </summary>
+        /// <param name="pol"></param>
+        /// <param name="z"></param>
+        /// <param name="initAngle"></param>
+        /// <returns></returns>
         private static VsRep Preprocess(Polygon2D pol, Vector2 z, out float initAngle)
         {
             pol.ShiftToOrigin(z);
@@ -97,6 +116,13 @@
             return new VsRep(l, zIsVertex);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="s"></param>
+        /// <param name="iprev"></param>
+        /// <returns></returns>
         public static List<VertDispl> Advance(VsRep v, Stack<VertDispl> s, int iprev)
         {
             var n = v.n - 1;
@@ -155,6 +181,13 @@
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="sOld"></param>
+        /// <param name="iprev"></param>
+        /// <returns></returns>
         public static List<VertDispl> Retard(VsRep v, Stack<VertDispl> sOld, int iprev)
         {
             var sj1 = sOld.Peek();
@@ -231,6 +264,15 @@
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="s"></param>
+        /// <param name="iprev"></param>
+        /// <param name="windowEnd"></param>
+        /// <param name="ccw"></param>
+        /// <returns></returns>
         public static List<VertDispl> Scan(VsRep v, Stack<VertDispl> s, int iprev, VertDispl windowEnd, int ccw)
         {
             var i = iprev + 1;
@@ -274,6 +316,14 @@
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="orig"></param>
+        /// <param name="endpoint"></param>
+        /// <returns></returns>
         public static VertDispl IntersectWithWindow(VertDispl a, VertDispl b, VertDispl orig, VertDispl endpoint)
         {
             LineSegment s1 = new LineSegment(a.p, b.p);
@@ -300,7 +350,13 @@
             return DisplacementInBetween(new PolarPoint2D(res.Value), a, b);
         }
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="v1"></param>
+        /// <param name="v2"></param>
+        /// <returns></returns>
         public static VertDispl DisplacementInBetween(PolarPoint2D s, VertDispl v1, VertDispl v2)
         {
             var bot = Mathf.Min(v1.alpha, v2.alpha);
@@ -319,6 +375,15 @@
             return new VertDispl(s, temp);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vi"></param>
+        /// <param name="vi1"></param>
+        /// <param name="sj1"></param>
+        /// <param name="ss"></param>
+        /// <param name="outSj"></param>
+        /// <returns></returns>
         public static Stack<VertDispl> LocateSj(VertDispl vi, VertDispl vi1, VertDispl sj1,
                 List<VertDispl> ss, out VertDispl outSj)
         {
@@ -351,7 +416,14 @@
             return LocateSj(vi, vi1, sj, sTail, out outSj);
         }
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="pre_s"></param>
+        /// <param name="vs"></param>
+        /// <param name="z"></param>
+        /// <param name="initAngle"></param>
+        /// <returns></returns>
         private static Polygon2D Postprocess(List<VertDispl> pre_s, VsRep vs, Vector2 z, float initAngle)
         {
             // reverse order of stack to establish CCW order of final visibility polygon
@@ -378,6 +450,11 @@
             return new Polygon2D(shiftedPol);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
         private static List<VertDispl> ComputeAngularDisplacements(List<PolarPoint2D> v)
         {
             // used to store the result, vertices with their corresponding angular
@@ -411,6 +488,12 @@
             return ret;
         }
 
+        /// <summary>
+        /// Retrieve the original vertex, which should not be z and have the smallest positive angle compared to z.
+        /// </summary>
+        /// <param name="shiftedPol"></param>
+        /// <param name="zIsVertex">whether z is a vertex</param>
+        /// <returns>the polar point corresponding to the initial vertex</returns>
         private static PolarPoint2D GetInitialVertex(Polygon2D shiftedPol, bool zIsVertex)
         {
             // if z is vertex then take vertex adjacent to z
@@ -446,12 +529,14 @@
 
             var visiblePolar = visible.Select(x => new PolarPoint2D(x));
 
-            var closestVisibleVertex = visiblePolar.First();
-
+            // find visible vertex with smallest positive angle
+            var closestVisibleVertex = visiblePolar.FirstOrDefault();
             foreach (var curr in visiblePolar)
             {
-                if (curr.R < closestVisibleVertex.R && (curr.R > 0 || MathUtil.EqualsEps(curr.R, 0)))
+                if (curr.R < closestVisibleVertex.R && MathUtil.GEQEps(curr.R, 0))
+                {
                     closestVisibleVertex = curr;
+                }
             }
 
             return closestVisibleVertex;
@@ -479,6 +564,9 @@
             return true;
         }
 
+        /// <summary>
+        /// Stores a vertex as a polar point and an angular displacement.
+        /// </summary>
         public class VertDispl
         {
             internal PolarPoint2D p;
@@ -490,6 +578,9 @@
                 this.alpha = alpha;
             }
 
+            /// <summary>
+            /// The direction vector of the angular displacement.
+            /// </summary>
             public Vector2 Direction
             {
                 get { return MathUtil.Rotate(new Vector2(1, 0), alpha); }
@@ -501,11 +592,17 @@
             }
         }
 
+        /// <summary>
+        /// Representation structure for the vertices with angular displacements.
+        /// Plus some additional data like whether z is a vertex in the polygon.
+        /// </summary>
         public class VsRep
         {
-            internal List<VertDispl> v;
-            internal bool zIsVertex;
-            internal int n;
+            public bool zIsVertex;
+            public int n;
+
+            // contains vertices with angular displacements
+            private readonly List<VertDispl> v;
 
             public VsRep(List<PolarPoint2D> vs, bool zIsVertex)
             {
@@ -518,6 +615,11 @@
                     v = ComputeAngularDisplacements(vs);
             }
 
+            /// <summary>
+            /// Gets the vertex+displacement at given position.
+            /// </summary>
+            /// <param name="i"></param>
+            /// <returns></returns>
             public VertDispl Get(int i)
             {
                 return v[i];

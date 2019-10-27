@@ -8,6 +8,10 @@
     using Util.Geometry.Triangulation;
     using MNMatrix = MathNet.Numerics.LinearAlgebra.Matrix<double>;
 
+    /// <summary>
+    /// Utility class that extends Math and Mathf with additional methods.
+    /// Mainly used for floating point comparison and some vector and triangle functionality.
+    /// </summary>
     public static class MathUtil
     {
         /// <summary>
@@ -63,21 +67,45 @@
             return (a_val1 - a_val2).sqrMagnitude < EPS;
         }
 
+        /// <summary>
+        /// Compares to floats to see if a >= b - eps
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public static bool GEQEps(float a, float b)
         {
             return EqualsEps(a, b) || (a > b);
         }
 
+        /// <summary>
+        /// Compares to floats to see if a <= b + eps
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public static bool LEQEps(float a, float b)
         {
             return EqualsEps(a, b) || (a < b);
         }
 
+        /// <summary>
+        /// Compares to floats to see if a > b + eps
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public static bool GreaterEps(float a, float b)
         {
             return a > b && !EqualsEps(a, b);
         }
 
+        /// <summary>
+        /// Compares to floats to see if a < b - eps
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public static bool LessEps(float a, float b)
         {
             return a < b && !EqualsEps(a, b);
@@ -119,16 +147,25 @@
             var SignedAngle = Math.Atan2(vb.y, vb.x) - Math.Atan2(va.y, va.x);
 
             if (SignedAngle < -Math.PI - EPS || SignedAngle > Math.PI + EPS)
+            {
                 throw new Exception("Invalid angle");
+            }
 
             if ((float)SignedAngle >= 0) return (float)SignedAngle;
             else return (float)(2.0 * Math.PI + SignedAngle);
         }
 
-        public static Vector2 Rotate(Vector2 a_Point, float a)
+        /// <summary>
+        /// Rotates the given vector by an angle in radians.
+        /// </summary>
+        /// <param name="a_Point"></param>
+        /// <param name="angleRadians"></param>
+        /// <returns></returns>
+        public static Vector2 Rotate(Vector2 a_Point, float angleRadians)
         {
-            var s = Mathf.Sin(a);
-            var c = Mathf.Cos(a);
+            var s = Mathf.Sin(angleRadians);
+            var c = Mathf.Cos(angleRadians);
+
             return new Vector2(
                 a_Point.x * c - a_Point.y * s,
                 a_Point.y * c + a_Point.x * s
@@ -167,6 +204,7 @@
         /// <returns>Whether point X is within a circle defined by points a, b, c.</returns>
         public static bool InsideCircle(Vector2 a, Vector2 b, Vector2 c, Vector2 X)
         {
+            // calculate turn orientation
             int orientation = Math.Sign(MathUtil.Orient2D(a, b, c));
             if (orientation == 0)
             {
@@ -233,12 +271,6 @@
 
             if (!IsFinite((float)Ox) || !IsFinite((float)Oy))
             {
-                Debug.Log(a);
-                Debug.Log(b);
-                Debug.Log(c);
-                Debug.Log((a - b).magnitude);
-                Debug.Log((b - c).magnitude);
-                Debug.Log(new Triangle(a, b, c).Degenerate());
                 throw new Exception("Result of CalculateCircumcenterStable was invalid!");
             }
 

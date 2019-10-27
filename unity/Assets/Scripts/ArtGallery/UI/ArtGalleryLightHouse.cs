@@ -4,15 +4,27 @@
     using UnityEngine;
     using Util.Geometry.Polygon;
 
+    /// <summary>
+    /// Represents the lighthouse object in the game.
+    /// Holds its position as well as the corresponding visibility polygon.
+    /// Handles user clicks and drags.
+    /// </summary>
     public class ArtGalleryLightHouse : MonoBehaviour
     {
-        private ArtGalleryController m_controller;
-
-        public ArtGalleryIsland m_visionAreaMesh { get; set; }
-
+        // stores a prefab object for the vision polygon
         [SerializeField]
         private GameObject m_visionAreaPrefab;
 
+        private ArtGalleryController m_controller;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public ArtGalleryIsland m_visionAreaMesh { get; set; }
+
+        /// <summary>
+        /// Stores lighthouse position. Updates vision after a change in position.
+        /// </summary>
         public Vector3 Pos
         {
             get
@@ -22,15 +34,23 @@
             set
             {
                 gameObject.transform.position = value;
+
+                // update vision polygon
                 m_controller.UpdateVision(this);
             }
         }
 
-        public Polygon2D VisionArea { get; set; }
+        /// <summary>
+        /// Holds the visibility polygon.
+        /// </summary>
+        public Polygon2D VisionPoly { get; set; }
 
-        void Awake()
+        // Use this for initialization
+        void Start()
         {
             m_controller = FindObjectOfType<ArtGalleryController>();
+            
+            // initialize the vision polygon
             GameObject go = Instantiate(m_visionAreaPrefab, new Vector3(0,0,-1.5f), Quaternion.identity) as GameObject;
             m_visionAreaMesh = go.GetComponent<ArtGalleryIsland>();
 

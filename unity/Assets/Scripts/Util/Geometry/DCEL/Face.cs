@@ -5,13 +5,32 @@
     using System.Linq;
     using UnityEngine;
     using Util.Geometry.Polygon;
-    using Util.Geometry.Graph;
+    using Util.Math;
 
+    /// <summary>
+    /// Face of a DCEL structure, where edges define a polygon stored in clockwise order.
+    /// 
+    /// Stores a pointer to a single halfedge of the outer boundary, unless it is the outer face.
+    /// Stores a single pointer to a halfedge for each inner components inside the face.
+    /// 
+    /// Inner components are assumed to disconnected from one another and the outer face
+    /// </summary>
     public class Face
     {
+        /// <summary>
+        /// Points to a single half edge of the outer boundary.
+        /// Used for easy iteration through the outer cycle.
+        /// </summary>
         public HalfEdge OuterComponent { get; set; }
+
+        /// <summary>
+        /// Collection of half edges, one for each connected component inside the face.
+        /// </summary>
         public List<HalfEdge> InnerComponents { get; private set; }
 
+        /// <summary>
+        /// Whether this face is the outer face.
+        /// </summary>
         public bool IsOuter { get; set; }
 
         public Face(HalfEdge a_outerComponent)
@@ -29,7 +48,8 @@
         }
 
         /// <summary>
-        /// A list of the vertices occuring in the outer component of the face
+        /// A list of the vertices occuring in the outer component of the face.
+        /// Empty if outer face.
         /// </summary>
         /// <returns></returns>
         public IEnumerable<DCELVertex> OuterVertices
@@ -38,7 +58,8 @@
         }
 
         /// <summary>
-        /// A list of the halfedges occuring in the outer component of the face
+        /// A list of the halfedges occuring in the outer component of the face.
+        /// Empty if outer face.
         /// </summary>
         /// <returns></returns>
         public IEnumerable<HalfEdge> OuterHalfEdges
@@ -51,29 +72,52 @@
             }
         }
 
+        /// <summary>
+        /// Points belonging to the outer boundary.
+        /// Empty if outer face.
+        /// </summary>
         public IEnumerable<Vector2> OuterPoints
         {
             get { return OuterVertices.Select(v => v.Pos); }
         }
 
+        /// <summary>
+        /// All halfedges contained inside the face.
+        /// Concatenates the half edges of all inner components.
+        /// </summary>
         public IEnumerable<HalfEdge> InnerHalfEdges
         {
             get { return InnerComponents.SelectMany(e => DCEL.Cycle(e)); }
         }
 
         /// <summary>
-        ///  Returns a the Polygon given by the endpoints of the edges of the face
+        /// Returns a the Polygon given by the endpoints of the edges of the face.
+        /// Not defined for outer face.
         /// </summary>
         /// <returns></returns>
         public Polygon2DWithHoles Polygon
         {
             get
             {
-                if (IsOuter) throw new GeomException("Outer face does not have a well-defined polygon");
-                return new Polygon2DWithHoles(new Polygon2D(OuterPoints), InnerPolygons.Select(f => f.Outside));
+                return new Polygon2DWithHoles(PolygonWithoutHoles, InnerPolygons.Select(f => f.Outside));
             }
         }
 
+        /// <summary>
+        /// Stores outer polygon without taking into account inner holes.
+        /// </summary>
+        public Polygon2D PolygonWithoutHoles
+        {
+            get
+            {
+                if (IsOuter) throw new GeomException("Outer face does not have a well-defined polygon");
+                return new Polygon2D(OuterPoints);
+            }
+        }
+
+        /// <summary>
+        /// Returns collection of 
+        /// </summary>
         public IEnumerable<Polygon2DWithHoles> InnerPolygons
         {
             get
@@ -85,85 +129,42 @@
         public float Area { get { return Polygon.Area; } }
 
         /// <summary>
-        /// This assumes the face is convex
+        /// Returns whether the point is contained inside the face.
         /// </summary>
+        /// <remarks>
+        /// This assumes the face is convex
+        /// </remarks>
         /// <param name="a_pos"></param>
         /// <returns></returns>
         public bool Contains(Vector2 a_pos)
         {
             if (IsOuter)
             {
-                return !InnerComponents.Exists(e => new Polygon2D(DCEL.Cycle(e).Select(ee => ee.From.Pos)).Contains(a_pos));
+                // check whether point is contained inside the outer polygon of one of the innercomponents
+
+                return !InnerComponents.Exists(e => e.Twin.Face.PolygonWithoutHoles.Contains(a_pos));
             }
 
             return Polygon.Contains(a_pos);
         }
 
-        public List<Vector2> GridPoints(float a_xspacing, float a_xmultiple, float a_yspacingBase)
-        {
-            if (IsOuter) throw new GeomException("Not defined for outer face");
-
-            //first compute a boundingBox
-            var bBox = BoundingBox();
-
-            //Then create gridPointsInFace
-            List<float> xcoords = new List<float>{ 0 };
-
-            var xit = a_xspacing;
-            while (xit < bBox.xMax)
-            {
-                xcoords.Add(xit);
-                xit *= a_xmultiple;
-            }
-
-            xit = -a_xspacing;
-            while (xit > bBox.xMin)
-            {
-                xcoords.Add(xit);
-                xit *= a_xmultiple;
-            }
-
-            var gridpoints = new List<Vector2>();
-            for (var i = 0; i < xcoords.Count; i++)
-            {
-                for (float yit = 0; yit < bBox.height; yit += (a_yspacingBase * Math.Abs(xcoords[i]) + .05f))
-                {
-                    //+.2 to prevent trouble when the slope is 0
-                    var pos = new Vector2(xcoords[i], bBox.yMin + yit);
-                    if (Contains(pos))
-                    {
-                        gridpoints.Add(pos);
-                    }
-                }
-            }
-            return gridpoints;
-        }
-
-        public Rect BoundingBox()
+        /// <summary>
+        /// Computes bounding rectangle around the face
+        /// </summary>
+        /// <param name="margin"></param>
+        /// <returns></returns>
+        public Rect BoundingBox(float margin = 0f)
         {
             if (IsOuter) throw new GeomException("Bounding box is ill-defined for outer face");
-            if (OuterComponent == null) return new Rect();
 
-            var bBox = new Rect(OuterComponent.From.Pos, Vector2.zero);
-
-            var workingedge = OuterComponent.Next;
-
-            while (workingedge != OuterComponent)
-            {
-                bBox.xMin = Math.Min(bBox.xMin, workingedge.From.Pos.x);
-                bBox.xMax = Math.Max(bBox.xMax, workingedge.From.Pos.x);
-                bBox.yMin = Math.Min(bBox.yMin, workingedge.From.Pos.y);
-                bBox.yMax = Math.Max(bBox.yMax, workingedge.From.Pos.y);
-
-                workingedge = workingedge.Next;
-            }
-            return bBox;
+            return BoundingBoxComputer.FromVector2(OuterVertices.Select(x => x.Pos), margin);
         }
 
         public override string ToString()
         {
             if (IsOuter)
             {
+                // print outer face differently
                 var result = "Outer face: ";
                 foreach (var comp in InnerComponents)
                 {
@@ -177,6 +178,7 @@
             }
             else
             {
+                // print all halfedges of outer face
                 var result = "Face: ";
                 foreach (var halfEdge in OuterHalfEdges)
                 {

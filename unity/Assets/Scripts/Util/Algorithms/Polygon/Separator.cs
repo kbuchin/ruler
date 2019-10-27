@@ -9,49 +9,57 @@
     using Util.Geometry.Polygon;
     using Util.Math;
 
-    public static class Seperator
+    /// <summary>
+    /// Collection of algorithms related to seperation.
+    /// </summary>
+    public static class Separator
     {
         /// <summary>
         /// Return the Line that gives the greatest distance from all points in the dual. We calculate true seperation and not vertical seperation
         /// No error checking occurs for bounding box faces/polygons
         /// </summary>
         /// <returns>Line with greatest distance to the points encoded by the polygon boundary </returns>
-        public static LineSeperationTuple LineOfGreatestMinimumSeperationInTheDual(Polygon2D polygon, bool a_isBoundingBoxFace)
+        public static LineSeparation LineOfGreatestMinimumSeparationInTheDual(Polygon2D polygon, bool a_isBoundingBoxFace)
         {
-            if (!polygon.IsConvex())
+            // copy for safety
+            var poly = new Polygon2D(polygon.Vertices);
+
+            if (!poly.IsConvex())
             {
                 throw new GeomException("Only support computing lines of greatest seperation for convex polygons");
             }
             
-            if (!polygon.IsClockwise())
+            if (!poly.IsClockwise())
             {
-                polygon = new Polygon2D(polygon.Vertices.Reverse());
+                poly.Reverse();
             }
 
-            var upperhull = ConvexHull.ComputeUpperHull(polygon).ToList();
-            var lowerhull = ConvexHull.ComputeLowerHull(polygon).ToList();
+            var upperhull = ConvexHull.ComputeUpperHull(poly).ToList();
+            var lowerhull = ConvexHull.ComputeLowerHull(poly).ToList();
 
             if (a_isBoundingBoxFace)
             {
                 //Check if the boundingboxface has only 2 real neighbouring lines(in the dual) and return the bisector (in the primal) in this case 
-                var reallines = polygon.Segments.Where(seg => 
+                var reallines = poly.Segments.Where(seg => 
                         !(float.IsInfinity(seg.Line.Slope) || MathUtil.EqualsEps(seg.Line.Slope, 0f)))
                     .Select(seg => seg.Line)
                     .ToList();
 
                 if (reallines.Count < 2)
                 {
-                    Debug.Log(polygon);
+                    Debug.Log(poly);
                     throw new GeomException("Found impossibly low amount of real lines");
                 }
                 else if (reallines.Count == 2)
                 {
                     //The two reallines are two points in the primal plane
+                    // get intersection
+                    // Assumes general positions of initial points
                     var averagepoint = (PointLineDual.Dual(reallines[0]) + PointLineDual.Dual(reallines[1])) / 2;
-                    var lineTroughBothPoints = PointLineDual.Dual((Vector2)reallines[0].Intersect(reallines[1]));
+                    var lineTroughBothPoints = PointLineDual.Dual(reallines[0].Intersect(reallines[1]).Value);
                     var perpLineSlope = -1 / lineTroughBothPoints.Slope;
                     var perpPoint = averagepoint + Vector2.right + Vector2.up * perpLineSlope;
-                    return new LineSeperationTuple(new Line(averagepoint, perpPoint), 0);
+                    return new LineSeparation(new Line(averagepoint, perpPoint), 0);
 
                     //we choose separtion 0 because a line with three constraints in the outer boundingboxface is more important?
                     //TODO this seems untrue, explictly calculate seperation (Wrt to all soldier??)
@@ -135,20 +143,26 @@
                 currentx = nextx;
             }
 
-            return new LineSeperationTuple(PointLineDual.Dual(candidatePoint), currentSeparation);
+            return new LineSeparation(PointLineDual.Dual(candidatePoint), currentSeparation);
         }
     }
 
-    public struct LineSeperationTuple
+    /// <summary>
+    /// Struct for storing line-separation tuple
+    /// </summary>
+    public struct LineSeparation
     {
-        public float Seperation { get; private set; }
+        /// <summary>
+        /// Minimum separation of the given line and points
+        /// </summary>
+        public float Separation { get; private set; }
 
         public Line Line { get; private set; }
 
-        public LineSeperationTuple(Line line, float currentSeparation)
+        public LineSeparation(Line line, float currentSeparation)
         {
             Line = line;
-            Seperation = currentSeparation;
+            Separation = currentSeparation;
         }
     }
 }

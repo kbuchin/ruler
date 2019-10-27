@@ -4,18 +4,30 @@
     using System.Collections.Generic;
     using System.Linq;
     using UnityEngine;
+    using Util.Math;
 
     /// <summary>
-    /// A class representing a general Polygon (possibly with holes)
+    /// A class representing a general Polygon, with a list of polygonal holes.
+    /// Hole polygons cannot contain holes themselves.
     /// </summary>
     public class Polygon2DWithHoles : IPolygon2D
     {
         private readonly List<Polygon2D> m_holes;
 
+        /// <summary>
+        /// Outer polygon, defined simply as a 2D polygon without holes.
+        /// </summary>
         public Polygon2D Outside { get; private set; }
 
+        /// <summary>
+        /// Collection of polygons that form the holes.
+        /// Assumed to be disjoint.
+        /// </summary>
         public ICollection<Polygon2D> Holes { get { return m_holes; } }
 
+        /// <summary>
+        /// Collection of both outer and inner vertices of the polygon.
+        /// </summary>
         public ICollection<Vector2> Vertices
         {
             get
@@ -29,35 +41,91 @@
             }
         }
 
-        public int VertexCount { get { return Outside.VertexCount + m_holes.Sum(p => p.VertexCount); } }
+        public ICollection<Vector2> OuterVertices
+        {
+            get { return Outside.Vertices; }
+        }
 
+        public ICollection<Vector2> InnerVertices
+        {
+            get
+            {
+                var vertices = new List<Vector2>();
+                foreach (var p in m_holes)
+                {
+                    vertices.Concat(p.Vertices);
+                }
+                return vertices;
+            }
+        }
+
+        public int VertexCount
+        {
+            get { return Outside.VertexCount + m_holes.Sum(p => p.VertexCount); }
+        }
 
         /// <summary>
-        /// Computes the area of this polygon minus it's holes
+        /// Calculates the total area as the outer area minus area of holes.
         /// </summary>
-        /// <returns></returns>
+        /// <remarks>
+        /// Assumes the hole polygons are disjoint and are contained inside outer polygon
+        /// </remarks>
         public float Area
         {
             get
             {
+                // find area of outside polygon
                 var result = Outside.Area;
+
+                // remove hole area from total
                 foreach (var hole in m_holes)
                 {
                     result -= hole.Area;
                 }
+
                 if (result < 0)
                 {
-                    throw new GeomException("Somehow ended up with negative area");
+                    throw new GeomException("Holes cannot have more area than outside polygon");
                 }
+
                 return result;
             }
         }
 
+        /// <summary>
+        /// Collection of both inner and outer segments.
+        /// </summary>
         public ICollection<LineSegment> Segments
         {
             get
             {
-                var segments = Outside.Segments;
+                // concat outer and inner segments
+                var segments = OuterSegments;
+                foreach (var h in m_holes)
+                {
+                    segments.Concat(h.Segments);
+                }
+                return segments;
+            }
+        }
+
+        /// <summary>
+        /// Collection of segments of the outer polygon.
+        /// </summary>
+        public ICollection<LineSegment> OuterSegments
+        {
+            get { return Outside.Segments; }
+        }
+
+        /// <summary>
+        /// Collection of segments of the inner polygon.
+        /// </summary>
+        public ICollection<LineSegment> InnerSegments
+        {
+            get
+            {
+                // concat outer and inner segments
+                var segments = new List<LineSegment>();
                 foreach (var h in m_holes)
                 {
                     segments.Concat(h.Segments);
@@ -113,7 +181,7 @@
             Outside.AddVertexFirst(pos);
         }
 
-        public void AddVertexAfter(Vector2 after, Vector2 pos)
+        public void AddVertexAfter(Vector2 pos, Vector2 after)
         {
             Outside.AddVertexAfter(pos, after);
         }
@@ -161,14 +229,9 @@
 
         public bool IsSimple()
         {
-            return false; // TODO
+            return Outside.IsSimple() && m_holes.Count == 0;
         }
-
-        /// <summary>
-        /// Returns whether a position is contained in the polygon
-        /// </summary>
-        /// <param name="a_pos"></param>
-        /// <returns></returns>
+        
         public bool Contains(Vector2 a_pos)
         {
             foreach (var hole in m_holes)
@@ -186,11 +249,15 @@
             return ret;
         }
 
-
         public void Reverse()
         {
             Outside.Reverse();
             foreach (var p in m_holes) p.Reverse();
+        }
+
+        public Rect BoundingBox(float margin = 0f)
+        {
+            return BoundingBoxComputer.FromVector2(Vertices, margin);
         }
 
         public bool Equals(IPolygon2D other)

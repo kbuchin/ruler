@@ -2,6 +2,10 @@
 {
     using System;
 
+    /// <summary>
+    /// Generic catch-all class for exceptions related to geometry.
+    /// Used for most exceptions thrown in this geometry library.
+    /// </summary>
     public class GeomException : Exception
     {
         public GeomException()

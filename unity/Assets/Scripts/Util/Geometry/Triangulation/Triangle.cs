@@ -2,131 +2,202 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using UnityEngine;
     using Util.Geometry.Graph;
     using Util.Math;
 
-    public class Triangle : IEquatable<Triangle> {
-
-        public ICollection<Vector2> Vertices {
-            get { return new List<Vector2> { P0, P1, P2 }; }
-        }
-
-        public ICollection<TriangleEdge> Edges {
-            get { return new List<TriangleEdge> { E0, E1, E2 }; }
-        }
-
-        public Vector2 P0 { get; private set; }
-        public Vector2 P1 { get; private set; }
-        public Vector2 P2 { get; private set; }
-
+    /// <summary>
+    /// Simple triangle class for use in triangulations.
+    /// Stores triangle edges explicitly while points are inferred from edges.
+    /// </summary>
+    public class Triangle : IEquatable<Triangle>
+    {
+        // three edges that define triangle
         public TriangleEdge E0 { get; private set; }
         public TriangleEdge E1 { get; private set; }
         public TriangleEdge E2 { get; private set; }
 
+        // three points are inferred from edges
+        public Vector2 P0 { get { return E0.Point1; } }
+        public Vector2 P1 { get { return E1.Point1; } }
+        public Vector2 P2 { get { return E2.Point1; } }
+
+        /// <summary>
+        /// Collection of the three vertices in the triangle for easy iteration.
+        /// </summary>
+        public IEnumerable<Vector2> Vertices
+        {
+            get { return new List<Vector2> { P0, P1, P2 }; }
+        }
+
+        /// <summary>
+        /// Collection of the three edges in the triangle for easy iteration.
+        /// </summary>
+        public IEnumerable<TriangleEdge> Edges
+        {
+            get { return new List<TriangleEdge> { E0, E1, E2 }; }
+        }
+
+        /// <summary>
+        /// Area covered by the triangle
+        /// </summary>
         public float Area {
             get
             {
+                // check degenerate cases
+                if (MathUtil.Colinear(P0, P1, P2)) return 0f;
+                if (Degenerate) return float.NaN;
+
                 // herons formula
                 float s = (E0.Magnitude + E1.Magnitude + E2.Magnitude) / 2f;
                 return Mathf.Sqrt(s * (s - E0.Magnitude) * (s - E1.Magnitude) * (s - E2.Magnitude));
             }
         }
+
+        /// <summary>
+        /// Center of the circle that goes through all three triangle points.
+        /// </summary>
         public Vector2 Circumcenter { get; private set; }
 
+        /// <summary>
+        /// Whether the given triangle is a degenerate case (area zero or infinite).
+        /// </summary>
+        public bool Degenerate
+        {
+            get
+            {
+                return !MathUtil.IsFinite(P0) ||
+                    !MathUtil.IsFinite(P1) ||
+                    !MathUtil.IsFinite(P2) ||
+                    MathUtil.Colinear(P0, P1, P2);
+            }
+        }
+
+        /// <summary>
+        /// Whether the given triangle has an edge without an adjacent triangle.
+        /// Useful for a triangulation.
+        /// </summary>
         public bool IsOuter { get { return E0.IsOuter || E1.IsOuter || E2.IsOuter; } }
 
         public Triangle() : this(new Vector2(), new Vector2(), new Vector2())
         { }
 
-        public Triangle(Vector2 v0, Vector2 v1, Vector2 v2) : this(
-                new TriangleEdge(v0, v1, null, null),
-                new TriangleEdge(v1, v2, null, null),
-                new TriangleEdge(v2, v0, null, null)
+        public Triangle(Vector2 a_vertex0, Vector2 a_vertex1, Vector2 a_vertex2) : this(
+                new TriangleEdge(a_vertex0, a_vertex1, null, null),
+                new TriangleEdge(a_vertex1, a_vertex2, null, null),
+                new TriangleEdge(a_vertex2, a_vertex0, null, null)
             )
         { }
 
-        public Triangle(TriangleEdge e0, TriangleEdge e1, TriangleEdge e2)
+        public Triangle(TriangleEdge a_edge0, TriangleEdge a_edge1, TriangleEdge a_edge2)
         {
-            if(e0.Point2 != e1.Point1 || e1.Point2 != e2.Point1 || e2.Point2 != e0.Point1)
+            if(a_edge0.Point2 != a_edge1.Point1 || a_edge1.Point2 != a_edge2.Point1 || a_edge2.Point2 != a_edge0.Point1)
             {
                 throw new ArgumentException("Invalid triangle edges given.");
             }
-            E0 = e0;
-            E1 = e1;
-            E2 = e2;
-            P0 = e0.Point1;
-            P1 = e1.Point1;
-            P2 = e2.Point1;
-            e0.T = this;
-            e1.T = this;
-            e2.T = this;
-            if (!Degenerate()) {
+
+            E0 = a_edge0;
+            E1 = a_edge1;
+            E2 = a_edge2;
+
+            // set the triangle pointer of the edges
+            a_edge0.T = a_edge1.T = a_edge2.T = this;
+
+            // calculate circumcenter if possible
+            if (!Degenerate) {
                 if(IsClockwise()) Circumcenter = MathUtil.CalculateCircumcenter(P0, P1, P2);
                 else Circumcenter = MathUtil.CalculateCircumcenter(P0, P2, P1);
             }
         }
 
-        public bool Degenerate()
+        /// <summary>
+        /// Check whether point is contained inside triangle.
+        /// </summary>
+        /// <param name="a_pos"></param>
+        /// <returns></returns>
+        public bool Contains(Vector2 a_pos)
         {
-            return !MathUtil.IsFinite(P0) ||
-                   !MathUtil.IsFinite(P1) ||
-                   !MathUtil.IsFinite(P2) ||
-                   MathUtil.Colinear(P0, P1, P2);
-        }
-
-        public bool Contains(Vector2 x)
-        {
-            if(IsClockwise())
-            {
-                return E0.IsRightOf(x) && E1.IsRightOf(x) && E2.IsRightOf(x);
-            }
-            else
-            {
-                return !E0.IsRightOf(x) && !E1.IsRightOf(x) && !E2.IsRightOf(x);
-            }
-        }
-
-        public bool ContainsEndpoint(Vector2 x)
-        {
-            return x.Equals(P0) || x.Equals(P1) || x.Equals(P2);
-        }
-
-        public bool Inside(Vector2 X)
-        {
-            int firstSide = Math.Sign(MathUtil.Orient2D(P0, P1, X));
-            int secondSide = Math.Sign(MathUtil.Orient2D(P1, P2, X));
-            int thirdSide = Math.Sign(MathUtil.Orient2D(P2, P0, X));
+            int firstSide = Math.Sign(MathUtil.Orient2D(P0, P1, a_pos));
+            int secondSide = Math.Sign(MathUtil.Orient2D(P1, P2, a_pos));
+            int thirdSide = Math.Sign(MathUtil.Orient2D(P2, P0, a_pos));
             return (firstSide != 0 && firstSide == secondSide && secondSide == thirdSide);
         }
 
+        /// <summary>
+        /// Checks whether the point is equal to one of the three endpoints.
+        /// </summary>
+        /// <param name="a_pos"></param>
+        /// <returns></returns>
+        public bool ContainsEndpoint(Vector2 a_pos)
+        {
+            return a_pos.Equals(P0) || a_pos.Equals(P1) || a_pos.Equals(P2);
+        }
+
+        /// <summary>
+        /// Returns whether the triangle is orientated clockwise.
+        /// </summary>
+        /// <returns></returns>
         public bool IsClockwise()
         {
             return MathUtil.Orient2D(P0, P1, P2) < 0;
         }
 
-        public bool InsideCircumcircle(Vector2 X)
+        /// <summary>
+        /// Checks whether the given point is inside the circumcircle of the triangle.
+        /// </summary>
+        /// <param name="a_pos"></param>
+        /// <returns></returns>
+        public bool InsideCircumcircle(Vector2 a_pos)
         {
-            return MathUtil.InsideCircle(P0, P1, P2, X);
+            return MathUtil.InsideCircle(P0, P1, P2, a_pos);
         }
 
-        public Vector2? OtherVertex(TriangleEdge a_Edge)
+        /// <summary>
+        /// Find the vertex that is not covered by the given triangle edge.
+        /// </summary>
+        /// <param name="a_edge"></param>
+        /// <returns></returns>
+        public Vector2? OtherVertex(TriangleEdge a_edge)
         {
-            return OtherVertex(a_Edge.Point1, a_Edge.Point2);
+            if (a_edge != E0 && a_edge != E1 && a_edge != E2)
+            {
+                throw new GeomException(string.Format("{0} not equal to any triangle edge of {1}", a_edge, this));
+            }
+            return OtherVertex(a_edge.Point1, a_edge.Point2);
         }
-            
-        public Vector2? OtherVertex(Vector2 a, Vector2 b)
+        
+        /// <summary>
+        /// Find the vertex
+        /// </summary>
+        /// <param name="a_vertex0"></param>
+        /// <param name="a_vertex1"></param>
+        /// <returns></returns>
+        public Vector2? OtherVertex(Vector2 a_vertex0, Vector2 a_vertex1)
         {
-            foreach (var v in Vertices)
-                if(v != a && v != b) return v;
-            return null;
+            return Vertices.ToList().Find(v => v != a_vertex0 && v != a_vertex1);
         }
 
-        public TriangleEdge OtherEdge(TriangleEdge a, Vector2 b)
+        /// <summary>
+        /// Finds the edge that is not equal to given two.
+        /// </summary>
+        /// <param name="a_edge0"></param>
+        /// <param name="a_edge1"></param>
+        /// <returns></returns>
+        public TriangleEdge OtherEdge(TriangleEdge a_edge0, TriangleEdge a_edge1)
         {
-            foreach (var e in Edges)
-                if (e != a && e.IsEndpoint(b)) return e;
-            return null;
+            return Edges.ToList().Find(e => e != a_edge0 && e != a_edge1);
+        }
+
+        /// <summary>
+        /// Finds edge that connects to the vertex and is not equal to given edge.
+        /// </summary>
+        /// <param name="a_edge"></param>
+        /// <param name="a_vertex"></param>
+        /// <returns></returns>
+        public TriangleEdge OtherEdge(TriangleEdge a_edge, Vector2 a_vertex)
+        {
+            return Edges.ToList().Find(e => e != a_edge && e.IsEndpoint(a_vertex));
         }
 
         public override string ToString()
@@ -134,9 +205,11 @@
             return string.Format("Triangle: <{0}, {1}, {2}>", P0, P1, P2);
         }
 
-        public bool Equals(Triangle other)
+        public bool Equals(Triangle a_triangle)
         {
-            return P0 == other.P0 && P1 == other.P1 && P2 == other.P2;
+            return P0.Equals(a_triangle.P0) && 
+                P1.Equals(a_triangle.P1) && 
+                P2.Equals(a_triangle.P2);
         }
 
         public override int GetHashCode()

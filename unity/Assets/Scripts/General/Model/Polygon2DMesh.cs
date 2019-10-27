@@ -1,46 +1,51 @@
 ﻿namespace General.Model
 {
-    using System.Linq;
+    using System;
+    using System.Collections;
     using UnityEngine;
     using Util.Algorithms.Triangulation;
     using Util.Geometry.Polygon;
 
+    /// <summary>
+    /// Calculates a (triangular) mesh for a given polygon and gives this to mesh filter and collider components.
+    /// Attach to a game object that contains MeshFilter and Renderer (and potentially a MeshCollider)
+    /// </summary>
     public class Polygon2DMesh : MonoBehaviour
     {
-        private Polygon2D m_polygon;
+        /// <summary>
+        /// Polygon for the current mesh.
+        /// Setting the Polygon will automatically update the Mesh.
+        /// </summary>
+        public Polygon2D Polygon
+        {
+            get { return m_polygon; }
+            set { m_polygon = value; UpdateMesh(); }
+        }
 
+        protected Polygon2D m_polygon;
+
+        // scale factor for the texture
+        protected float m_scale;
+
+        // relevant mesh renderer objects
         private MeshFilter m_meshFilter;
         private Renderer m_renderer;
         private MeshCollider m_collider;
 
-        protected float m_scale;
 
-        /// <summary>
-        /// Seting the Polygon will automatically update the Mesh
-        /// </summary>
-        public Polygon2D Polygon
-        {
-            get
-            {
-                return m_polygon;
-            }
-            set
-            {
-                m_polygon = value;
-                UpdateMesh();
-            }
-        }
-
-        protected Polygon2DMesh(float scale)
+        public Polygon2DMesh(float scale)
         {
             m_scale = scale;
         }
 
-        protected Polygon2DMesh()
+        public Polygon2DMesh()
         { }
 
-        protected void Awake()
+        // Use this for initialization
+        public void Start()
         {
+            // get mesh renderer components
+            // should be attached to game object with this script
             m_meshFilter = GetComponent<MeshFilter>();
             m_collider = GetComponent<MeshCollider>();
             m_renderer = GetComponent<Renderer>();
@@ -59,13 +64,14 @@
 
             var oldMesh = m_meshFilter.mesh;
 
-            //create triangulation
+            // create triangulation
             var tri = Triangulator.Triangulate(Polygon2D.RemoveDanglingEdges(m_polygon));
 
+            // create mesh from triangulation
             var mesh = tri.CreateMesh();
             m_meshFilter.mesh = mesh;
 
-            //duplicateMaterial and scale
+            //duplicate Material and scale
             var size = Mathf.Max(mesh.bounds.size.x, mesh.bounds.size.y);
             var newMat = new Material(m_renderer.material)
             {
@@ -73,7 +79,7 @@
             };
             m_renderer.materials = new Material[] { newMat }; //also remove olde material by replacing material array
 
-            //set the same mesh to the colider
+            // set the same mesh to the colider
             if (m_collider != null)
             {
                 m_collider.sharedMesh = mesh;

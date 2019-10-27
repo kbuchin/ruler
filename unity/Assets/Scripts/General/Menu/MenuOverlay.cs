@@ -4,6 +4,10 @@
 
     public delegate void CallbackMethod();
 
+    /// <summary>
+    /// Menu overlay that upon activation shows a sprite, which disactivates upon clicking.
+    /// Can set a callback method which is called after a click.
+    /// </summary>
     public class MenuOverlay : MonoBehaviour
     {
         private SpriteRenderer m_sprite;
@@ -14,20 +18,9 @@
         // Use this for initialization
         void Start()
         {
+            // get 
             m_sprite = GetComponent<SpriteRenderer>();
             m_boxcollider = GetComponent<BoxCollider2D>();
-        }
-
-        public void Activate()
-        {
-            // enable overlay sprite and box collider
-            m_sprite.enabled = true;
-            m_boxcollider.enabled = true;
-        }
-
-        public void SetSprite(Sprite sprite)
-        {
-            m_sprite.sprite = sprite;
         }
 
         void OnMouseUpAsButton()
@@ -41,6 +34,24 @@
             {
                 Callback();
             }
+        }
+
+        /// <summary>
+        /// Activates the overlay sprite and box collider
+        /// </summary>
+        public void Activate()
+        {
+            m_sprite.enabled = true;
+            m_boxcollider.enabled = true;
+        }
+
+        /// <summary>
+        /// Sets the sprite pointer in the sprite renderer.
+        /// </summary>
+        /// <param name="sprite"></param>
+        public void SetSprite(Sprite sprite)
+        {
+            m_sprite.sprite = sprite;
         }
     }
 }

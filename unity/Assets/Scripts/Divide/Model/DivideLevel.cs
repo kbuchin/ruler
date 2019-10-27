@@ -4,6 +4,10 @@
     using System.Collections.Generic;
     using UnityEngine;
 
+    /// <summary>
+    /// Data container for the divide level.
+    /// Stores position vectors for the three kinds of soldiers, plus the maximum number of swaps
+    /// </summary>
     [CreateAssetMenu(fileName = "divideLevelNew", menuName = "Levels/Divide Level")]
     public class DivideLevel : ScriptableObject
     {

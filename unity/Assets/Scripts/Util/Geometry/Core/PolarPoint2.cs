@@ -6,6 +6,9 @@
     using UnityEngine;
     using Util.Math;
 
+    /// <summary>
+    /// Point representation as a distance-angle pair (r, theta) to origin.
+    /// </summary>
     public class PolarPoint2D : IEquatable<PolarPoint2D>
     {
         public float R { get; set; } // distance to p
@@ -18,7 +21,10 @@
             this.Theta = theta;
         }
 
-        // initlialize polar point from cartesian
+        /// <summary>
+        /// Initialize polar point from cartesian point.
+        /// </summary>
+        /// <param name="p"></param>
         public PolarPoint2D(Vector2 p)
         {
             var temp = CartesianToPolar(p);
@@ -26,11 +32,17 @@
             Theta = temp.Theta;
         }
 
+        /// <summary>
+        /// Obtain the cartesian representation of the polar point.
+        /// </summary>
         public Vector2 Cartesian
         {
             get { return PolarToCartesian(this); }
         }
 
+        /// <summary>
+        /// Returns a ray shooting from the origin towards the polar point.
+        /// </summary>
         public Ray2D Ray
         {
             get
@@ -39,7 +51,12 @@
             }
         }
 
-        private PolarPoint2D CartesianToPolar(Vector2 p)
+        /// <summary>
+        /// Transforms a cartesian point to polar.
+        /// </summary>
+        /// <param name="p"></param>
+        /// <returns></returns>
+        public static PolarPoint2D CartesianToPolar(Vector2 p)
         {
             var r = Mathf.Sqrt(p.x * p.x + p.y * p.y);
             var theta = Mathf.Atan2(p.y, p.x);
@@ -47,7 +64,12 @@
             return new PolarPoint2D(r, theta);
         }
 
-        private Vector2 PolarToCartesian(PolarPoint2D p)
+        /// <summary>
+        /// Transforms a polar point to cartesian.
+        /// </summary>
+        /// <param name="p"></param>
+        /// <returns></returns>
+        public static Vector2 PolarToCartesian(PolarPoint2D p)
         {
             var x = Mathf.Cos(p.Theta) * p.R;
             var y = Mathf.Sin(p.Theta) * p.R;
@@ -55,18 +77,30 @@
             return new Vector2(x, y);
         }
 
+        /// <summary>
+        /// Check whether the polar point is the origin.
+        /// </summary>
+        /// <returns></returns>
         public bool IsOrigin()
         {
             return R == 0;
         }
 
+        /// <summary>
+        /// Rotate the point with a given angle theta in radians.
+        /// Normalizes the angle to be between [0, 2 * PI]
+        /// </summary>
+        /// <param name="theta"></param>
         public void RotateClockWise(float theta)
         {
             this.Theta -= theta;
             Normalize(2 * Mathf.PI);
         }
 
-        // keeps theta in [0, period]
+        /// <summary>
+        /// Keeps theta in [0, period].
+        /// </summary>
+        /// <param name="period"></param>
         public void Normalize(float period)
         {
             while (Theta <= 0.0)

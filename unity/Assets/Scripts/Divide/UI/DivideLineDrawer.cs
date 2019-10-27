@@ -5,60 +5,81 @@
 
     class DivideLineDrawer : LineDrawer
     {
-        public Color ArcherColor = new Color(102f/255,194f/255,165f/255);
-        public Color SwordsmenColor = new Color(252f/255,141f/255,98f/255);
-        public Color MageColor = new Color(141f/255,160f/255,203f/255);
-        public Color AllColor = Color.black;
+        // line colors for cut lines
+        private Color ArcherColor = Color.red; //new Color(102f/255, 194f/255, 165f/255);
+        private Color SpearmenColor = Color.green; //new Color(252f/255, 141f/255, 98f/255);
+        private Color MageColor = Color.blue; //new Color(141f/255, 160f/255, 203f/255);
+        private Color AllColor = Color.black;
 
+        // Boolean for whether to display lines
         private bool m_displayArcherLines;
-        private bool m_displaySoldierLines;
+        private bool m_displaySpearmenLines;
         private bool m_displayMageLines;
         private bool m_displayAllLines;
 
+        // solution storing the cut lines
         private DivideSolution m_solution;
 
-        internal void ToggleArchers()
+        /// <summary>
+        /// Update the solution to be drawn
+        /// </summary>
+        public DivideSolution Solution
+        {
+            get { return m_solution; }
+            set { m_solution = value; UpdateLines(); }
+        }
+
+        /// <summary>
+        /// Toggles the drawing of the archer cut lines
+        /// </summary>
+        public void ToggleArchers()
         {
             m_displayArcherLines = !m_displayArcherLines;
             UpdateLines();
         }
 
-        internal void ToggleSoldier()
+        /// <summary>
+        /// Toggles the drawing of the spearmen cut lines
+        /// </summary>
+        public void ToggleSpearmen()
         {
-            m_displaySoldierLines = !m_displaySoldierLines;
+            m_displaySpearmenLines = !m_displaySpearmenLines;
             UpdateLines();
         }
 
-        internal void ToggleMages()
+        /// <summary>
+        /// Toggles the drawing of the mage cut lines
+        /// </summary>
+        public void ToggleMages()
         {
             m_displayMageLines = !m_displayMageLines;
             UpdateLines();
         }
 
-        internal void ToggleAll()
+        /// <summary>
+        /// Toggles displaying the final cut line
+        /// </summary>
+        public void ToggleAll()
         {
             m_displayAllLines = !m_displayAllLines;
             UpdateLines();
         }
 
-        internal void NewSolution(DivideSolution a_solution)
-        {
-            m_solution = a_solution;
-            UpdateLines();
-        }
-
+        /// <summary>
+        /// Updates the line drawing given the divide solution cut lines and toggles.
+        /// </summary>
         private void UpdateLines()
         {
             ClearLines();
             
-            
+            // draw lines that are enabled by adding lines to LineDrawer
             if (m_displayArcherLines)
             {
                 AddLines(m_solution.Archers, ArcherColor);
             }
-            if (m_displaySoldierLines)
+            if (m_displaySpearmenLines)
             {
-                AddLines(m_solution.Soldiers, SwordsmenColor);
+                AddLines(m_solution.Spearmen, SpearmenColor);
             }
             if (m_displayMageLines)
             {

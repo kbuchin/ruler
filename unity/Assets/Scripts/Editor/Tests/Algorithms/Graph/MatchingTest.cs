@@ -39,35 +39,43 @@
         [Test]
         public void CreatePerfectMatching1Test()
         {
-            var matching = Matching.MinimumWeightPerfectMatchingOfCompleteGraph(m_level1pos);
+            var matching = Matching.MinimumWeightPerfectMatching(m_level1pos);
 
-            //test degree
-            foreach (var v in matching.Vertices)
+            // test disjoint edges
+            var vertices = new HashSet<Vertex>();
+            foreach (var edge in matching)
             {
-                Assert.AreEqual(1, matching.DegreeOf(v));
+                Assert.IsFalse(vertices.Contains(edge.Start));
+                Assert.IsFalse(vertices.Contains(edge.End));
+                vertices.Add(edge.Start);
+                vertices.Add(edge.End);
             }
         }
 
         [Test]
         public void CreatePerfectMatching2Test()
         {
-            var matching = Matching.MinimumWeightPerfectMatchingOfCompleteGraph(m_level2pos);
+            var matching = Matching.MinimumWeightPerfectMatching(m_level2pos);
 
-            //test degree
-            foreach (var v in matching.Vertices)
+            // test disjoint edges
+            var vertices = new HashSet<Vertex>();
+            foreach (var edge in matching)
             {
-                Assert.AreEqual(1, matching.DegreeOf(v));
+                Assert.IsFalse(vertices.Contains(edge.Start));
+                Assert.IsFalse(vertices.Contains(edge.End));
+                vertices.Add(edge.Start);
+                vertices.Add(edge.End);
             }
         }
 
         [Test]
         public void MinimumWeightMatching1Test()
         {
-            var matching = Matching.MinimumWeightPerfectMatchingOfCompleteGraph(m_level1pos);
+            var matching = Matching.MinimumWeightPerfectMatching(m_level1pos);
             var cost = new Edge(m_level1pos[0], m_level1pos[2]).Weight +
                        new Edge(m_level1pos[1], m_level1pos[3]).Weight;
 
-            Assert.AreEqual(cost, matching.TotalEdgeWeight);
+            Assert.AreEqual(cost, matching.Sum(e => e.Weight));
         }
 
         [Test]

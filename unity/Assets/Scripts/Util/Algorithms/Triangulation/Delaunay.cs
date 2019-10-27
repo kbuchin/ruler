@@ -8,10 +8,17 @@
     using Util.Geometry;
     using System.Linq;
 
+    /// <summary>
+    /// Collection of algorithms related to Delaunay traingulation.
+    /// </summary>
     public static class Delaunay {
 
         private const float m_farAway = 999f;
 
+        /// <summary>
+        /// Create initial delaunay triangulation
+        /// </summary>
+        /// <returns></returns>
         public static Triangulation Create()
         {
             var v0 = new Vector2(-m_farAway, -m_farAway);
@@ -21,6 +28,12 @@
             return new Triangulation(v0, v1, v2);
         }
 
+        /// <summary>
+        /// Create a Delaunay triangulation of the given vertices.
+        /// Adds vertices iteratively, while keeping Delaunay condition.
+        /// </summary>
+        /// <param name="vertices"></param>
+        /// <returns></returns>
         public static Triangulation Create(IEnumerable<Vector2> vertices)
         {
             var T = Create();
@@ -66,65 +79,35 @@
             return !a_triangle.InsideCircumcircle(v) && !a_Twin.InsideCircumcircle(u);
         }
 
-        public static bool AddVertex(Triangulation T, Vector2 X)
+        /// <summary>
+        /// Adds a vertex at the given position to the Delaunay triangulation.
+        /// Legalizes relevant edges in order to maintain Delaunay condition.
+        /// </summary>
+        /// <param name="T"></param>
+        /// <param name="a_vertex"></param>
+        /// <returns></returns>
+        public static bool AddVertex(Triangulation T, Vector2 a_vertex)
         {
-            var triangle = FindTriangle(T, X);
-            if (triangle == null)
-            {
-                Debug.LogWarning("Couldn't place Vector2 in triangle; probably placed point colinear.");
-                return false;
-            }
+            // find triangle that contains X
+            var triangle = T.FindContainingTriangle(a_vertex);
 
-            AddVertex(T, triangle, X);
+            T.AddVertex(a_vertex);
 
             // Flip if needed
-            LegalizeEdge(T, X, triangle.E0);
-            LegalizeEdge(T, X, triangle.E1);
-            LegalizeEdge(T, X, triangle.E2);
+            LegalizeEdge(T, a_vertex, triangle.E0);
+            LegalizeEdge(T, a_vertex, triangle.E1);
+            LegalizeEdge(T, a_vertex, triangle.E2);
 
             return true;
         }
 
-        private static Triangle FindTriangle(Triangulation T, Vector2 a_Vector2)
-        {
-            foreach (Triangle triangle in T.Triangles)
-            {
-                if (triangle.Inside(a_Vector2))
-                {
-                    return triangle;
-                }
-            }
-            return null;
-        }
-
-        private static void AddVertex(Triangulation T, Triangle a_Triangle, Vector2 X)
-        {
-            if(!a_Triangle.Inside(X))
-            {
-                throw new ArgumentException("Vector to be added should be inside triangle.");
-            }
-
-            T.Remove(a_Triangle);
-
-            var e0x = new TriangleEdge(a_Triangle.P0, X, null, null);
-            var ex0 = new TriangleEdge(X, a_Triangle.P0, e0x, null);
-            e0x.Twin = ex0;
-            var e1x = new TriangleEdge(a_Triangle.P1, X, null, null);
-            var ex1 = new TriangleEdge(X, a_Triangle.P1, e1x, null);
-            e1x.Twin = ex1;
-            var e2x = new TriangleEdge(a_Triangle.P2, X, null, null);
-            var ex2 = new TriangleEdge(X, a_Triangle.P2, e2x, null);
-            e2x.Twin = ex2;
-
-            var t0 = new Triangle(a_Triangle.E0, e1x, ex0);
-            var t1 = new Triangle(a_Triangle.E1, e2x, ex1);
-            var t2 = new Triangle(a_Triangle.E2, e0x, ex2);
-
-            T.Add(t0);
-            T.Add(t1);
-            T.Add(t2);
-        }
-
+        /// <summary>
+        /// Makes an edge legal accorinding to the Delaunay condition.
+        /// Recurses whenever flipping an edge since adjacent edges can be made illegal.
+        /// </summary>
+        /// <param name="T"></param>
+        /// <param name="a_Vertex"></param>
+        /// <param name="a_Edge"></param>
         private static void LegalizeEdge(Triangulation T, Vector2 a_Vertex, TriangleEdge a_Edge)
         {
             // do not legalize outer edge
@@ -147,6 +130,12 @@
             }
         }
 
+        /// <summary>
+        /// Flips the given triangle edge in the triangulation.
+        /// Flipping for Delaunay means changing the edge for the adjacent two triangles to the other possibility.
+        /// </summary>
+        /// <param name="T"></param>
+        /// <param name="a_Edge"></param>
         private static void Flip(Triangulation T, TriangleEdge a_Edge)
         {
             var a_Triangle = a_Edge.T;
@@ -157,24 +146,24 @@
                 throw new GeomException("Cannot flip edge if neighbouring triangles don't exist");
             }
 
-            // Remove old triangles
-            T.Remove(a_Triangle);
-            T.Remove(a_Twin);
-
+            // retrieve other adjacent edges to edge vertices
             var e0 = a_Triangle.OtherEdge(a_Edge, a_Edge.Point1);
             var e1 = a_Triangle.OtherEdge(a_Edge, a_Edge.Point2);
             var e2 = a_Twin.OtherEdge(a_Edge.Twin, a_Edge.Point1);
             var e3 = a_Twin.OtherEdge(a_Edge.Twin, a_Edge.Point2);
 
+            // create new triangle edges
             var euv = new TriangleEdge(e0.Point1, e2.Point2, null, null);
             var evu = new TriangleEdge(e2.Point2, e0.Point1, euv, null);
             euv.Twin = evu;
 
-            var t0 = new Triangle(e0, e2, evu);
-            var t1 = new Triangle(e3, e1, euv);
+            // Remove old triangles
+            T.RemoveTriangle(a_Triangle);
+            T.RemoveTriangle(a_Twin);
 
-            T.Add(t0);
-            T.Add(t1);
+            // add new triangles
+            T.AddTriangle(new Triangle(e0, e2, evu));
+            T.AddTriangle(new Triangle(e3, e1, euv));
         }
     }
 }

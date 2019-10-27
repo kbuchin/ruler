@@ -4,21 +4,32 @@
     using Util.Geometry;
     using Divide.Controller;
 
+    /// <summary>
+    /// Deals with user drawn lines.
+    /// Updates a line renderer and calls the controller when line is drawn.
+    /// </summary>
     public class DivideLine : MonoBehaviour
     {
-        private LineRenderer m_line;
-        private bool m_updating = false;
-        
+        /// <summary>
+        /// Holds the last line drawn by user
+        /// </summary>
+        public Line Line { get; private set; }
+
+        private LineRenderer m_lineRenderer;
         private DivideController m_gameController;
 
-        private Vector3 m_pos1;
-        private Vector3 m_pos0;
+        // holds start and end positions for line
+        private Vector3 startPos, curPos;
+
+        // holds whether line needs to be updated
+        private bool m_updating = false;
 
         // Use this for initialization
-        void Awake()
+        void Start()
         {
-            m_line = GetComponentInChildren<LineRenderer>();
+            m_lineRenderer = GetComponentInChildren<LineRenderer>();
             m_gameController = FindObjectOfType<DivideController>();
+            Line = null;
         }
 
         // Update is called once per frame
@@ -27,17 +38,28 @@
             //If mouse is relead and the mouse is no longer held
             if (!Input.GetMouseButton(0) && m_updating)
             {
+                // stop update line
                 m_updating = false;
-                var d = m_pos0 - m_pos1;
+                
+                // calculate difference vector
+                var d = startPos - curPos;
+
                 if (d.sqrMagnitude > .25)
                 {
-                    m_pos0 -= 10 * d;
-                    m_pos1 += 10 * d;
-                    m_line.SetPositions(new[] { m_pos0, m_pos1 });
-                    m_gameController.ProcessSolution(new Line(m_pos0, m_pos1));
+                    // move positions to increase size of line to cover entire screen
+                    startPos -= 10 * d;
+                    curPos += 10 * d;
+
+                    // update line renderer
+                    m_lineRenderer.SetPositions(new[] { startPos, curPos });
+
+                    // update line
+                    Line = new Line(startPos, curPos);
+                    m_gameController.CheckSolution();
                 }
                 else
                 {
+                    // line too small, disable it
                     DisableLine();
                 }
             }
@@ -45,23 +67,28 @@
             if (m_updating)
             {
                 //add forward vector to create distance to the camera
-                m_pos1 = Camera.main.ScreenToWorldPoint(Input.mousePosition + 10 * Vector3.forward);
-                m_line.SetPosition(1, m_pos1);
+                curPos = Camera.main.ScreenToWorldPoint(Input.mousePosition + 10 * Vector3.forward);
+
+                // update line renderer
+                m_lineRenderer.SetPosition(1, curPos);
             }
         }
 
         //we use a event to prevent drawing a line when switching things
         void OnMouseDown()
         {
-            m_line.enabled = true;
+            m_lineRenderer.enabled = true;
             m_updating = true;
-            m_pos0 = Camera.main.ScreenToWorldPoint(Input.mousePosition + 10* Vector3.forward);
-            m_line.SetPosition(0, m_pos0);
+            startPos = Camera.main.ScreenToWorldPoint(Input.mousePosition + 10 * Vector3.forward);
+            m_lineRenderer.SetPosition(0, startPos);
         }
 
+        /// <summary>
+        /// Disable line renderer
+        /// </summary>
         public void DisableLine()
         {
-            m_line.enabled = false;
+            m_lineRenderer.enabled = false;
         }
     }
 }

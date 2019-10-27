@@ -7,6 +7,9 @@
     using UnityEngine;
     using Util.Geometry.Graph;
 
+    /// <summary>
+    /// Collection of algorithms related to TSP and Hamiltonicity.
+    /// </summary>
     public static class TSP {
 
         /// <summary>
@@ -20,7 +23,7 @@
             if (Graph.VertexCount <= 1) return true;
 
             // start with random vertex
-            Vertex v = Graph.Vertices.First();
+            Vertex v = Graph.Vertices.FirstOrDefault();
             var visited = new HashSet<Vertex>();
 
             while(true)
@@ -49,6 +52,11 @@
             return visited.Count == Graph.VertexCount;
         }
 
+        /// <summary>
+        /// Compute the length of the TSP tour in the graph.
+        /// </summary>
+        /// <param name="graph"></param>
+        /// <returns></returns>
         public static float ComputeTSPLength(IGraph graph)
         {
             if (!IsHamiltonian(graph))
@@ -58,6 +66,11 @@
             return graph.TotalEdgeWeight;
         }
 
+        /// <summary>
+        /// Finds the lenth of a TSPtour, provided by christofides algorithm.
+        /// </summary>
+        /// <param name="graph"></param>
+        /// <returns></returns>
         public static float FindTSPLength(IGraph graph)
         {
             return FindTSPLength(graph.Vertices);
@@ -84,10 +97,11 @@
             }
 
             //find minimum weight perfect matcing
-            var oddDegreeMatching = Matching.MinimumWeightPerfectMatchingOfCompleteGraph(oddDegreePos);
+            var oddDegreeMatching = Matching.MinimumWeightPerfectMatching(oddDegreePos);
+            var matchWeight = oddDegreeMatching.Sum(e => e.Weight);
 
-            Debug.Log("mst length: " + mst.TotalEdgeWeight + "  om length: " + oddDegreeMatching.TotalEdgeWeight);
-            return mst.TotalEdgeWeight + oddDegreeMatching.TotalEdgeWeight;
+            Debug.Log("mst length: " + mst.TotalEdgeWeight + "  om length: " + matchWeight);
+            return mst.TotalEdgeWeight + matchWeight;
         }
     }
 }

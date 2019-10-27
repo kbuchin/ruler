@@ -55,7 +55,7 @@
                 foreach (var v in m_complete4pos)
                 {
                     if (u == v) continue;
-                    Assert.True(m_complete4.ContainsEdge(new Edge(u, v)));
+                    Assert.True(m_complete4.ContainsEdge(u, v));
                 }
             }            
         }

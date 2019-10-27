@@ -6,15 +6,17 @@
     using UnityEngine;
     using UnityEngine.SceneManagement;
     using UnityEngine.UI;
-    using Util.Geometry.Graph;
     using Util.Algorithms.Graph;
 
+    /// <summary>
+    /// Game controller for the TSP minigame of the King Taxes game.
+    /// </summary>
     class TSPController : KingsTaxesController
     {
-
         [SerializeField]
         private Text m_scoreText;
 
+        // score variables
         private float m_thresholdscore;
         private float m_bestPlayerScore;
         private float m_highscore;
@@ -26,50 +28,54 @@
             m_beatKey = "tsp_beat";
         }
 
-        public override void Awake()
+        protected override void FinishLevelSetup()
         {
-            base.Awake();
-        }
-
-        public override void FinishLevelSetup()
-        {
+            // set score variables
             m_bestPlayerScore = float.PositiveInfinity;
-            m_thresholdscore = TSP.FindTSPLength(m_graph) + 0.0001f;
+            m_thresholdscore = TSP.FindTSPLength(m_graph) + 0.0001f;        // use greedy tsp length as threshold
             m_scorekey = SceneManager.GetActiveScene().name + "score" + m_levelCounter;
             m_highscore = PlayerPrefs.GetFloat(m_scorekey, float.PositiveInfinity);
 
             UpdateTextField(false, -1);
         }
 
+        protected override List<Vector2> InitEndlessLevel(int level, float width, float height)
+        {
+            return RandomPos(level + 3, width, height);
+        }
+
         public override void CheckSolution()
         {
-            var tour = TSP.IsHamiltonian(m_graph);
             var score = -1f;
+
+            // check if tour is hamiltonian, otherwise invalid
+            var tour = TSP.IsHamiltonian(m_graph);
             if (tour)
             {
+                // calculate TSP score
                 score = m_graph.TotalEdgeWeight;
-                if (score< m_bestPlayerScore)
+
+                // update best score by player
+                if (score < m_bestPlayerScore)
                 {
                     m_bestPlayerScore = score;
                 }
+
+                // check if score below theshold
                 if (score < m_thresholdscore)
                 {
                     m_advanceButton.Enable();
                 }
+
+                // update all-time high score
                 if (score < m_highscore)
                 {
                     m_highscore = score;
                     PlayerPrefs.SetFloat(m_scorekey, m_highscore);
                 }
-
-                    Debug.Log("We have a tour of " + m_graph.TotalEdgeWeight);
             }
-            UpdateTextField(tour, score);
-        }
 
-        public override List<Vector2> InitEndlessLevel(int level, float width, float height)
-        {
-            return RandomPos(level + 3, width, height);
+            UpdateTextField(tour, score);
         }
 
         /// <summary>

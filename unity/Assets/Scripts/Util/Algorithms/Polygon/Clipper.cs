@@ -8,6 +8,9 @@
     using Util.Geometry.Polygon;
     using Util.Math;
 
+    /// <summary>
+    /// Collection of algorithm related to cutting out polygons such that they no longer overlap.
+    /// </summary>
     public static class Clipper
     {
 
@@ -53,14 +56,16 @@
         }
 
         /// <summary>
-        /// 
+        /// Creates cutout multipolygon given the relevant vector lists.
         /// </summary>
+        /// <remarks>
+        /// An eventual intersecting implementation of the Weiler-Atherthon algorithm should use selection on the startvertices.
+        /// (i.e. taking only inbound edges, see also wikipedia)
+        /// </remarks>
         /// <param name="a_subjectList"></param>
         /// <param name="a_clipList"></param>
         /// <param name="a_startVertexList">A list of points where we start tracing shapes. Double startpoints on the same shape will be removed. </param>
         /// <returns></returns>
-        /// 
-        ///NOTE: An eventual interesecting implementation of the Weiler-Atherthon algorithm should use selection on the startvertices. (i.e. taking only inbound edges, see also wikipedia)
         private static MultiPolygon2D WeilerAtherthonCutOut(LinkedList<Vector2> a_subjectList, LinkedList<Vector2> a_clipList, List<Vector2> a_startVertexList)
         {
             var result = new MultiPolygon2D();
@@ -87,7 +92,7 @@
                 Debug.Assert(startnode != null, startnode);
                 LinkedListNode<Vector2> workingvertex = startnode.Next;
 
-                if (workingvertex == null) { workingvertex = a_subjectList.First; }
+                if (workingvertex == null) workingvertex = a_subjectList.First;
 
                 while (workingvertex.Value != start)
                 {
@@ -98,6 +103,7 @@
                     if (activeList == WAList.Subject)
                     {
                         intersection = a_clipList.Find(workingvertex.Value);
+
                         //fallback
                         var iterationvertex = a_clipList.First;
                         while (iterationvertex != null)

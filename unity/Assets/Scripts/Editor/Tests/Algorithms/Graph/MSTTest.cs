@@ -70,16 +70,16 @@
 
             var level2vertices = level2mst.Vertices.ToList();
 
-            Assert.True(level2mst.ContainsEdge(new Edge(level2vertices[0], level2vertices[1])));
-            Assert.True(level2mst.ContainsEdge(new Edge(level2vertices[2], level2vertices[1])));
-            Assert.True(level2mst.ContainsEdge(new Edge(level2vertices[2], level2vertices[3])));
-            Assert.True(level2mst.ContainsEdge(new Edge(level2vertices[3], level2vertices[4])));
+            Assert.True(level2mst.ContainsEdge(level2vertices[0], level2vertices[1]));
+            Assert.True(level2mst.ContainsEdge(level2vertices[2], level2vertices[1]));
+            Assert.True(level2mst.ContainsEdge(level2vertices[2], level2vertices[3]));
+            Assert.True(level2mst.ContainsEdge(level2vertices[3], level2vertices[4]));
 
-            Assert.False(level2mst.ContainsEdge(new Edge(level2vertices[0], level2vertices[2])));
-            Assert.False(level2mst.ContainsEdge(new Edge(level2vertices[3], level2vertices[1])));
-            Assert.False(level2mst.ContainsEdge(new Edge(level2vertices[4], level2vertices[1])));
-            Assert.False(level2mst.ContainsEdge(new Edge(level2vertices[4], level2vertices[2])));
-            Assert.False(level2mst.ContainsEdge(new Edge(level2vertices[1], level2vertices[3])));
+            Assert.False(level2mst.ContainsEdge(level2vertices[0], level2vertices[2]));
+            Assert.False(level2mst.ContainsEdge(level2vertices[3], level2vertices[1]));
+            Assert.False(level2mst.ContainsEdge(level2vertices[4], level2vertices[1]));
+            Assert.False(level2mst.ContainsEdge(level2vertices[4], level2vertices[2]));
+            Assert.False(level2mst.ContainsEdge(level2vertices[1], level2vertices[3]));
         }
 
         [Test]
@@ -87,7 +87,7 @@
         {
             var mst = MST.MinimumSpanningTree(m_graph);
 
-            Assert.False(mst.ContainsEdge(new Edge(m_level1pos[1], m_level1pos[2])));
+            Assert.False(mst.ContainsEdge(m_level1pos[1], m_level1pos[2]));
         }
     }
 }

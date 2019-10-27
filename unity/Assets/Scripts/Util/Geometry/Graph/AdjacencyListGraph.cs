@@ -6,6 +6,10 @@
     using System.Linq;
     using UnityEngine;
 
+    /// <summary>
+    /// Basic implementation of the graph interface, using adjacency lists to store vertex-edge information 
+    /// (as opposed to an adjacency matrix).
+    /// </summary>
     public class AdjacencyListGraph : IGraph
     {
         private readonly List<Vertex> m_Vertices;
@@ -33,6 +37,8 @@
             m_Edges = new Dictionary<Vertex, List<Edge>>();
             Type = typ;
             EdgeCount = 0;
+
+            // add given vertices and edges in order
             foreach (var v in vertices) AddVertex(v);
             foreach (var e in edges) AddEdge(e);
         }
@@ -111,13 +117,18 @@
             // edge already exists
             if (Type.SIMPLE && ContainsEdge(e)) return e;
 
+            // add edge to graph
             m_Edges[e.Start].Add(e);
             EdgeCount++;
 
+            // check if back edge is necessary
+            // only add back edge in undirected graph
             if (!Type.DIRECTED)
             {
-                Edge e_back = new Edge(e.End, e.Start, e.Weight);
-                e_back.Twin = e;
+                Edge e_back = new Edge(e.End, e.Start, e.Weight)
+                {
+                    Twin = e
+                };
                 e.Twin = e_back;
 
                 // if back edge does not exist or graph isnt simple, add back edge
@@ -161,31 +172,48 @@
             m_Edges.Clear();
         }
 
-        public bool ContainsEdge(Edge e)
-        {
-            if (e == null)
-                throw new ArgumentException("Edge cannot be null");
-            return m_Edges[e.Start].Contains(e);
-        }
-
         public bool ContainsVertex(Vertex v)
         {
             if (v == null)
+            {
                 throw new ArgumentException("Vertex cannot be null");
+            }
             return m_Vertices.Contains(v);
+        }
+
+        public bool ContainsEdge(Edge e)
+        {
+            if (e == null)
+            {
+                throw new ArgumentException("Edge cannot be null");
+            }
+            return m_Edges[e.Start].Contains(e);
+        }
+
+        public bool ContainsEdge(Vertex u, Vertex v)
+        {
+            if (u == null || v == null)
+            {
+                throw new ArgumentException("Vertices cannot be null");
+            }
+            return ContainsEdge(new Edge(u, v));
         }
 
         public int DegreeOf(Vertex v)
         {
             if (v == null || !m_Edges.ContainsKey(v))
+            {
                 throw new ArgumentException("Graph does not contain vertex");
+            }
             return m_Edges[v].Count;
         }
 
         public IEnumerable<Edge> EdgesOf(Vertex v)
         {
             if (v == null || !m_Edges.ContainsKey(v))
+            {
                 throw new ArgumentException("Graph does not contain vertex");
+            }
 
             if (Type.DIRECTED)
             {
@@ -206,23 +234,21 @@
         public int InDegreeOf(Vertex v)
         {
             if (v == null || !m_Edges.ContainsKey(v))
+            {
                 throw new ArgumentException("Graph does not contain vertex");
+            }
 
             if (!Type.DIRECTED) return DegreeOf(v);
 
-            int count = 0;
-            foreach (var e in Edges)
-            {
-                if (e.End.Equals(v)) count++;
-            }
-
-            return count;
+            return Edges.Where(e => e.End.Equals(v)).Count();
         }
 
         public IEnumerable<Edge> InEdgesOf(Vertex v)
         {
             if (v == null || !m_Edges.ContainsKey(v))
+            {
                 throw new ArgumentException("Graph does not contain vertex");
+            }
 
             if (!Type.DIRECTED) { /* nothing done atm */ }
 
@@ -235,7 +261,9 @@
         public int OutDegreeOf(Vertex v)
         {
             if (v == null || !m_Edges.ContainsKey(v))
+            {
                 throw new ArgumentException("Graph does not contain vertex");
+            }
 
             if (!Type.DIRECTED) return DegreeOf(v);
 
@@ -245,7 +273,9 @@
         public IEnumerable<Edge> OutEdgesOf(Vertex v)
         {
             if (v == null || !m_Edges.ContainsKey(v))
+            {
                 throw new ArgumentException("Graph does not contain vertex");
+            }
 
             if (!Type.DIRECTED) return EdgesOf(v);
 
@@ -355,7 +385,7 @@
     public class AdjacencyListGraph<E> : AdjacencyListGraph, IGraph<E>
     {
 
-        private Dictionary<Edge, E> EdgeProp;
+        private readonly Dictionary<Edge, E> EdgeProp = new Dictionary<Edge, E>();
 
         public AdjacencyListGraph() : this(new GraphType(false, true))
         { }
@@ -375,9 +405,7 @@
 
         public AdjacencyListGraph(IEnumerable<Vertex> vertices, IEnumerable<Edge> edges, GraphType typ)
             : base(vertices, edges, typ)
-        {
-            EdgeProp = new Dictionary<Edge, E>();
-        }
+        { }
 
         public new Edge AddEdge(Edge e)
         {
@@ -400,7 +428,7 @@
             EdgeProp.Clear();
         }
 
-        public E getEdgeProp(Edge e)
+        public E GetEdgeProp(Edge e)
         {
             if(!ContainsEdge(e))
             {
@@ -409,7 +437,7 @@
             return EdgeProp[e];
         }
 
-        public void setEdgeProp(Edge e, E val)
+        public void SetEdgeProp(Edge e, E val)
         {
             if (!ContainsEdge(e))
             {
@@ -422,7 +450,7 @@
     public class AdjacencyListGraph<V,E> : AdjacencyListGraph<E>, IGraph<V,E>
     {
 
-        private Dictionary<Vertex, V> VertexProp;
+        private readonly Dictionary<Vertex, V> VertexProp = new Dictionary<Vertex, V>();
 
         public AdjacencyListGraph() : this(new GraphType(false, true))
         { }
@@ -442,9 +470,7 @@
 
         public AdjacencyListGraph(IEnumerable<Vertex> vertices, IEnumerable<Edge> edges, GraphType typ)
             : base(vertices, edges, typ)
-        {
-            VertexProp = new Dictionary<Vertex, V>();
-        }
+        { }
 
         public new Vertex AddVertex()
         {
@@ -471,7 +497,7 @@
             VertexProp.Clear();
         }
 
-        public V getVertexProp(Vertex v)
+        public V GetVertexProp(Vertex v)
         {
             if (!ContainsVertex(v))
             {
@@ -480,7 +506,7 @@
             return VertexProp[v];
         }
 
-        public void setVertexProp(Vertex v, V val)
+        public void SetVertexProp(Vertex v, V val)
         {
             if (!ContainsVertex(v))
             {

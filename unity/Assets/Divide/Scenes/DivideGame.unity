@@ -244,13 +244,30 @@ Prefab:
       propertyPath: m_leftText
       value: 
       objectReference: {fileID: 761520868}
+    - target: {fileID: 114196080148231858, guid: 6167f5fff7937994a9f9d04932727a4e,
+        type: 2}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 498115626}
+    - target: {fileID: 114196080148231858, guid: 6167f5fff7937994a9f9d04932727a4e,
+        type: 2}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: Activate
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 114316817067168508, guid: 6167f5fff7937994a9f9d04932727a4e, type: 2}
     - {fileID: 61410367574743112, guid: 6167f5fff7937994a9f9d04932727a4e, type: 2}
     - {fileID: 212899966722681038, guid: 6167f5fff7937994a9f9d04932727a4e, type: 2}
     - {fileID: 114774177067694444, guid: 6167f5fff7937994a9f9d04932727a4e, type: 2}
+    - {fileID: 114233867522223042, guid: 6167f5fff7937994a9f9d04932727a4e, type: 2}
   m_SourcePrefab: {fileID: 100100000, guid: 6167f5fff7937994a9f9d04932727a4e, type: 2}
   m_IsPrefabAsset: 0
+--- !u!114 &498115626 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 114487568662881042, guid: 6167f5fff7937994a9f9d04932727a4e,
+    type: 2}
+  m_PrefabInternal: {fileID: 498115625}
+  m_Script: {fileID: 11500000, guid: 29ad63c18b77fdf44a2694151d6d6031, type: 3}
 --- !u!114 &513017923 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 114427536216980344, guid: 6167f5fff7937994a9f9d04932727a4e,

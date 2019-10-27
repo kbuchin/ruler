@@ -7,17 +7,51 @@
     using Util.Algorithms.Polygon;
     using Util.Geometry;
     using Util.Geometry.DCEL;
+    using Util.Geometry.Duality;
     using Util.Geometry.Polygon;
     using Util.Math;
 
+    /// <summary>
+    /// Collection of algorithms for finding cut lines through a collection of points.
+    /// Uses point-line duality to find the middle regions between the lines in the dual.
+    /// Finds line of greatest separation.
+    /// </summary>
     public static class HamSandwich
     {
-        public static List<Line> FindCutlines(IEnumerable<Face> a_region)
+        public static List<Line> FindCutlines(IEnumerable<Vector2> a_points)
         {
-            return FindCutlines(a_region.Select(f => f.Polygon.Outside));
+            // obtain dual lines for points
+            var lines = PointLineDual.Dual(a_points);
+
+            // calculate bounding box around line intersections with some margin
+            var bBox = BoundingBoxComputer.FromLines(lines, 10f);
+
+            // calculate dcel for line inside given bounding box
+            var m_dcel = new DCEL(lines, bBox);
+
+            // find faces in the middle of the lines vertically and calculate cut lines
+            var faces = MiddleFaces(m_dcel);
+            return FindCutlinesInDual(faces);
         }
 
-        public static List<Line> FindCutlines(IEnumerable<Polygon2D> a_region)
+        /// <summary>
+        /// Find cut lines through each face of a dcel.
+        /// </summary>
+        /// <param name="a_region"></param>
+        /// <returns></returns>
+        public static List<Line> FindCutlinesInDual(IEnumerable<Face> a_region)
+        {
+            return FindCutlinesInDual(a_region.Select(f => f.Polygon.Outside));
+        }
+
+        /// <summary>
+        /// Find cut lines through each polygon.
+        /// A polygon represents an area bounded by lines in the dual plane.
+        /// The cut line will be a point in the dual plane, being the line of greatest seperation in the real plane.
+        /// </summary>
+        /// <param name="a_region"></param>
+        /// <returns></returns>
+        public static List<Line> FindCutlinesInDual(IEnumerable<Polygon2D> a_region)
         {
             if (a_region.Count() <= 0) // no valid faces are supplied
             {
@@ -28,7 +62,7 @@
             var lines = new List<Line>();
             foreach (var poly in a_region.Skip(1).Take(a_region.Count() - 2)) //Treat faces on the bounding box separately
             {
-                var line = Seperator.LineOfGreatestMinimumSeperationInTheDual(poly, false).Line;
+                var line = Separator.LineOfGreatestMinimumSeparationInTheDual(poly, false).Line;
                 if (line == null)
                 {
                     throw new GeomException("Polygon should have a seperation line");
@@ -39,9 +73,9 @@
             // Solve bounding box cases (Take only the line with the greatest separation)
             var firstBoundingboxPoly = a_region.ElementAt(0);
             var lastBoundingboxPoly = a_region.ElementAt(a_region.Count() - 1);
-            var firstTuple = Seperator.LineOfGreatestMinimumSeperationInTheDual(firstBoundingboxPoly, true);
-            var lastTuple = Seperator.LineOfGreatestMinimumSeperationInTheDual(lastBoundingboxPoly, true);
-            if (firstTuple.Seperation > lastTuple.Seperation)
+            var firstTuple = Separator.LineOfGreatestMinimumSeparationInTheDual(firstBoundingboxPoly, true);
+            var lastTuple = Separator.LineOfGreatestMinimumSeparationInTheDual(lastBoundingboxPoly, true);
+            if (firstTuple.Separation > lastTuple.Separation)
             {
                 lines.Add(firstTuple.Line);
             }
@@ -49,16 +83,55 @@
             {
                 lines.Add(lastTuple.Line);
             }
-            foreach (var l in lines) { Debug.Log(l); }
+
             return lines;
         }
-
-        public static List<Line> FindCutlines(IEnumerable<Face> a_region1, IEnumerable<Face> a_region2, IEnumerable<Face> a_region3)
+        
+        /// <summary>
+        /// Find cut lines that separates all point sets equally.
+        /// Generates dcel of dual lines and generates cut lines through intersection of middle faces.
+        /// </summary>
+        /// <param name="a_points1"></param>
+        /// <param name="a_points2"></param>
+        /// <param name="a_points3"></param>
+        /// <returns></returns>
+        public static List<Line> FindCutLines(IEnumerable<Vector2> a_points1, IEnumerable<Vector2> a_points2, 
+            IEnumerable<Vector2> a_points3)
         {
-            return FindCutlines(a_region1.ToList(), a_region2.ToList(), a_region3.ToList());
+            // obtain dual lines for game objects
+            var lines1 = PointLineDual.Dual(a_points1);
+            var lines2 = PointLineDual.Dual(a_points2);
+            var lines3 = PointLineDual.Dual(a_points3);
+
+            // add lines together
+            var allLines = lines1.Concat(lines2.Concat(lines3));
+
+            // calculate bounding box around line intersections with some margin
+            var bBox = BoundingBoxComputer.FromLines(allLines, 10f);
+
+            // calculate dcel for line inside given bounding box
+            var dcel1 = new DCEL(lines1, bBox);
+            var dcel2 = new DCEL(lines2, bBox);
+            var dcel3 = new DCEL(lines3, bBox);
+
+            // find faces in the middle of the lines vertically
+            var archerFaces = MiddleFaces(dcel1);
+            var swordsmenFaces = MiddleFaces(dcel2);
+            var mageFaces = MiddleFaces(dcel3);
+
+            // obtain cut lines for the dcel middle faces
+            return FindCutlinesInDual(archerFaces, swordsmenFaces, mageFaces);
         }
 
-        public static List<Line> FindCutlines(List<Face> a_region1, List<Face> a_region2, List<Face> a_region3)
+        /// <summary>
+        /// Find cut line through the intersection of dcel faces.
+        /// Each dcel face is bounded by lines in the dual plane, representing the points to separate equally.
+        /// </summary>
+        /// <param name="a_region1"></param>
+        /// <param name="a_region2"></param>
+        /// <param name="a_region3"></param>
+        /// <returns></returns>
+        public static List<Line> FindCutlinesInDual(List<Face> a_region1, List<Face> a_region2, List<Face> a_region3)
         {
             //Assume each list of faces has an strict y-order (i.e. each aface is above the other)
             a_region1.Sort((f1, f2) => f1.BoundingBox().yMin.CompareTo(f2.BoundingBox().yMin));
@@ -106,8 +179,7 @@
                     intermediateList.Add(intersection);
                 }
 
-                if (BoundingBoxComputer.FromPolygon(region2[list2index]).yMax <
-                    BoundingBoxComputer.FromPolygon(region1[list1index]).yMax)
+                if (region2[list2index].BoundingBox().yMax < region1[list1index].BoundingBox().yMax)
                 {
                     list2index++;
                 }
@@ -132,8 +204,7 @@
                     result.Add(intersection);
                 }
 
-                if (BoundingBoxComputer.FromPolygon(region3[list3index]).yMax <
-                    BoundingBoxComputer.FromPolygon(intermediateList[intermediateIndex]).yMax)
+                if (region3[list3index].BoundingBox().yMax < intermediateList[intermediateIndex].BoundingBox().yMax)
                 {
                     list3index++;
                 }
@@ -145,10 +216,14 @@
             while (intermediateIndex < intermediateList.Count && list3index < region3.Count);
 
             //Convert polygons to lines
-            foreach (var poly in result) { Debug.Log(poly); }
-            return FindCutlines(result);
+            return FindCutlinesInDual(result);
         }
 
+        /// <summary>
+        /// Finds faces that are vertically right in middle of the dual lines in the given dcel.
+        /// </summary>
+        /// <param name="m_dcel"></param>
+        /// <returns></returns>
         public static List<Face> MiddleFaces(DCEL m_dcel)
         {
             if (m_dcel == null) return new List<Face>();
@@ -200,7 +275,7 @@
             while (true)
             {
                 var dbstartedge = workingedge;
-                while (!isEdgeLeadingToTopMostVertex(workingedge))
+                while (!IsEdgeLeadingToTopMostVertex(workingedge))
                 {
                     workingedge = workingedge.Next;
                     Debug.Assert((workingedge != dbstartedge), "OMG returned to starting Edge");
@@ -227,14 +302,10 @@
             return midllefaces;
         }
 
-        private static bool isEdgeLeadingToTopMostVertex(HalfEdge edge)
+        private static bool IsEdgeLeadingToTopMostVertex(HalfEdge edge)
         {
-            var epsilon = 0.0005f;
-            if (edge.From.Pos.y - epsilon <= edge.To.Pos.y && edge.Next.From.Pos.y >= edge.Next.To.Pos.y - epsilon)
-            {
-                return true;
-            }
-            return false;
+            return MathUtil.LEQEps(edge.From.Pos.y, edge.To.Pos.y) && 
+                MathUtil.GEQEps(edge.Next.From.Pos.y, edge.Next.To.Pos.y);
         }
     }
 }

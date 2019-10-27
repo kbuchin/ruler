@@ -4,11 +4,15 @@
     using System.Collections.Generic;
     using Util.Geometry;
 
+    /// <summary>
+    /// Draws lines with a given color onto the screen.
+    /// </summary>
     public class LineDrawer : MonoBehaviour
     {
         private List<ColoredLines> m_lines;
         private Material m_LineMaterial;
 
+        // Use this for initialization
         void Awake()
         {
             m_lines = new List<ColoredLines>();
@@ -27,6 +31,9 @@
             m_LineMaterial.SetInt("_ZWrite", 0);
         }
 
+        /// <summary>
+        /// Draws the colored lines using GL.
+        /// </summary>
         private void DrawLines()
         {
             foreach (var colored_lines in m_lines)
@@ -53,12 +60,20 @@
             DrawLines();
         }
 
-        internal void AddLines(ICollection<Line> a_lines, Color a_color)
+        /// <summary>
+        /// Adds a collection of lines with a given color.
+        /// </summary>
+        /// <param name="a_lines"></param>
+        /// <param name="a_color"></param>
+        public void AddLines(IEnumerable<Line> a_lines, Color a_color)
         {
             m_lines.Add(new ColoredLines(a_color, a_lines));
         }
 
-        internal void ClearLines()
+        /// <summary>
+        /// Clears all lines in the drawer.
+        /// </summary>
+        public void ClearLines()
         {
             m_lines.Clear();
         }

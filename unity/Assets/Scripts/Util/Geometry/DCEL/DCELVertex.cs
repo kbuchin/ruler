@@ -5,6 +5,11 @@
     using UnityEngine;
     using Util.Geometry.Graph;
 
+    /// <summary>
+    /// Simple extension of a normal graph vertex.
+    /// Now also stores one additional leaving half edge for easy iteration.
+    /// Use DCEL methods for iterating through adjacent edges.
+    /// </summary>
     public class DCELVertex : Vertex
     {
         public HalfEdge Leaving { get; set; }

@@ -9,7 +9,11 @@
     using UnityEngine.SceneManagement;
     using Util.Geometry.Graph;
     using KingsTaxes.Model;
+    using System;
 
+    /// <summary>
+    /// Parent controller for all game controllers related to the Kings Taxes game
+    /// </summary>
     public abstract class KingsTaxesController : MonoBehaviour, IController
     {
         [SerializeField]
@@ -29,33 +33,44 @@
 
         [SerializeField]
         protected bool m_endlessMode = false;
+
+        // Player prefs keys for endless levels beat and regular games beat
         protected string m_endlessScoreKey = "taxes_score";
         protected string m_beatKey = "taxes_beat";
 
-        protected int m_endlessDifficulty;
-        protected readonly float m_settlementRadius = 0.6f; // estimated radius of a settlement in unity units 
+        // estimated radius of a settlement in unity units 
+        protected readonly float m_settlementRadius = 0.6f;
         protected bool m_solutionMode = false;
 
+        // list of game objects instantiated, for removal
         protected List<GameObject> instantObjects = new List<GameObject>();
 
+        // graph information
         protected IGraph m_graph;
         protected Settlement[] m_settlements;
 
+        // t-spanner ratio for the current level
+        // only relevant for spanner, but stored with each level object
         protected float m_t = 1f;
 
-        public virtual void Awake ()
-        { }
-
         // Use this for initialization
-        public virtual void Start () {
+        public virtual void Start()
+        {
             InitLevel();
         }
 
+        // Update called every frame
+        public virtual void Update()
+        { }
+
         public void InitLevel()
         {
+            // clear old level
+            Clear();
+
             if (m_levelCounter >= m_levels.Count && m_endlessMode)
             {
-                m_endlessDifficulty = PlayerPrefs.GetInt(m_endlessScoreKey);
+                var m_endlessDifficulty = PlayerPrefs.GetInt(m_endlessScoreKey);
                 Camera.main.orthographicSize = 2 * (1 + m_settlementRadius * Mathf.Sqrt(m_endlessDifficulty));
 
                 var height = Camera.main.orthographicSize * 2;
@@ -65,7 +80,7 @@
                 foreach (var positon in positions)
                 {
                     GameObject obj;
-                    if (Random.Range(0f, 1f) < .75f)
+                    if (UnityEngine.Random.Range(0f, 1f) < .75f)
                     {
                         obj = Instantiate(m_villagePrefab, positon, Quaternion.identity);
                     }
@@ -108,14 +123,10 @@
             m_advanceButton.Disable();
         }
 
-        // Update is called once per frame
-        public virtual void Update ()
-        { }
-
         /// <summary>
         /// Is called to finish level creation, e.g. for creating a solution for a new level
         /// </summary>
-        public abstract void FinishLevelSetup();
+        protected abstract void FinishLevelSetup();
 
         /// <summary>
         /// Is called after removing or adding an edge
@@ -126,7 +137,7 @@
         /// Gives the position for a random endlesss level. The positons are centered around 0,0 
         /// </summary>
         /// <param name="level">The difficulty level, in range 0 -- infty</param>
-        public abstract List<Vector2> InitEndlessLevel(int level, float width, float height);
+        protected abstract List<Vector2> InitEndlessLevel(int level, float width, float height);
 
 
         /// <summary>
@@ -138,23 +149,26 @@
             {
                 if(!m_solutionMode)
                 {
+                    // update number of endless levels solved
+                    var m_endlessDifficulty = PlayerPrefs.GetInt(m_endlessScoreKey);
                     PlayerPrefs.SetInt(m_endlessScoreKey, m_endlessDifficulty + 1);
                 }
             }
             else
             {
+                // increase level index
                 m_levelCounter++;
             }
 
-            Clear();
-
             if (m_levelCounter >= m_levels.Count && !m_endlessMode)
             {
+                // all levels beat, load victory
                 PlayerPrefs.SetInt(m_beatKey, 1);
                 SceneManager.LoadScene(m_victoryScene);
             }
             else
             {
+                // initialize new level
                 InitLevel();
             }
         }
@@ -167,23 +181,42 @@
         public void AddRoad(Settlement settlement1, Settlement settlement2)
         {
             // dont add road to itself
-            if (settlement1 == settlement2) return;
+            if (settlement1 == settlement2 || m_graph.ContainsEdge(settlement1.Vertex, settlement2.Vertex))
+            {
+                return;
+            }
 
+            // instantiate a road object in game
+            var roadmesh = Instantiate(m_roadMeshPrefab, Vector3.forward, Quaternion.identity) as GameObject;
+            roadmesh.transform.parent = this.transform;
+
+            // remember road for destroyal later
+            instantObjects.Add(roadmesh);
+            
+            // create road mesh
+            var roadmeshScript = roadmesh.GetComponent<ReshapingMesh>();
+            roadmeshScript.CreateNewMesh(settlement1.transform.position, settlement2.transform.position);
+
+            // create road edge
             var edge = m_graph.AddEdge(settlement1.Vertex, settlement2.Vertex);
 
-            if (edge != null)
+            // error check
+            if (edge == null)
             {
-                var roadmesh = Instantiate(m_roadMeshPrefab, Vector3.forward, Quaternion.identity) as GameObject;
-                roadmesh.transform.parent = this.transform;
-                instantObjects.Add(roadmesh);
-                var roadmeshScript = roadmesh.GetComponent<ReshapingMesh>();
-                roadmeshScript.CreateNewMesh(settlement1.transform.position, settlement2.transform.position);
-                roadmesh.GetComponent<Road>().Edge = edge;
-
-                CheckSolution();
+                throw new InvalidOperationException("Road could not be added to graph");
             }
+
+            // link edge to road
+            roadmesh.GetComponent<Road>().Edge = edge;
+
+            // check if solution present
+            CheckSolution();
         }
 
+        /// <summary>
+        /// Removes the given road from the graph
+        /// </summary>
+        /// <param name="road"></param>
         public void RemoveRoad(Road road)
         {
             m_graph.RemoveEdge(road.Edge);
@@ -197,24 +230,20 @@
         /// <param name="width"> The widht of the rectangle in which the positions should lie</param>
         /// <param name="height"> The height of the rectangle in which the positions should lie</param>
         /// <returns></returns>
-        public List<Vector2> RandomPos(int count, float width, float height)
+        protected List<Vector2> RandomPos(int count, float width, float height)
         {
             var result = new List<Vector2>();
 
             while (result.Count < count)
             {
-                var xpos = Random.Range(-width / 2 + 2 * m_settlementRadius, width / 2 - 2 * m_settlementRadius);
-                var ypos = Random.Range(-height / 2 + 2 * m_settlementRadius, height / 2 - 2 * m_settlementRadius);
+                // find uniform random position centered around (0,0) within width and height
+                // taking into account settlement radius
+                var xpos = UnityEngine.Random.Range(-width / 2 + 2 * m_settlementRadius, width / 2 - 2 * m_settlementRadius);
+                var ypos = UnityEngine.Random.Range(-height / 2 + 2 * m_settlementRadius, height / 2 - 2 * m_settlementRadius);
                 var pos = new Vector2(xpos, ypos);
-                var accepted = true;
-                foreach (var r in result)
-                {
-                    if (Vector2.Distance(r, pos) < 2 * m_settlementRadius)
-                    {
-                        accepted = false;
-                    }
-                }
-                if (accepted)
+
+                // add if not too close to other settlement
+                if (!result.Exists(r => Vector2.Distance(r, pos) < 2 * m_settlementRadius))
                 {
                     result.Add(pos);
                 }
@@ -223,15 +252,21 @@
             return result;
         }
 
+        /// <summary>
+        /// Clears graph and relevant game objects
+        /// </summary>
         protected void Clear()
         {
-            m_graph.Clear();
+            // clear graph if exists
+            if (m_graph != null) m_graph.Clear();
 
+            // destroy game objects related to graph
             foreach (var obj in instantObjects)
             {
+                // destroy immediate
+                // since controller will search for existing objects afterwards
                 DestroyImmediate(obj);
             }
-
             instantObjects.Clear();
 
             m_settlements = null;

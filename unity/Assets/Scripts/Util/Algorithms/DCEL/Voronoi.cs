@@ -1,4 +1,4 @@
-﻿namespace Util.Algorithms.Graph
+﻿namespace Util.Algorithms.DCEL
 {
     using System;
     using System.Collections.Generic;
@@ -10,6 +10,9 @@
     using Util.Math;
     using System.Linq;
 
+    /// <summary>
+    /// Collection of algorithms related to Voronoi diagrams.
+    /// </summary>
     public static class Voronoi {
 
         /// <summary>
@@ -36,14 +39,13 @@
         {
             if (!Delaunay.IsValid(m_Delaunay))
             {
-                foreach (var edge in m_Delaunay.Edges.Where(e => !Delaunay.IsValid(e))) Debug.Log(edge.IsOuter);
                 throw new GeomException("Triangulation should be delaunay for the Voronoi diagram.");
             }
 
             var dcel = new DCEL();
 
+            // create vertices for each triangles circumcenter and store them in a dictionary
             Dictionary<Triangle, DCELVertex> vertexMap = new Dictionary<Triangle, DCELVertex>();
-
             foreach (var triangle in m_Delaunay.Triangles)
             {
                 var vertex = new DCELVertex(triangle.Circumcenter);
@@ -51,6 +53,8 @@
                 vertexMap.Add(triangle, vertex);
             }
 
+            // remember which edges where visited
+            // since each edge has a twin
             var edgesVisited = new HashSet<TriangleEdge>();            
 
             foreach (var edge in m_Delaunay.Edges)
@@ -58,6 +62,8 @@
                 // either already visited twin edge or edge is outer triangle
                 if (edgesVisited.Contains(edge) || edge.IsOuter) continue;
 
+                // add edge between the two adjacent triangles vertices
+                // vertices at circumcenter of triangle
                 if (edge.T != null && edge.Twin.T != null)
                 {
                     var v1 = vertexMap[edge.T];
@@ -69,8 +75,6 @@
                     edgesVisited.Add(edge.Twin);
                 }
             }
-
-            dcel.AssertWellformed();
 
             return dcel;
         }

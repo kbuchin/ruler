@@ -7,6 +7,10 @@
     using UnityEngine;
     using Util.Geometry.Polygon;
 
+    /// <summary>
+    /// Acts as a data container for an art gallery level.
+    /// Stores the level polygon (2D polygon without holes) and the max lighthouse parameter.
+    /// </summary>
     [CreateAssetMenu(fileName = "agLevelNew", menuName = "Levels/Art Gallery Level")]
     public class ArtGalleryLevel : ScriptableObject
     {

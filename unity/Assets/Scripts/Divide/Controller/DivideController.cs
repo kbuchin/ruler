@@ -7,16 +7,19 @@
     using UnityEngine.SceneManagement;
     using UnityEngine.UI;
     using Util.Geometry.DCEL;
-    using Util.Geometry;
     using Util.Geometry.Duality;
     using Drawing;
     using Divide.Model;
     using Divide.UI;
     using General.Menu;
     using Util.Algorithms.DCEL;
-    using Util.Algorithms;
     using General.Controller;
+    using Util.Math;
 
+    /// <summary>
+    /// Main controller for the divide game.
+    /// Handles the game update loop, as well as level initialization and advancement.
+    /// </summary>
     public class DivideController : MonoBehaviour, IController
     {
         [Header("Levels")]
@@ -47,21 +50,22 @@
         [SerializeField]
         private Sprite m_sprTooBad;
 
+        // holds current level index
         private int m_levelCounter = 0;
+
+        // hold number of swaps still allowed
         private int m_numberOfSwaps;
 
         private DivideSoldier selectedSoldier;
         private DivideSolution m_solution;
 
+        // holds the game objects for the soldiers
         private List<GameObject> m_spearmen = new List<GameObject>();
         private List<GameObject> m_archers = new List<GameObject>();
         private List<GameObject> m_mages = new List<GameObject>();
 
+        // dcel for the dual lines related to soldiers
         private DCEL m_archerDcel, m_spearmenDcel,  m_mageDcel;
-
-        private List<Vector2> m_spearmenPos = new List<Vector2>();
-        private List<Vector2> m_archersPos = new List<Vector2>();
-        private List<Vector2> m_magesPos = new List<Vector2>();
 
         //Unity references
         private DivideLineDrawer m_lineDrawer;
@@ -71,7 +75,9 @@
         private bool m_levelSolved;
         private bool m_restartLevel;
 
-        void Start() {
+        // Use this for initialization
+        void Start()
+        {
             m_mouseLine = FindObjectOfType<DivideLine>();
             m_lineDrawer = FindObjectOfType<DivideLineDrawer>();
             m_graphDrawer = FindObjectOfType<DCELDrawer>();
@@ -79,6 +85,78 @@
             m_victoryOverlay.Callback = AdvanceLevel;
 
             InitLevel();
+        }
+
+        // Update is called once per frame
+        void Update()
+        {
+            //handle input key presses
+            if (Input.GetKeyDown("q"))
+            {
+                m_lineDrawer.ToggleArchers();
+            }
+            if (Input.GetKeyDown("w"))
+            {
+                m_lineDrawer.ToggleSpearmen();
+            }
+            if (Input.GetKeyDown("e"))
+            {
+                m_lineDrawer.ToggleMages();
+            }
+            if (Input.GetKeyDown("r"))
+            {
+                m_lineDrawer.ToggleAll();
+            }
+            if (Input.GetKeyDown("a"))
+            {
+                // toggle archer dcel 
+                m_graphDrawer.Graph = m_graphDrawer.Graph == m_archerDcel ? null : m_archerDcel;
+            }
+            if (Input.GetKeyDown("s"))
+            {
+                // toggle spearmen dcel
+                m_graphDrawer.Graph = m_graphDrawer.Graph == m_spearmenDcel ? null : m_spearmenDcel;
+            }
+            if (Input.GetKeyDown("d"))
+            {
+                // toggle mage dcel
+                m_graphDrawer.Graph = m_graphDrawer.Graph == m_mageDcel ? null : m_mageDcel;
+            }
+            if (Input.GetKeyDown(KeyCode.Minus) || Input.GetKeyDown(KeyCode.KeypadMinus))
+            {
+                // scale graph drawer down
+                var newscale = m_graphDrawer.transform.localScale;
+                newscale.Scale(new Vector3(1 / 1.2f, 1 / 1.2f, 1));
+                m_graphDrawer.transform.localScale = newscale;
+            }
+            if (Input.GetKeyDown(KeyCode.Plus) || Input.GetKeyDown(KeyCode.KeypadPlus) || Input.GetKeyDown(KeyCode.Equals))
+            {
+                // scale graph drawer up
+                var newscale = m_graphDrawer.transform.localScale;
+                newscale.Scale(new Vector3(1.2f, 1.2f, 1));
+                m_graphDrawer.transform.localScale = newscale;
+            }
+
+            if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.Keypad4))
+            {
+                // move graph drawer to left
+                m_graphDrawer.transform.localPosition += new Vector3(-0.5f, 0f, 0f); ;
+            }
+            if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.Keypad6))
+            {
+                // move graph drawer to right
+                m_graphDrawer.transform.localPosition += new Vector3(0.5f, 0f, 0f); ;
+            }
+            if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.Keypad8))
+            {
+                // move graph drawer up
+                m_graphDrawer.transform.localPosition += new Vector3(0f, 0.5f, 0f); ;
+            }
+            if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.Keypad2))
+            {
+                // move graph drawer down
+                m_graphDrawer.transform.localPosition += new Vector3(0f, -0.5f, 0f);
+            }
         }
 
         public void InitLevel()
@@ -126,23 +204,20 @@
             }
 
             UpdateSwapText();
-            UpdateArmyPos();
-            CheckSolution();
+            FindSolution();
         }
 
-        private void UpdateArmyPos()
+        public void CheckSolution()
         {
-            //Find position of different soldiers
-            m_archersPos = m_archers.Select(x => (Vector2)x.transform.position).ToList();
-            m_spearmenPos = m_spearmen.Select(x => (Vector2)x.transform.position).ToList();
-            m_magesPos = m_mages.Select(x => (Vector2)x.transform.position).ToList();
-        }
+            // obtain line and point data of game objects
+            var line = m_mouseLine.Line;
+            var archersPos = m_mages.Select(x => (Vector2)x.transform.position);
+            var spearmenPos = m_mages.Select(x => (Vector2)x.transform.position);
+            var magesPos = m_mages.Select(x => (Vector2)x.transform.position);
 
-        internal void ProcessSolution(Line line)
-        {
-            if (line.NumberOfPointsAbove(m_magesPos) == m_magesPos.Count / 2 
-                && line.NumberOfPointsAbove(m_archersPos) == m_archersPos.Count / 2
-                && line.NumberOfPointsAbove(m_spearmenPos) == m_spearmenPos.Count / 2)
+            if (line.NumberOfPointsAbove(archersPos) == m_archers.Count / 2
+                && line.NumberOfPointsAbove(spearmenPos) == m_spearmen.Count / 2
+                && line.NumberOfPointsAbove(magesPos) == m_mages.Count / 2)
             {
                 if (m_numberOfSwaps >= 0)
                 {
@@ -181,118 +256,54 @@
             }
         }
 
-        void Update()
+        /// <summary>
+        /// Handles a user click on the given soldier.
+        /// Performs a swap if appropriate.
+        /// </summary>
+        /// <param name="soldier"></param>
+        internal void HandleSoldierClick(DivideSoldier soldier)
         {
-            //handle input
-            if (Input.GetKeyDown("q"))
+            if (selectedSoldier == null)
             {
-                m_lineDrawer.ToggleArchers();
+                // select the clicked soldier 
+                selectedSoldier = soldier;
             }
-            if (Input.GetKeyDown("w"))
+            else if (selectedSoldier == soldier)
             {
-                m_lineDrawer.ToggleSoldier();
-            }
-            if (Input.GetKeyDown("e"))
-            {
-                m_lineDrawer.ToggleMages();
-            }
-            if (Input.GetKeyDown("r"))
-            {
-                m_lineDrawer.ToggleAll();
-            }
-            if (Input.GetKeyDown("a"))
-            {
-                if (m_graphDrawer.Graph == m_archerDcel)
-                {
-                    m_graphDrawer.Graph = null;
-                }
-                else {
-                    m_graphDrawer.Graph = m_archerDcel;
-                }
-            }
-            if (Input.GetKeyDown("s"))
-            {
-                if (m_graphDrawer.Graph == m_spearmenDcel)
-                {
-                    m_graphDrawer.Graph = null;
-                }
-                else {
-                    m_graphDrawer.Graph = m_spearmenDcel;
-                }
-            }
-            if (Input.GetKeyDown("d"))
-            {
-                if (m_graphDrawer.Graph == m_mageDcel)
-                {
-                    m_graphDrawer.Graph = null;
-                }
-                else {
-                    m_graphDrawer.Graph = m_mageDcel;
-                }
-            }
-            if (Input.GetKeyDown(KeyCode.Minus) || Input.GetKeyDown(KeyCode.KeypadMinus))
-            {
-                var newscale = m_graphDrawer.transform.localScale;
-                newscale.Scale(new Vector3(1/1.2f, 1/1.2f, 1));
-                m_graphDrawer.transform.localScale = newscale;
-            }
-            if (Input.GetKeyDown(KeyCode.Plus) || Input.GetKeyDown(KeyCode.KeypadPlus)|| Input.GetKeyDown(KeyCode.Equals))
-            {
-                var newscale = m_graphDrawer.transform.localScale;
-                newscale.Scale(new Vector3(1.2f,  1.2f, 1));
-                m_graphDrawer.transform.localScale = newscale;
-            }
-
-            if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.Keypad4))
-            {
-                m_graphDrawer.transform.localPosition += new Vector3(-0.5f, 0f, 0f); ;
-            }
-            if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.Keypad6))
-            {
-                m_graphDrawer.transform.localPosition += new Vector3(0.5f, 0f, 0f); ;
-            }
-            if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.Keypad8))
-            {
-                m_graphDrawer.transform.localPosition += new Vector3(0f, 0.5f, 0f); ;
-            }
-            if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.Keypad2))
-            {
-                m_graphDrawer.transform.localPosition += new Vector3(0f, -0.5f, 0f);
-            }
-        }
-
-        internal void SoldierClick(DivideSoldier soldier)
-        {
-            if (selectedSoldier == soldier){
+                // deselect soldier that was clicked on twice
                 soldier.Deselect();
-                selectedSoldier = null;
-            }
-            else if (selectedSoldier != null)
-            {
-                Swap(selectedSoldier, soldier);
                 selectedSoldier = null;
             }
             else
             {
-                selectedSoldier = soldier;
+                // swap the previous selected soldier with current clicked soldier
+                Swap(selectedSoldier, soldier);
+                selectedSoldier = null;
             }
         }
 
+        /// <summary>
+        /// Perform a swap of two divide soldiers. 
+        /// </summary>
+        /// <param name="soldier1"></param>
+        /// <param name="soldier2"></param>
         private void Swap(DivideSoldier soldier1, DivideSoldier soldier2)
         {
+            // swap positions of soldiers
             var pos = soldier1.transform.position;
             soldier1.transform.position = soldier2.transform.position;
             soldier2.transform.position = pos;
 
+            // deselect the soldiers in the swap
             soldier1.Deselect();
             soldier2.Deselect();
 
+            // decrease number of swaps
             m_numberOfSwaps--;
-
             UpdateSwapText();
 
-            UpdateArmyPos();
-            CheckSolution();
+            // update solutions shown in drawer
+            FindSolution();
         }
 
         /// <summary>
@@ -300,31 +311,42 @@
         /// 
         /// NOTE: only works if the x coords of all things are all positive or all negative
         /// </summary>
-        public void CheckSolution()
+        public void FindSolution()
         {
-            var archerlines = PointLineDual.Dual(m_archersPos);
-            var swordsmenlines = PointLineDual.Dual(m_spearmenPos);
-            var magelines = PointLineDual.Dual(m_magesPos);
+            // obtain dual lines for game objects
+            var archerlines = PointLineDual.Dual(m_archers.Select(x => (Vector2)x.transform.position));
+            var swordsmenlines = PointLineDual.Dual(m_spearmen.Select(x => (Vector2)x.transform.position));
+            var magelines = PointLineDual.Dual(m_mages.Select(x => (Vector2)x.transform.position));
 
+            // add lines together
             var allLines = archerlines.Concat(swordsmenlines.Concat(magelines));
 
-            Rect bBox = BoundingBoxComputer.FromLines(allLines, 10f);
+            // calculate bounding box around line intersections with some margin
+            var bBox = BoundingBoxComputer.FromLines(allLines, 10f);
+
+            // calculate dcel for line inside given bounding box
             m_archerDcel = new DCEL(archerlines, bBox);
             m_spearmenDcel = new DCEL(swordsmenlines, bBox);
             m_mageDcel = new DCEL(magelines, bBox);
 
+            // find faces in the middle of the lines vertically
             var archerFaces = HamSandwich.MiddleFaces(m_archerDcel);
             var swordsmenFaces = HamSandwich.MiddleFaces(m_spearmenDcel);
             var mageFaces = HamSandwich.MiddleFaces(m_mageDcel);
 
-            m_solution = new DivideSolution(HamSandwich.FindCutlines(archerFaces),
-                HamSandwich.FindCutlines(swordsmenFaces),
-                HamSandwich.FindCutlines(mageFaces),
-                HamSandwich.FindCutlines(archerFaces, swordsmenFaces, mageFaces));
+            // obtain cut lines for the dcel middle faces and final possible cutlines
+            m_solution = new DivideSolution(HamSandwich.FindCutlinesInDual(archerFaces),
+                HamSandwich.FindCutlinesInDual(swordsmenFaces),
+                HamSandwich.FindCutlinesInDual(mageFaces),
+                HamSandwich.FindCutlinesInDual(archerFaces, swordsmenFaces, mageFaces));
 
-            m_lineDrawer.NewSolution(m_solution);
+            // update solution to the drawer
+            m_lineDrawer.Solution = m_solution;
         }
 
+        /// <summary>
+        /// Set the text field with the maximum number of allowed swaps.
+        /// </summary>
         private void UpdateSwapText()
         {
             m_swapText.text = "Swaps:  " + m_numberOfSwaps;

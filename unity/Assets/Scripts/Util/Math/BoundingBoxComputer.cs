@@ -1,4 +1,4 @@
-﻿namespace Util.Algorithms
+﻿namespace Util.Math
 {
     using System;
     using System.Collections.Generic;
@@ -8,24 +8,19 @@
     using Util.Geometry.Polygon;
     using Util.Math;
 
+    /// <summary>
+    /// Class for computing the bounding box (Rect) around various structures.
+    /// </summary>
     public static class BoundingBoxComputer
     {
-        public static Rect FromPolygon(IPolygon2D polygon)
-        {
-            return FromPolygon(polygon, 0f);
-        }
-
-        public static Rect FromPolygon(IPolygon2D polygon, float margin)
-        {
-            return FromVector2(polygon.Vertices, margin);
-        }
-
-        public static Rect FromSegments(IEnumerable<LineSegment> a_segments)
-        {
-            return FromSegments(a_segments, 0f);
-        }
-
-        public static Rect FromSegments(IEnumerable<LineSegment> a_segments, float margin)
+        /// <summary>
+        /// Compute bounding box from collection of segments.
+        /// Extend with given margin.
+        /// </summary>
+        /// <param name="a_segments"></param>
+        /// <param name="margin"></param>
+        /// <returns></returns>
+        public static Rect FromSegments(IEnumerable<LineSegment> a_segments, float margin = 0f)
         {
             var vertices = new List<Vector2>();
             foreach (var seg in a_segments)
@@ -36,17 +31,13 @@
             return FromVector2(vertices, margin);
         }
 
-        public static Rect FromLines(IEnumerable<Line> a_lines)
-        {
-            return FromLines(a_lines, 0f);
-        }
-
         /// <summary>
         /// Computes bounding box around the line intersections.
+        /// Extend with given margin.
         /// </summary>
         /// <param name="a_lines"></param>
         /// <returns> A bounding box</returns>
-        public static Rect FromLines(IEnumerable<Line> a_lines, float margin)
+        public static Rect FromLines(IEnumerable<Line> a_lines, float margin = 0f)
         {
             var lines = a_lines.ToList();
 
@@ -62,25 +53,31 @@
             var candidatepoints = new List<Vector2>();
             for (var i = 0; i < lines.Count - 1; i++)
             {
-                candidatepoints.Add(Line.Intersect(lines[i], lines[i + 1]));
+                var intersect = Line.Intersect(lines[i], lines[i + 1]);
+                if (intersect != null)
+                {
+                    candidatepoints.Add(intersect.Value);
+                }
             }
 
             return FromVector2(candidatepoints, margin);
         }
 
-        public static Rect FromVector2(IEnumerable<Vector2> a_points)
-        {
-            return FromVector2(a_points, 0.1f);
-        }
-
-        public static Rect FromVector2(IEnumerable<Vector2> a_points, float margin)
+        /// <summary>
+        /// Compute bounding box from collection of points.
+        /// Extend with given margin.
+        /// </summary>
+        /// <param name="a_points"></param>
+        /// <param name="margin"></param>
+        /// <returns></returns>
+        public static Rect FromVector2(IEnumerable<Vector2> a_points, float margin = 0f)
         {
             if(a_points.Count() == 0)
             {
                 throw new ArgumentException("Bounding box not defined on empty vector list");
             }
 
-            var result = new Rect(a_points.First(), Vector2.zero);
+            var result = new Rect(a_points.FirstOrDefault(), Vector2.zero);
             foreach (var candidatepoint in a_points)
             {
                 result.xMin = Math.Min(result.xMin, candidatepoint.x - margin);

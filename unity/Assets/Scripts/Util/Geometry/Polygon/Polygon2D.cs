@@ -1,14 +1,15 @@
 ﻿namespace Util.Geometry.Polygon
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using UnityEngine;
-    using System;
     using Util.Math;
     using Util.Algorithms.Triangulation;
     using Util.Algorithms.Polygon;
 
     /// <summary>
+    /// Simple 2D polygon class without holes.
     /// We represent the polygon internally as a linked list of vertices.
     /// </summary>
     public class Polygon2D : IPolygon2D
@@ -92,16 +93,16 @@
             m_vertices.AddFirst(pos);
         }
 
-        public void AddVertexAfter(Vector2 after, Vector2 pos)
+        public void AddVertexAfter(Vector2 pos, Vector2 after)
         {
             if (!Contains(after))
             {
                 throw new ArgumentException("Polygon does not contain vertex after which to add");
             }
-            AddVertexAfter(m_vertices.Find(after), pos);
+            AddVertexAfter(pos, m_vertices.Find(after));
         }
 
-        private void AddVertexAfter(LinkedListNode<Vector2> node, Vector2 pos)
+        private void AddVertexAfter(Vector2 pos, LinkedListNode<Vector2> node)
         {
             if (node == null) throw new GeomException("Adding vertex after null node");
 
@@ -128,24 +129,6 @@
             m_vertices.Clear();
         }
 
-        private Vector2 FindLeftMostVertex()
-        {
-            //init
-            var minVertex = m_vertices.First.Value;
-            var minX = minVertex.x;
-
-            foreach (var v in m_vertices)
-            {
-                if (v.x < minX)
-                {
-                    minX = v.x;
-                    minVertex = v;
-                }
-            }
-
-            return minVertex;
-        }
-
         /// <summary>
         /// Simple Constructor 
         /// </summary>
@@ -164,7 +147,7 @@
         }
 
         /// <summary>
-        /// Tests wheter this polygon is convex by verifying that each tripplet of points constitues a right turn
+        /// Tests wheter this polygon is convex by verifying that each triplet of points constitutes a right turn
         /// </summary>
         public bool IsConvex()
         {
@@ -218,19 +201,19 @@
             {
                 Debug.Assert(VertexCount > 3);
 
+                // calculate triangulation
                 var poly = RemoveDanglingEdges(this);
+                var triangles = Triangulator.Triangulate(poly).Triangles.ToList();
 
-                foreach (var triangle in Triangulator.Triangulate(poly).Triangles)
-                {
-                    if (triangle.Inside(a_pos))
-                    {
-                        return true;
-                    }
-                }
-                return false;
+                // check for triangle that contains point
+                return triangles.Exists(t => t.Contains(a_pos));
             }
         }
 
+        /// <summary>
+        /// Shifts all polygon points such that the given point lies at origin.
+        /// </summary>
+        /// <param name="a_point"></param>
         public void ShiftToOrigin(Vector2 a_point)
         {
             m_vertices = new LinkedList<Vector2>(m_vertices.Select(v => v - a_point));
@@ -253,11 +236,12 @@
                 throw new GeomException("Method not defined for nonconvex polygons" + a_poly2);
             }
 
+            // obtain vertices that lie inside both polygons
             var resultVertices = a_poly1.Vertices.Where(v => a_poly2.Contains(v))
                 .Concat(a_poly2.Vertices.Where(v => a_poly1.Contains(v)))
                 .ToList();
 
-
+            // add intersections between two polygon segments
             foreach (LineSegment seg1 in a_poly1.Segments)
             {
                 foreach (LineSegment seg2 in a_poly2.Segments)
@@ -269,12 +253,15 @@
                     }
                 }
             }
+            
+            // retrieve convex hull of relevant vertices
             if (resultVertices.Count >= 3)
             {
                 var poly = ConvexHull.ComputeConvexHull(new Polygon2D(resultVertices));
                 Debug.Assert(poly.IsConvex());
                 return poly;
             }
+
             return null;
 
         }
@@ -326,10 +313,24 @@
             return true;
         }
 
+        public Rect BoundingBox(float margin = 0f)
+        {
+            return BoundingBoxComputer.FromVector2(Vertices, margin);
+        }
+
+        /// <summary>
+        /// Removes any parts of the polygon where the boundary reverses (a dangling edge).
+        /// </summary>
+        /// <remarks>
+        /// Useful for easier triangulation, whenever only area or containment matters.
+        /// </remarks>
+        /// <param name="poly"></param>
+        /// <returns></returns>
         public static Polygon2D RemoveDanglingEdges(Polygon2D poly)
         {
             var result = new Polygon2D(poly.Vertices);
 
+            // iterate until no more dangling edges
             bool containsDanglingEdge = true;
             while (containsDanglingEdge)
             {
@@ -339,7 +340,8 @@
                 Vector2? toRemove = null;
                 foreach (var vertex in result.Vertices)
                 {
-                    if (vertex == result.Next(vertex) || vertex == result.Prev(vertex) || result.Prev(vertex) == result.Next(vertex))
+                    if (vertex == result.Next(vertex) || vertex == result.Prev(vertex) 
+                        || result.Prev(vertex) == result.Next(vertex))
                     {
                         containsDanglingEdge = true;
                         toRemove = vertex;

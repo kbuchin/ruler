@@ -9,11 +9,22 @@
     using Util.Math;
     using Util.Algorithms;
 
+    /// <summary>
+    /// Implementation of a standard DCEL.
+    /// 
+    /// Each edge is represented as two halfedges, which are connected in cycles to create explicit faces.
+    /// The inner faces are stored in clockwise order (CW), while the outer face is counter-clockwise (CCW).
+    /// 
+    /// Each halfedge stores a pointer to its next and previous edges and its adjacent face.
+    /// The vertices store one outgoing halfedge for easy iteration.
+    /// The face stores one halfedge of the outer boundary (unless outer face)
+    /// and a list of halfedges of innercomponents, one halfedge for each inner faces
+    /// </summary>
     public class DCEL
     {
-        private readonly LinkedList<DCELVertex> m_Vertices;
-        private readonly LinkedList<HalfEdge> m_Edges;
-        private readonly LinkedList<Face> m_Faces;
+        private readonly LinkedList<DCELVertex> m_Vertices = new LinkedList<DCELVertex>();
+        private readonly LinkedList<HalfEdge> m_Edges = new LinkedList<HalfEdge>();
+        private readonly LinkedList<Face> m_Faces = new LinkedList<Face>();
 
         // store bounding box and its edges, possibly used for initialization DCEL
         public readonly Rect? InitBoundingBox;
@@ -35,6 +46,9 @@
         public int EdgeCount { get { return m_Edges.Count; } }
         public int FaceCount { get { return m_Faces.Count; } }
 
+        /// <summary>
+        /// Stores the outer face explicitly.
+        /// </summary>
         public Face OuterFace { get; private set; }
 
         /// <summary>
@@ -42,13 +56,15 @@
         /// </summary>
         public DCEL()
         {
-            m_Vertices = new LinkedList<DCELVertex>();
-            m_Edges = new LinkedList<HalfEdge>();
-            m_Faces = new LinkedList<Face>();
             OuterFace = new Face(null) { IsOuter = true };
             m_Faces.AddLast(OuterFace);
         }
 
+        /// <summary>
+        /// Creates a dcel and initializes it with a bounding rectangle.
+        /// Useful whenever you want certain faces to be bounded, e.g. in Voronoi diagram.
+        /// </summary>
+        /// <param name="a_bBox"></param>
         public DCEL(Rect a_bBox) : this()
         {
             if (a_bBox == null || MathUtil.EqualsEps(a_bBox.width, 0f) || MathUtil.EqualsEps(a_bBox.height, 0f))
@@ -56,6 +72,7 @@
                 throw new ArgumentException("Bounding box is invalid");
             }
 
+            // calculate four bounding vertices
             var topleft = new Vector2(a_bBox.xMin, a_bBox.yMax);
             var topright = new Vector2(a_bBox.xMax, a_bBox.yMax);
             var downleft = new Vector2(a_bBox.xMin, a_bBox.yMin);
@@ -66,6 +83,7 @@
             AddVertex(downleft);
             AddVertex(downright);
 
+            /// store bounding halfedges
             InitBoundingBoxEdge0 = AddEdge(topleft, topright);
             InitBoundingBoxEdge1 = AddEdge(topright, downright);
             InitBoundingBoxEdge2 = AddEdge(downright, downleft);
@@ -73,6 +91,7 @@
 
             InitBoundingBox = a_bBox;
 
+            //debug stuff
             AssertWellformed();
         }
 
@@ -140,9 +159,9 @@
         /// </summary>
         /// <param name="a_Edge"></param>
         /// <param name="a_Vertex"></param>
-        /// <returns> The inserted Vertex
-        ///If the requested insertion Vertex is on a endpoint we insert no vertex
-        ///and instead return said endpoint
+        /// <returns> The inserted Vertex.
+        /// If the requested insertion Vertex is on a endpoint we insert no vertex
+        /// and instead return said endpoint
         ///</returns>
         public DCELVertex AddVertexInEdge(HalfEdge a_Edge, Vector2 a_Point)
         {
@@ -152,31 +171,36 @@
             }
             if (MathUtil.EqualsEps(a_Edge.From.Pos, a_Point))
             {
-                throw new ArgumentException("Requested insertion in Edge on From.Pos");
+                return a_Edge.From;
+                //throw new ArgumentException("Requested insertion in Edge on From.Pos");
             }
             if (MathUtil.EqualsEps(a_Edge.To.Pos,a_Point))
             {
-                throw new ArgumentException("Requested insertion in Edge on To.Pos");
+                return a_Edge.To;
+                //throw new ArgumentException("Requested insertion in Edge on To.Pos");
             }
             if (!MathUtil.IsFinite(a_Point.x) || !MathUtil.IsFinite(a_Point.y))
             {
                 throw new ArgumentException("Vertex should have a finite position");
             }
 
+            // create vertex with outgoing edge
             var a_Vertex = new DCELVertex(a_Point, a_Edge.Twin);
             m_Vertices.AddLast(a_Vertex);
+
+            // update old edge pointers
             var oldTo = a_Edge.To;
             a_Edge.To = a_Vertex;
             a_Edge.Twin.From = a_Vertex;
 
+            // create new halfedges
             var newedge = new HalfEdge(a_Vertex, oldTo);
             var newtwinedge = new HalfEdge(oldTo, a_Vertex);
             m_Edges.AddLast(newedge);
             m_Edges.AddLast(newtwinedge);
-
             Twin(newedge, newtwinedge);
 
-            //fix pointers in the original cycle
+            //fix next/prev pointers in the original cycle
             Chain(newedge, a_Edge.Next);
             Chain(a_Edge, newedge);
 
@@ -196,6 +220,7 @@
         /// </summary>
         /// <param name="a_Point1"></param>
         /// <param name="a_Point2"></param>
+        /// <returns> One of the newly added edges </returns>
         public HalfEdge AddEdge(Vector2 a_Point1, Vector2 a_Point2)
         {
             return AddSegment(new LineSegment(a_Point1, a_Point2));
@@ -206,6 +231,7 @@
         /// Method that adds new vertices (if needed) and halfedges.
         /// </summary>
         /// <param name="segment"></param>
+        /// <returns> One of the new halfedges </returns>
         public HalfEdge AddSegment(LineSegment segment)
         {
             // check for intersections
@@ -237,20 +263,23 @@
         }
 
         /// <summary>
-        /// Adds a line to the dcel
+        /// Adds a line to the dcel.
         /// </summary>
         /// <param name="line"></param>
         public void AddLine(Line line)
         {
+            // find intersections of line with dcel
             var intersections = new List<DCELVertex>();
             var hasIntersection = true;
             while (hasIntersection)
             {
+                // loop until no more proper intersections
                 hasIntersection = false;
                 HalfEdge intersectEdge = null;
                 Vector2? intersection = null;
                 foreach (var edge in m_Edges)
                 {
+                    // find proper intersection (not through vertex)
                     intersection = edge.Segment.IntersectProper(line);
                     if (intersection != null)
                     {
@@ -260,22 +289,24 @@
                     }
                 }
                 
+                // create vertex in edge
+                // in future intersection no longer proper
                 if (hasIntersection)
                 {
                     intersections.Add(AddVertexInEdge(intersectEdge, (Vector2)intersection));
                 }
             }
 
-            Debug.Assert(intersections.Count > 1);
-
+            // resolve intersections in x order
             intersections = intersections.OrderBy(v => line.X(v.Pos.y)).ToList();
 
             for (var i = 0; i < intersections.Count - 1; i++)
             {
-                if (!MathUtil.EqualsEps(intersections[i].Pos, intersections[i + 1].Pos))
-                {
+                //if (!MathUtil.EqualsEps(intersections[i].Pos, intersections[i + 1].Pos))
+                //{
+                    // add between adjacent intersections
                     AddEdge(intersections[i], intersections[i + 1]);
-                }
+                //}
             }
         }
 
@@ -287,6 +318,7 @@
         /// </remarks>
         /// <param name="a_vertex1"></param>
         /// <param name="a_vertex2"></param>
+        /// <returns> One of the newly added edges </returns>
         public HalfEdge AddEdge(DCELVertex a_Vertex1, DCELVertex a_Vertex2)
         {
             if(!m_Vertices.Contains(a_Vertex1) || !m_Vertices.Contains(a_Vertex2))
@@ -312,6 +344,7 @@
             // or disconnected inside a face
             if (OutgoingEdges(a_Vertex1).Count() != 0 && OutgoingEdges(a_Vertex2).Count() != 0)
             {
+                // get faces split by new edge from each vertex
                 face1 = GetSplittingFace(a_Vertex1, a_Vertex2.Pos);
                 face2 = GetSplittingFace(a_Vertex2, a_Vertex1.Pos);
 
@@ -320,7 +353,6 @@
                 var outerFaceSplit = !face1.IsOuter && 
                     OnCycle(face1.OuterComponent, a_Vertex1) && 
                     OnCycle(face1.OuterComponent, a_Vertex2);
-
                 newFace = newInnerFace || outerFaceSplit;
             }
             else if (OutgoingEdges(a_Vertex2).Count() != 0)
@@ -344,12 +376,6 @@
 
             if (face1 != face2)
             {
-                Debug.Log(a_Vertex1);
-                Debug.Log(a_Vertex2);
-                Debug.Log(OutgoingEdges(a_Vertex1).Count());
-                Debug.Log(OutgoingEdges(a_Vertex2).Count());
-                Debug.Log(face1);
-                Debug.Log(face2);
                 throw new GeomException("Vertices do not lie in the same face");
             }
 
@@ -357,8 +383,8 @@
             e1.Face = face1;
             e2.Face = face1;
             Twin(e1, e2);
-            FixChaining(a_Vertex1, e1);
-            FixChaining(a_Vertex2, e2);
+            AddEdgeInVertexChain(a_Vertex1, e1);
+            AddEdgeInVertexChain(a_Vertex2, e2);
 
             if (newFace)
             {
@@ -407,12 +433,22 @@
             return newface;
         }
 
+        /// <summary>
+        /// Adds a new face to the collection.
+        /// </summary>
+        /// <param name="a_Face"></param>
+        /// <returns>the newly added face</returns>
         public Face AddFace(Face a_Face)
         {
             m_Faces.AddLast(a_Face);
             return a_Face;
         }
 
+        /// <summary>
+        /// Find all half edges adjacent to the given vertex, ingoing as well as outgoing.
+        /// </summary>
+        /// <param name="a_Vertex1"></param>
+        /// <returns></returns>
         public IEnumerable<HalfEdge> AdjacentEdges(DCELVertex a_Vertex1)
         {
             var edges = new List<HalfEdge>();
@@ -425,6 +461,11 @@
             return edges;
         }
 
+        /// <summary>
+        /// Returns all edges that are outgoing from the given vertex.
+        /// </summary>
+        /// <param name="a_Vertex1"></param>
+        /// <returns></returns>
         public IEnumerable<HalfEdge> OutgoingEdges(DCELVertex a_Vertex1)
         {
             if (a_Vertex1.Leaving == null) return new List<HalfEdge>();
@@ -440,24 +481,48 @@
             return edges;
         }
 
+        /// <summary>
+        /// Chains the two edges together in sequence.
+        /// Sets prev/next pointers.
+        /// </summary>
+        /// <param name="a_First"></param>
+        /// <param name="a_Second"></param>
         private static void Chain(HalfEdge a_First, HalfEdge a_Second)
         {
             a_First.Next = a_Second;
             a_Second.Prev = a_First;
         }
 
+        /// <summary>
+        /// Sets the two edges as each others twins.
+        /// </summary>
+        /// <param name="a_Edge1"></param>
+        /// <param name="a_Edge2"></param>
         private static void Twin(HalfEdge a_Edge1, HalfEdge a_Edge2)
         {
             a_Edge1.Twin = a_Edge2;
             a_Edge2.Twin = a_Edge1;
         }
 
+        /// <summary>
+        /// Checks whether the given vertex lies on the edge cycle specified by the halfedge.
+        /// </summary>
+        /// <param name="a_startedge"></param>
+        /// <param name="a_Vertex"></param>
+        /// <returns></returns>
         private static bool OnCycle(HalfEdge a_startedge, DCELVertex a_Vertex)
         {
             return Cycle(a_startedge).ToList().Exists(e => e.To == a_Vertex);
         }
 
-        private void FixChaining(DCELVertex a_Vertex, HalfEdge a_Edge)
+        /// <summary>
+        /// Fix the edge chaining from the given vertex and insert the half edge.
+        /// Updates the next/prev data from the adjacent edges of a_Vertex
+        /// to include the new edge.
+        /// </summary>
+        /// <param name="a_Vertex"></param>
+        /// <param name="a_Edge"></param>
+        private void AddEdgeInVertexChain(DCELVertex a_Vertex, HalfEdge a_Edge)
         {
             List<HalfEdge> outedges = OutgoingEdges(a_Vertex).ToList();
 
@@ -489,10 +554,20 @@
             }
 
             // new edge between first and last edge
-            Chain(a_Edge.Twin, outedges.First());
+            Chain(a_Edge.Twin, outedges.FirstOrDefault());
             Chain(outedges.Last().Twin, a_Edge);
         }
 
+        /// <summary>
+        /// Fix the inner component of the oldface, after adding two halfedges.
+        /// 
+        /// Will redistribute inner components whenever a face was split into.
+        /// Additionally, removes inner components that have been joined to other components.
+        /// </summary>
+        /// <param name="e1"></param>
+        /// <param name="e2"></param>
+        /// <param name="oldFace"></param>
+        /// <param name="newFace"></param>
         private void FixInnerComponents(HalfEdge e1, HalfEdge e2, Face oldFace, Face newFace)
         {
             // remove all inner components that were affected by adding halfedges
@@ -530,11 +605,21 @@
 
         }
 
+        /// <summary>
+        /// Check whether the cycle specified by a_startedge is clockwise.
+        /// </summary>
+        /// <param name="a_startedge"></param>
+        /// <returns></returns>
         private static bool IsCycleClockwise(HalfEdge a_startedge)
         {
             return new Polygon2D(Cycle(a_startedge).Select(e => e.From.Pos)).IsClockwise();
         }
 
+        /// <summary>
+        /// Updats the face pointers in the cycle starting from given halfedge to the new face.
+        /// </summary>
+        /// <param name="a_startedge"></param>
+        /// <param name="a_face"></param>
         private static void UpdateFaceInCycle(HalfEdge a_startedge, Face a_face)
         {
             foreach (var e in Cycle(a_startedge))
@@ -543,32 +628,31 @@
             }
         }
 
+        /// <summary>
+        /// Finds a vertex with the given location, or null otherwise.
+        /// </summary>
+        /// <remarks>
+        /// Slow method O(n), not recommended.
+        /// </remarks>
+        /// <param name="a_Point"></param>
+        /// <param name="a_Vertex"></param>
+        /// <returns></returns>
         private bool FindVertex(Vector2 a_Point, out DCELVertex a_Vertex)
         {
-            foreach (var v in m_Vertices)
-            {
-                if (a_Point == v.Pos)
-                {
-                    a_Vertex = v;
-                    return true;
-                }
-            }
-            a_Vertex = null;
-            return false;
+            a_Vertex = m_Vertices.FirstOrDefault(v => a_Point.Equals(v.Pos));
+            return a_Vertex != null;
         }
 
+        /// <summary>
+        /// Checks whether the given vertex lies on the cycle
+        /// </summary>
+        /// <param name="a_Vertex"></param>
+        /// <param name="a_Edge"></param>
+        /// <returns></returns>
         private bool OnEdge(Vertex a_Vertex, out HalfEdge a_Edge)
         {
-            foreach (var e in m_Edges)
-            {
-                if(e.Segment.IsOnSegment(a_Vertex.Pos))
-                {
-                    a_Edge = e;
-                    return true;
-                }
-            }
-            a_Edge = null;
-            return false;
+            a_Edge = m_Edges.FirstOrDefault(e => e.Segment.IsOnSegment(a_Vertex.Pos));
+            return a_Edge != null;
         }
 
         /// <summary>
@@ -621,6 +705,11 @@
             return OuterFace;
         }
 
+        /// <summary>
+        /// Returns an enumerable of all edges on the cycle starting at the given edge.
+        /// </summary>
+        /// <param name="a_Edge"></param>
+        /// <returns></returns>
         public static IEnumerable<HalfEdge> Cycle(HalfEdge a_Edge)
         {
             if (a_Edge == null) return new List<HalfEdge>();
@@ -635,6 +724,12 @@
             return edges;
         }
 
+        /// <summary>
+        /// Compares to halfedges based on angle.
+        /// </summary>
+        /// <param name="e1"></param>
+        /// <param name="e2"></param>
+        /// <returns></returns>
         private static int EdgeAngleComparer(HalfEdge e1, HalfEdge e2)
         {
             var angle = MathUtil.Angle(e1.From.Pos, e1.From.Pos + new Vector2(1f, 0f), e1.To.Pos);
@@ -643,7 +738,7 @@
             return angle.CompareTo(angle2);
         }
 
-        internal void AssertWellformed()
+        public void AssertWellformed()
         {
             // check initial state
             if (VertexCount == 0)

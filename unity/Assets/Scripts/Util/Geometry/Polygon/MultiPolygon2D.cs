@@ -1,10 +1,10 @@
 ﻿namespace Util.Geometry.Polygon
 {
     using System.Collections.Generic;
-    using System.Collections.ObjectModel;
     using System.Linq;
     using UnityEngine;
     using System;
+    using Util.Math;
 
     /// <summary>
     /// We represent the polygon internally as a linked list of vertices.
@@ -28,7 +28,7 @@
         /// Computes the area spanned by this multi polygon
         /// </summary>
         /// <remarks>
-        /// Assumes the polygons do not overlap
+        /// Assumes the polygons do not overlap.
         /// </remarks>
         /// <returns></returns>
         public float Area
@@ -84,7 +84,7 @@
             throw new NotSupportedException("Method ill-defined on multi polygon");
         }
 
-        public void AddVertexAfter(Vector2 after, Vector2 pos)
+        public void AddVertexAfter(Vector2 pos, Vector2 after)
         {
             foreach (var p in m_Polygons)
             {
@@ -187,7 +187,13 @@
 
         public bool IsSimple()
         {
-            return true; // TODO
+            Debug.Log("Simple ill-defined on multiple polygons");
+            return m_Polygons.All(p => p.IsSimple()); // assumes polygons disjoint
+        }
+
+        public Rect BoundingBox(float margin = 0f)
+        {
+            return BoundingBoxComputer.FromVector2(Vertices, margin);
         }
 
         public bool Equals(IPolygon2D other)

@@ -45,11 +45,11 @@
             var left = new Vector2(-10, 0);
             var right = new Vector2(10, 0);
 
-            Assert.AreEqual(true, downwards.PointIsRightOf(left));
-            Assert.AreEqual(false, downwards.PointIsRightOf(right));
+            Assert.AreEqual(true, downwards.IsRightOf(left));
+            Assert.AreEqual(false, downwards.IsRightOf(right));
 
-            Assert.AreEqual(false, upwards.PointIsRightOf(left));
-            Assert.AreEqual(true, upwards.PointIsRightOf(right));
+            Assert.AreEqual(false, upwards.IsRightOf(left));
+            Assert.AreEqual(true, upwards.IsRightOf(right));
         }
 
         [Test]
@@ -61,11 +61,11 @@
             var left = new Vector2(-10, 0);
             var right = new Vector2(10, 0);
 
-            Assert.AreEqual(true, downwards.PointIsRightOf(left));
-            Assert.AreEqual(false, downwards.PointIsRightOf(right));
+            Assert.AreEqual(true, downwards.IsRightOf(left));
+            Assert.AreEqual(false, downwards.IsRightOf(right));
 
-            Assert.AreEqual(false, upwards.PointIsRightOf(left));
-            Assert.AreEqual(true, upwards.PointIsRightOf(right));
+            Assert.AreEqual(false, upwards.IsRightOf(left));
+            Assert.AreEqual(true, upwards.IsRightOf(right));
         }
 
         [Test]
@@ -77,11 +77,11 @@
             var left = new Vector2(-10, 0);
             var right = new Vector2(10, 0);
 
-            Assert.AreEqual(true, downwards.PointIsRightOf(left));
-            Assert.AreEqual(false, downwards.PointIsRightOf(right));
+            Assert.AreEqual(true, downwards.IsRightOf(left));
+            Assert.AreEqual(false, downwards.IsRightOf(right));
 
-            Assert.AreEqual(false, upwards.PointIsRightOf(left));
-            Assert.AreEqual(true, upwards.PointIsRightOf(right));
+            Assert.AreEqual(false, upwards.IsRightOf(left));
+            Assert.AreEqual(true, upwards.IsRightOf(right));
         }
     }
 }

@@ -7,13 +7,13 @@
     /// <summary>
     /// Enables a image when m_keyname is satisfied otherwise disables the image
     /// </summary>
-    public class LevelCompleteMarker : MonoBehaviour
+    public class KeyImageEnabler : MonoBehaviour
     {
-
-        public string m_keyName = "taxes_beat";
+        // keyname of variable in Player Prefs
+        public string m_keyName = "score_beat";
 
         // Use this for initialization
-        void Start()
+        void Awake()
         {
             if (PlayerPrefs.GetInt(m_keyName, 0) == 0)
             {

@@ -6,33 +6,57 @@
     using Util.Geometry.Core;
     using Util.Math;
 
+    /// <summary>
+    /// Class representing a line segment between two given points.
+    /// Has auxiliary methods for intersection, orientation and distance among others.
+    /// </summary>
     public class LineSegment : IEquatable<LineSegment>
     {
-        protected Vector2 m_Point1;
-        protected Vector2 m_Point2;
+        public Vector2 Point1 { get; private set; }
+        public Vector2 Point2 { get; private set; }
 
-        public Vector2 Point1 { get { return m_Point1; } }
-        public Vector2 Point2 { get { return m_Point2; } }
-        public Vector2 Midpoint { get { return (m_Point1 + m_Point2) / 2f; } }
+        /// <summary>
+        /// Returns point in the middle of the endpoints.
+        /// </summary>
+        public Vector2 Midpoint { get { return (Point1 + Point2) / 2f; } }
 
-        public Line Line { get { return new Line(m_Point1, m_Point2); } }
+        /// <summary>
+        /// Gives the corresponding line through the two points.
+        /// </summary>
+        public Line Line { get { return new Line(Point1, Point2); } }
 
+        /// <summary>
+        /// A perpendicular line that crosses the segment in the midpoint.
+        /// </summary>
         public Line Bissector {
             get
             {
-                var perp = Vector2.Perpendicular(m_Point2 - m_Point1);
+                var perp = Vector2.Perpendicular(Point2 - Point1);
                 return new Line(Midpoint, Midpoint + perp);
             }
         }
 
+        /// <summary>
+        /// Whether the segment is vertical.
+        /// </summary>
         public bool IsVertical { get { return Line.IsVertical; } }
-
+        
+        /// <summary>
+        /// Whether the segment is horizontal.
+        /// </summary>
         public bool IsHorizontal { get { return Line.IsHorizontal; } }
 
+        /// <summary>
+        /// Length of the segment.
+        /// </summary>
         public float Magnitude
         {
-            get { return (Point2 - Point1).magnitude; }
+            get { return Vector2.Distance(Point2, Point1); }
         }
+
+        /// <summary>
+        /// Square of the magnitude (length) of the segment.
+        /// </summary>
         public float SqrMagnitude
         {
             get { return (Point2 - Point1).sqrMagnitude; }
@@ -40,40 +64,60 @@
 
         public LineSegment(Vector2 a_point1, Vector2 a_point2)
         {
-            // create copy
-            m_Point1 = a_point1; // new Vector2(a_point1.x, a_point1.y);
-            m_Point2 = a_point2; // new Vector2(a_point2.x, a_point2.y);
+            Point1 = new Vector2(a_point1.x, a_point1.y);
+            Point2 = new Vector2(a_point2.x, a_point2.y);
         }
+
         public LineSegment(PolarPoint2D a_point1, PolarPoint2D a_point2) 
         {
-            m_Point1 = a_point1.Cartesian;
-            m_Point2 = a_point2.Cartesian;
+            Point1 = a_point1.Cartesian;
+            Point2 = a_point2.Cartesian;
         }
 
+        /// <summary>
+        /// Checks whether the points lies to the right of the underlying line of the segment.
+        /// </summary>
+        /// <param name="a_Point"></param>
+        /// <returns></returns>
         public bool IsRightOf(Vector2 a_Point)
         {
-            var line = new Line(m_Point1, m_Point2);
-            return line.PointRightOfLine(a_Point);
+            return Line.PointRightOfLine(a_Point);
         }
 
+        /// <summary>
+        /// Checks whether the points lies on this segment (with some tolerance).
+        /// </summary>
+        /// <param name="a_Point"></param>
+        /// <returns></returns>
         public bool IsOnSegment(Vector2 a_Point)
         {
             return XInterval.ContainsEpsilon(a_Point.x) && Line.IsOnLine(a_Point);
         }
 
+        /// <summary>
+        /// Checks whether the given points is equal to one of the endpoints (with some tolerance).
+        /// </summary>
+        /// <param name="a_Point"></param>
+        /// <returns></returns>
         public bool IsEndpoint(Vector2 a_Point)
         {
-            return m_Point1 == a_Point || m_Point2 == a_Point;
+            return MathUtil.EqualsEps(Point1, a_Point) || MathUtil.EqualsEps(Point2, a_Point);
         }
 
+        /// <summary>
+        /// Interval in the x-dimension of the segment.
+        /// </summary>
         public FloatInterval XInterval
         {
-            get { return new FloatInterval(m_Point1.x, m_Point2.x); }
+            get { return new FloatInterval(Point1.x, Point2.x); }
         }
 
+        /// <summary>
+        /// Interval in the y-dimension of the segment.
+        /// </summary>
         public FloatInterval YInterval
         {
-            get { return new FloatInterval(m_Point1.y, m_Point2.y); }
+            get { return new FloatInterval(Point1.y, Point2.y); }
         }
 
         /// <summary>
@@ -84,44 +128,71 @@
         /// <returns></returns>
         public static Vector2? Intersect(LineSegment a_seg1, LineSegment a_seg2)
         {
-            FloatInterval intervalXIntersection = a_seg1.XInterval.Intersect(a_seg2.XInterval);
-            FloatInterval intervalYIntersection = a_seg1.YInterval.Intersect(a_seg2.YInterval);
+            // get intersection of the intervals
+            var intervalXIntersection = a_seg1.XInterval.Intersect(a_seg2.XInterval);
+            var intervalYIntersection = a_seg1.YInterval.Intersect(a_seg2.YInterval);
+
+            // return quickly if intervals dont overlap
             if (intervalXIntersection == null || intervalYIntersection == null)
             {
                 return null;
             }
 
-            if (a_seg1.Line.Slope == a_seg2.Line.Slope)
+            // check for parralel lines
+            if (MathUtil.EqualsEps(a_seg1.Line.Slope, a_seg2.Line.Slope))
             {
                 return null;
             }
 
-            var intersectionpoint = Line.Intersect(a_seg1.Line, a_seg2.Line);
-            if (intervalXIntersection.ContainsEpsilon(intersectionpoint.x) && intervalYIntersection.ContainsEpsilon(intersectionpoint.y))
+            // get intersection of lines of segments
+            // and check if intersection point on both segments
+            var intersect = Line.Intersect(a_seg1.Line, a_seg2.Line);
+            if (intersect != null &&
+                intervalXIntersection.ContainsEpsilon(intersect.Value.x) && 
+                intervalYIntersection.ContainsEpsilon(intersect.Value.y))
             {
-                return intersectionpoint;
+                return intersect;
             }
             return null;
         }
 
+        /// <summary>
+        /// Check for proper intersection, meaning intersection point is not equal to one of the endpoints
+        /// </summary>
+        /// <param name="a_seg1"></param>
+        /// <param name="a_seg2"></param>
+        /// <returns></returns>
         public static Vector2? IntersectProper(LineSegment a_seg1, LineSegment a_seg2)
         {
+            // check for overlapping endpoints
             if (MathUtil.EqualsEps(a_seg1.Point1, a_seg2.Point1) || MathUtil.EqualsEps(a_seg1.Point1, a_seg2.Point2) ||
                 MathUtil.EqualsEps(a_seg1.Point2, a_seg2.Point1) || MathUtil.EqualsEps(a_seg1.Point2, a_seg2.Point2))
+            {
                 return null;
+            }
 
+            // find (non-proper) intersection of segments
             var intersect = Intersect(a_seg1, a_seg2);
+
             if (intersect == null) return null;
 
-            var x = (Vector2)intersect;
-
+            // check if intersection point equal to one of the endpoints
+            var x = intersect.Value;
             if (MathUtil.EqualsEps(x, a_seg1.Point1) || MathUtil.EqualsEps(x, a_seg1.Point2) ||
                 MathUtil.EqualsEps(x, a_seg2.Point1) || MathUtil.EqualsEps(x, a_seg2.Point2))
+            {
                 return null;
+            }
 
-            return intersect;
+            return x;
         }
 
+        /// <summary>
+        /// Intersection of segment and line.
+        /// </summary>
+        /// <param name="a_seg"></param>
+        /// <param name="a_line"></param>
+        /// <returns></returns>
         public static Vector2? Intersect(LineSegment a_seg, Line a_line)
         {
             // cf Interset(LineSegment, LineSegment)
@@ -130,14 +201,22 @@
                 return null;
             }
             
-            var intersectionpoint = Line.Intersect(a_seg.Line, a_line);
-            if (a_seg.XInterval.ContainsEpsilon(intersectionpoint.x) && a_seg.YInterval.ContainsEpsilon(intersectionpoint.y)) //Double check to handle single vertical segments
+            var intersect = Line.Intersect(a_seg.Line, a_line);
+            if (intersect != null && 
+                a_seg.XInterval.ContainsEpsilon(intersect.Value.x) && 
+                a_seg.YInterval.ContainsEpsilon(intersect.Value.y)) //Double check to handle single vertical segments
             {
-                return intersectionpoint;
+                return intersect;
             }
             return null;
         }
 
+        /// <summary>
+        /// Proper intersection of line segment and line.
+        /// </summary>
+        /// <param name="a_seg"></param>
+        /// <param name="a_line"></param>
+        /// <returns></returns>
         public static Vector2? IntersectProper(LineSegment a_seg, Line a_line)
         {
             var intersect = Intersect(a_seg, a_line);
@@ -153,6 +232,12 @@
             return intersect;
         }
 
+        /// <summary>
+        /// Intersection of line segment and ray.
+        /// </summary>
+        /// <param name="a_seg"></param>
+        /// <param name="a_ray"></param>
+        /// <returns></returns>
         public static Vector2? Intersect(LineSegment a_seg, Ray2D a_ray)
         {
             var rayTarget = a_ray.origin + a_ray.direction;
@@ -166,6 +251,42 @@
 
             return ret;
         }
+
+        /// <summary>
+        /// Intersects the line segment with the rect boundary.
+        /// </summary>
+        /// <param name="a_seg"></param>
+        /// <param name="a_rect"></param>
+        /// <returns></returns>
+        public static List<Vector2> Intersect(LineSegment a_seg, Rect a_rect)
+        {
+            var intersections = new List<Vector2>();
+            Vector2? intersection;
+
+            // left side
+            var left = new LineSegment(new Vector2(a_rect.xMin, a_rect.yMin), new Vector2(a_rect.xMin, a_rect.yMax));
+            intersection = Intersect(a_seg, left);
+            if (intersection != null) intersections.Add((Vector2)intersection);
+
+            // bottom side
+            var bottom = new LineSegment(new Vector2(a_rect.xMin, a_rect.yMin), new Vector2(a_rect.xMax, a_rect.yMin));
+            intersection = Intersect(a_seg, bottom);
+            if (intersection != null) intersections.Add((Vector2)intersection);
+
+            // right side
+            var right = new LineSegment(new Vector2(a_rect.xMax, a_rect.yMin), new Vector2(a_rect.xMax, a_rect.yMax));
+            intersection = Intersect(a_seg, right);
+            if (intersection != null) intersections.Add((Vector2)intersection);
+
+            // top side
+            var top = new LineSegment(new Vector2(a_rect.xMin, a_rect.yMax), new Vector2(a_rect.xMax, a_rect.yMax));
+            intersection = Intersect(a_seg, top);
+            if (intersection != null) intersections.Add((Vector2)intersection);
+
+            return intersections;
+        }
+
+        // Some helper methods for easy use that point to static corresponding methods
 
         internal Vector2? Intersect(LineSegment a_seg)
         {
@@ -192,32 +313,9 @@
             return Intersect(this, a_ray);
         }
 
-        internal List<Vector2> Intersect(Rect a_rect)
+        public List<Vector2> Intersect(Rect a_rect)
         {
-            var intersections = new List<Vector2>();
-            Vector2? intersection;
-
-            // left side
-            var left = new LineSegment(new Vector2(a_rect.xMin, a_rect.yMin), new Vector2(a_rect.xMin, a_rect.yMax));
-            intersection = Intersect(left);
-            if (intersection != null) intersections.Add((Vector2)intersection);
-
-            // bottom side
-            var bottom = new LineSegment(new Vector2(a_rect.xMin, a_rect.yMin), new Vector2(a_rect.xMax, a_rect.yMin));
-            intersection = Intersect(bottom);
-            if (intersection != null) intersections.Add((Vector2)intersection);
-
-            // right side
-            var right = new LineSegment(new Vector2(a_rect.xMax, a_rect.yMin), new Vector2(a_rect.xMax, a_rect.yMax));
-            intersection = Intersect(right);
-            if (intersection != null) intersections.Add((Vector2)intersection);
-
-            // top side
-            var top = new LineSegment(new Vector2(a_rect.xMin, a_rect.yMax), new Vector2(a_rect.xMax, a_rect.yMax));
-            intersection = Intersect(top);
-            if (intersection != null) intersections.Add((Vector2)intersection);
-
-            return intersections;
+            return Intersect(this, a_rect);
         }
 
         /// <summary>
@@ -228,7 +326,7 @@
         internal float DistanceToPoint(Vector2 v)
         {
             var closest = ClosestPoint(v);
-            return (closest - v).magnitude;
+            return Vector2.Distance(closest, v);
         }
 
         /// <summary>
@@ -276,6 +374,12 @@
             return intersections;
         }
 
+        /// <summary>
+        /// Compares two points based on distance to start point of line segment
+        /// </summary>
+        /// <param name="a_1"></param>
+        /// <param name="a_2"></param>
+        /// <returns></returns>
         private int ClosestToPoint1Comparer(Vector2 a_1, Vector2 a_2)
         {
             var dist_1 = Vector2.Distance(Point1, a_1);
@@ -300,7 +404,7 @@
         /// <returns></returns>
         public Vector2 Orientation()
         {
-            return m_Point2 - m_Point1;
+            return Point2 - Point1;
         }
 
         /// <summary>
@@ -339,13 +443,13 @@
 
         public bool Equals(LineSegment other)
         {
-            return MathUtil.EqualsEps(0f, (Point1 - other.Point1).magnitude) &&
-                MathUtil.EqualsEps(0f, (Point2 - other.Point2).magnitude);
+            return MathUtil.EqualsEps(Point1, other.Point1) &&
+                MathUtil.EqualsEps(Point2, other.Point2);
         }
 
         public override string ToString()
         {
-            return "Segment: (" + m_Point1 + "," + m_Point2 + ")";
+            return "Segment: (" + Point1 + "," + Point2 + ")";
         }
     }
 }
