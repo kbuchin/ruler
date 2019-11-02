@@ -6,6 +6,7 @@
     using Util.Geometry.Polygon;
     using Util.Algorithms.Polygon;
     using System;
+    using Util.Math;
 
     [TestFixture]
     public class VisibilityTest
@@ -37,10 +38,10 @@
             var vision = Visibility.Vision(arrowPoly, new Vector2(1.5f, 0));
             Debug.Log(arrowPoly);
             Debug.Log(vision);
-            Assert.AreEqual(arrowPoly.Area, vision.Area);
+            Assert.IsTrue(MathUtil.EqualsEps(arrowPoly.Area, vision.Area));
 
             vision = Visibility.Vision(diamondPoly, Vector2.zero);
-            Assert.AreEqual(diamondPoly.Area, vision.Area);
+            Assert.IsTrue(MathUtil.EqualsEps(diamondPoly.Area, vision.Area));
         }
 
         [Test]

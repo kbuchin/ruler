@@ -42,7 +42,7 @@
         { }
 
         // Use this for initialization
-        public void Start()
+        public void Awake()
         {
             // get mesh renderer components
             // should be attached to game object with this script
@@ -58,7 +58,6 @@
         {
             if (m_polygon == null || m_polygon.Vertices.Count < 3)
             {
-                Debug.Log("Polygon is not correctly set");
                 return;
             }
 

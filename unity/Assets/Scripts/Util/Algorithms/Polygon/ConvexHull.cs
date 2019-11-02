@@ -19,23 +19,51 @@
         /// <param name="a_points"></param>
         public static Polygon2D ComputeConvexHull(IPolygon2D polygon)
         {
-            var upperhull = ComputeUpperHull(polygon);
-            var lowerhull = ComputeLowerHull(polygon);
-
-            //STITCH AND RETURN
-            lowerhull = lowerhull.Reverse();
-
-            return new Polygon2D(upperhull.Concat(lowerhull.ToList().GetRange(1, lowerhull.Count() - 2)));
+            return ComputeConvexHull(polygon.Vertices);
         }
 
         /// <summary>
-        /// Computes the upper hull of the given polygon
+        /// Performs a simple graham scan of the given vertices
+        /// </summary>
+        /// <param name="a_vertices"></param>
+        /// <returns></returns>
+        public static Polygon2D ComputeConvexHull(IEnumerable<Vector2> a_vertices)
+        {
+            var upperhull = ComputeUpperHull(a_vertices);
+            var lowerhull = ComputeLowerHull(a_vertices);
+
+            //STITCH AND RETURN
+            lowerhull.Reverse();
+
+            var convexhull = new Polygon2D(upperhull.Concat(lowerhull.GetRange(1, lowerhull.Count - 2)));
+            
+            Debug.Assert(convexhull.IsConvex());
+            Debug.Assert(convexhull.Vertices.First() != convexhull.Vertices.Last());
+            //Debug.Log(a_vertices);
+            //Debug.Log("HULL: " + convexhull);
+            
+
+            return convexhull;
+        }
+
+        /// <summary>
+        /// Computes the upper hull of the given polygon.
         /// </summary>
         /// <param name="polygon"></param>
         /// <returns></returns>
-        public static IEnumerable<Vector2> ComputeUpperHull(IPolygon2D polygon)
+        public static List<Vector2> ComputeUpperHull(IPolygon2D polygon)
         {
-            return ComputeHull(polygon, 1);
+            return ComputeHull(polygon.Vertices, 1);
+        }
+
+        /// <summary>
+        /// Computes the upper hull of the given vertices.
+        /// </summary>
+        /// <param name="a_vertices"></param>
+        /// <returns></returns>
+        public static List<Vector2> ComputeUpperHull(IEnumerable<Vector2> a_vertices)
+        {
+            return ComputeHull(a_vertices, 1);
         }
 
         /// <summary>
@@ -43,9 +71,19 @@
         /// </summary>
         /// <param name="polygon"></param>
         /// <returns></returns>
-        public static IEnumerable<Vector2> ComputeLowerHull(IPolygon2D polygon)
+        public static List<Vector2> ComputeLowerHull(IPolygon2D polygon)
         {
-            return ComputeHull(polygon, -1);
+            return ComputeHull(polygon.Vertices, -1);
+        }
+
+        /// <summary>
+        /// Computes the lower hull of the given vertices.
+        /// </summary>
+        /// <param name="a_vertices"></param>
+        /// <returns></returns>
+        public static List<Vector2> ComputeLowerHull(IEnumerable<Vector2> a_vertices)
+        {
+            return ComputeHull(a_vertices, -1);
         }
 
         /// <summary>
@@ -55,15 +93,15 @@
         /// <param name="polygon"></param>
         /// <param name="dir"></param>
         /// <returns></returns>
-        private static IEnumerable<Vector2> ComputeHull(IPolygon2D polygon, int dir)
+        private static List<Vector2> ComputeHull(IEnumerable<Vector2> a_vertices, int dir)
         {
-            if (polygon.VertexCount <= 2)
+            if (a_vertices.Count() <= 2)
             {
                 throw new GeomException("Too little points provided");
             }
 
             //Sort vertices on x-coordinate
-            var sortedVertices = polygon.Vertices.ToList().OrderBy(v => v.x).ToList();
+            var sortedVertices = a_vertices.ToList().OrderBy(v => v.x).ToList();
 
             //UPPER HULL
             //add first two points

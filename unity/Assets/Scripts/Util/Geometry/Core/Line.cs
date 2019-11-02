@@ -97,7 +97,6 @@
             //Point2 = new Vector2(10, a_heigthatyaxis + 10 * a_slope);
             if (MathUtil.IsFinite(a_slope))
             {
-                Debug.Log(a_slope);
                 Point2 = new Vector2(1, a_heigthatyaxis + a_slope);
             }
             else
@@ -158,14 +157,14 @@
         {
             if (a_line1.IsVertical && a_line2.IsVertical)
             {
-                Debug.Log("Vertical");
+                //Debug.Log("Vertical");
                 return null;
                 //throw new GeomException("Two vertical lines ");
             }
 
             if (MathUtil.EqualsEps(a_line1.Slope, a_line2.Slope))
             {
-                Debug.Log("Parallel");
+                //Debug.Log("Parallel");
                 return null;
                 //throw new GeomException("Two parallel lines");
             }

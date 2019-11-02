@@ -42,6 +42,12 @@
         }
 
         /// <summary>
+        /// Faces in between dual lines. 
+        /// For drawing of DCEL construction with dual lines.
+        /// </summary>
+        public IEnumerable<Face> MiddleFaces { get; set; }
+
+        /// <summary>
         /// Enable text boxes to display additioanl information
         /// </summary>
         /// <param name="a_enable"></param>
@@ -53,10 +59,10 @@
             m_rightText.GetComponent<Text>().enabled = a_enable;
         }
 
-        private Color FaceColor = Color.yellow;
-        private Color EdgeColor = Color.grey;
-        private Color VertexColor = Color.black;
-        private float VertexRadius = 0.15f;
+        private readonly Color FaceColor = Color.yellow;
+        private readonly Color EdgeColor = new Color(.25f, .25f, .25f);     // dark grey
+        private readonly Color VertexColor = Color.black;
+        private readonly float VertexRadius = 0.2f;
 
         private Transform m_MyTransform;
         private Material m_LineMaterial;
@@ -165,9 +171,10 @@
         /// </summary>
         private void DrawMiddleFaces()
         {
+            var triangles = Triangulator.Triangulate(MiddleFaces).Triangles;
+
             GL.Begin(GL.TRIANGLES);
             GL.Color(FaceColor);
-            var triangles = Triangulator.Triangulate(HamSandwich.MiddleFaces(m_graph)).Triangles;
 
             foreach (var triangle in triangles)
             {

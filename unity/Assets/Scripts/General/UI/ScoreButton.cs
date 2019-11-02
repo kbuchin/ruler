@@ -15,7 +15,8 @@
         // key in Player Prefs storing the amount of levels beaten
         public string m_numberOfLevelsKey = "levels_score";
 
-        void Start()
+        // Use this for initialization
+        void Awake()
         {
             if (0 == PlayerPrefs.GetInt(m_beatkey, 0))
             {

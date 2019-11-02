@@ -16,12 +16,22 @@
 
         /// <summary>
         /// A implementation of the Weiler-Atherthon algorithm that cuts away the provided clippling area from the subject polygon
+        /// Assumes the cutting polygon is not entirely inside subject polygon!
         /// </summary>
         /// <param name="a_subject"></param>
         /// <param name="a_clip"></param>
         /// <returns></returns>
         public static MultiPolygon2D CutOut(Polygon2D a_subject, Polygon2D a_clip)
         {
+            if (!a_subject.IsClockwise())
+            {
+                a_subject = new Polygon2D(a_subject.Vertices.Reverse());
+            }
+            if (!a_clip.IsClockwise())
+            {
+                a_clip = new Polygon2D(a_clip.Vertices.Reverse());
+            }
+
             var subjectList = WeilerAthertonList(a_subject, a_clip);
             var clipList = new LinkedList<Vector2>(WeilerAthertonList(a_clip, a_subject).Reverse());
             var intersectionList = WeilerAthertonIntersectionList(a_subject, a_clip);
@@ -30,11 +40,9 @@
 
             if (intersectionList.Count == 0)
             {
-                //either polygons is entirly inside the other, or they are disjoint.
-                //We can't have vision polygons entirly inside each other.
+                // either polygons is entirely inside the other, or they are disjoint.
                 return new MultiPolygon2D(a_subject);
             }
-
 
             return WeilerAtherthonCutOut(subjectList, clipList, intersectionList);
         }
@@ -56,7 +64,8 @@
         }
 
         /// <summary>
-        /// Creates cutout multipolygon given the relevant vector lists.
+        /// Creates a cutout given the relevant vector lists.
+        /// Resulting in a polygon with holes
         /// </summary>
         /// <remarks>
         /// An eventual intersecting implementation of the Weiler-Atherthon algorithm should use selection on the startvertices.
@@ -73,16 +82,16 @@
             //PERF organise intersections better so i have to loop less over the lists
             while (a_startVertexList.Count > 0)
             {
-                Vector2 start = a_startVertexList[0];
+                var start = a_startVertexList[0];
                 var activeList = WAList.Subject;
                 var singlePolyVertices = new List<Vector2>() { start };
-                LinkedListNode<Vector2> startnode = a_subjectList.Find(start);
+                var startnode = a_subjectList.Find(start);
 
                 if (startnode == null) //fallback
                 {
-                    foreach (Vector2 vertex in a_subjectList)
+                    foreach (var vertex in a_subjectList)
                     {
-                        if (Vector2.Distance(vertex, start) < 2 * MathUtil.EPS) //more liberal then Equals
+                        if (MathUtil.EqualsEps(vertex, start)) //more liberal then Equals
                         {
                             startnode = a_subjectList.Find(vertex);
                         }
@@ -90,7 +99,7 @@
                 }
 
                 Debug.Assert(startnode != null, startnode);
-                LinkedListNode<Vector2> workingvertex = startnode.Next;
+                var workingvertex = startnode.Next;
 
                 if (workingvertex == null) workingvertex = a_subjectList.First;
 
@@ -108,7 +117,7 @@
                         var iterationvertex = a_clipList.First;
                         while (iterationvertex != null)
                         {
-                            if (Vector2.Distance(workingvertex.Value, iterationvertex.Value) < MathUtil.EPS)
+                            if (MathUtil.EqualsEps(workingvertex.Value, iterationvertex.Value))
                             {
                                 intersection = iterationvertex;
                                 break;
@@ -125,7 +134,7 @@
                         var iterationvertex = a_subjectList.First;
                         while (iterationvertex != null)
                         {
-                            if (Vector2.Distance(workingvertex.Value, iterationvertex.Value) < MathUtil.EPS)
+                            if (MathUtil.EqualsEps(workingvertex.Value, iterationvertex.Value))
                             {
                                 intersection = iterationvertex;
                                 break;
@@ -137,7 +146,7 @@
                     if (intersection != null)
                     {
                         //toggle activeList
-                        if (activeList == WAList.Subject) { activeList = WAList.Clip; } else { activeList = WAList.Subject; }
+                        activeList = activeList == WAList.Subject ? WAList.Clip : WAList.Subject; 
                         workingvertex = intersection.Next;
                     }
                     //otherwise, advance in own list
@@ -145,6 +154,7 @@
                     {
                         workingvertex = workingvertex.Next;
                     }
+
                     // if workingvertex is null we called Next at the end of the list
                     if (workingvertex == null)
                     {
@@ -169,10 +179,11 @@
                 }
                 if (singlePolyVertices.Count > 2)  //only add if we find a nontrivial polygon
                 {
-                    IPolygon2D candidatePoly = new Polygon2D(singlePolyVertices);
+                    var candidatePoly = new Polygon2D(singlePolyVertices);
                     if (candidatePoly.IsClockwise())
                     {
-                        foreach (var v in candidatePoly.Vertices) result.AddVertex(v);
+                        result.AddPolygon(candidatePoly);
+
                         //remove treated vertices
                         foreach (Vector2 vertex in singlePolyVertices)
                         {
@@ -185,7 +196,6 @@
                         //remove only starting vertex, the other vertex could yield a succes
                         a_startVertexList.Remove(start);
                     }
-
                 }
                 else
                 {
@@ -210,33 +220,32 @@
             var intersectionList = new LinkedList<Vector2>();
             var intersectingSegments = a_intersector.Segments;
 
-            foreach (LineSegment segment in a_poly.Segments)
+            foreach (var segment in a_poly.Segments)
             {
                 intersectionList.AddLast(segment.Point1);
-                foreach (Vector2 intersection in segment.IntersectionWithSegments(intersectingSegments)) //no AddRange for LinkedList
+                var segIntersections = segment.Intersect(intersectingSegments);
+                segIntersections.Sort(segment.ClosestToPoint1Comparer);
+                foreach (var intersection in segIntersections) //no AddRange for LinkedList
                 {
-                    //Debug.Log(segment.Line.DistanceToPoint(intersection));
                     intersectionList.AddLast(intersection);
                 }
             }
 
+            if (intersectionList.Count <= 1) return intersectionList;
+
             //Clear subsequent (near) duplicates from intersectionlist
-            LinkedListNode<Vector2> workingvertex = intersectionList.First;
-            while (workingvertex.Next != null)
+            var workingvertex = intersectionList.First;
+            while (workingvertex != null)
             {
-                if (Vector2.Distance(workingvertex.Value, workingvertex.Next.Value) < MathUtil.EPS)
+                var next = workingvertex.Next ?? intersectionList.First;
+                if (MathUtil.EqualsEps(workingvertex.Value, next.Value))
                 {
-                    intersectionList.Remove(workingvertex.Next);
+                    intersectionList.Remove(next);
                 }
                 else
                 {
                     workingvertex = workingvertex.Next;
                 }
-            }
-            if (Vector2.Distance(intersectionList.First.Value, intersectionList.Last.Value) < MathUtil.EPS &&
-                intersectionList.Count != 1)
-            {
-                intersectionList.RemoveLast();
             }
 
             return intersectionList;
@@ -260,37 +269,27 @@
             var intersectionList = new List<Vector2>();
             var intersectingSegments = a_subject.Segments;
 
-            foreach (LineSegment segment in a_clip.Segments)
+            foreach (var segment in a_clip.Segments)
             {
-                intersectionList.AddRange(segment.IntersectionWithSegments(intersectingSegments));
+                var segIntersections = segment.Intersect(intersectingSegments);
+                segIntersections.Sort(segment.ClosestToPoint1Comparer);
+                intersectionList.AddRange(segIntersections);
             }
 
-
-            if (intersectionList.Count == 0)
-            {
-                return intersectionList;
-            }
+            if (intersectionList.Count <= 1) return intersectionList;
 
             //Clear subsequent duplicates from intersectionlist
-            var i = 0;
-            while (intersectionList.Count > i + 1)
+            for (var i = 0; i < intersectionList.Count; i++)
             {
-                if (Vector2.Distance(intersectionList[i], intersectionList[i + 1]) < MathUtil.EPS)
+                var next = (i + 1) % intersectionList.Count;
+                if (Vector2.Distance(intersectionList[i], intersectionList[next]) < MathUtil.EPS)
                 {
-                    intersectionList.RemoveAt(i + 1);
-                }
-                else
-                {
-                    i++;
+                    intersectionList.RemoveAt(next);
+
+                    // decrement i to counteract next for-loop iteration
+                    i--;
                 }
             }
-
-            if (Vector2.Distance(intersectionList[0], intersectionList[intersectionList.Count - 1]) < MathUtil.EPS &&
-                intersectionList.Count != 1)
-            {
-                intersectionList.RemoveAt(0);
-            }
-
 
             return intersectionList;
         }

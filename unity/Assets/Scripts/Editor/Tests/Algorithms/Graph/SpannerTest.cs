@@ -13,9 +13,6 @@
     {
         private readonly List<Vertex> m_complete4pos;
         private readonly IGraph m_complete4;
-        private readonly List<Vertex> m_level2pos;
-
-        private static float eps = MathUtil.EPS;
 
         public SpannerTest()
         {
@@ -27,14 +24,6 @@
             };
             m_complete4 = new AdjacencyListGraph(m_complete4pos);
             m_complete4.MakeComplete();
-
-            m_level2pos = new List<Vertex>() {
-                new Vertex(1.4f, -1.1f),
-                new Vertex(1.3f, -0.2f),
-                new Vertex(0.8f, 0.7f),
-                new Vertex(-0.2f, 1f),
-                new Vertex(-1.2f, 1.2f)
-            };
         }
 
         [Test]

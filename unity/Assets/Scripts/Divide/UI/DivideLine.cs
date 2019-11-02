@@ -25,7 +25,7 @@
         private bool m_updating = false;
 
         // Use this for initialization
-        void Start()
+        void Awake()
         {
             m_lineRenderer = GetComponentInChildren<LineRenderer>();
             m_gameController = FindObjectOfType<DivideController>();

@@ -28,10 +28,6 @@
 
         // store bounding box and its edges, possibly used for initialization DCEL
         public readonly Rect? InitBoundingBox;
-        public readonly HalfEdge InitBoundingBoxEdge0;
-        public readonly HalfEdge InitBoundingBoxEdge1;
-        public readonly HalfEdge InitBoundingBoxEdge2;
-        public readonly HalfEdge InitBoundingBoxEdge3;
 
         public IEnumerable<DCELVertex> Vertices { get { return m_Vertices; } }
         public IEnumerable<HalfEdge> Edges { get { return m_Edges; } }
@@ -67,7 +63,7 @@
         /// <param name="a_bBox"></param>
         public DCEL(Rect a_bBox) : this()
         {
-            if (a_bBox == null || MathUtil.EqualsEps(a_bBox.width, 0f) || MathUtil.EqualsEps(a_bBox.height, 0f))
+            if (MathUtil.EqualsEps(a_bBox.width, 0f) || MathUtil.EqualsEps(a_bBox.height, 0f))
             {
                 throw new ArgumentException("Bounding box is invalid");
             }
@@ -83,11 +79,10 @@
             AddVertex(downleft);
             AddVertex(downright);
 
-            /// store bounding halfedges
-            InitBoundingBoxEdge0 = AddEdge(topleft, topright);
-            InitBoundingBoxEdge1 = AddEdge(topright, downright);
-            InitBoundingBoxEdge2 = AddEdge(downright, downleft);
-            InitBoundingBoxEdge3 = AddEdge(downleft, topleft);
+            AddEdge(topleft, topright);
+            AddEdge(topright, downright);
+            AddEdge(downright, downleft);
+            AddEdge(downleft, topleft);
 
             InitBoundingBox = a_bBox;
 
@@ -684,7 +679,7 @@
                 }
             }
 
-            return outedges.First().Face;
+            return outedges.FirstOrDefault().Face;
         }
 
         /// <summary>

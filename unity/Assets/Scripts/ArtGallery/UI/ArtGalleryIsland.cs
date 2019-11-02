@@ -19,9 +19,9 @@
         }
 
         // Use this for initialization
-        public new void Start()
+        public new void Awake()
         {
-            base.Start();
+            base.Awake();
             m_controller = FindObjectOfType<ArtGalleryController>();
         }
 

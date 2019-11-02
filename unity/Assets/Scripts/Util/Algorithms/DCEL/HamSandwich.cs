@@ -30,7 +30,7 @@
             var m_dcel = new DCEL(lines, bBox);
 
             // find faces in the middle of the lines vertically and calculate cut lines
-            var faces = MiddleFaces(m_dcel);
+            var faces = MiddleFaces(m_dcel, lines);
             return FindCutlinesInDual(faces);
         }
 
@@ -115,9 +115,9 @@
             var dcel3 = new DCEL(lines3, bBox);
 
             // find faces in the middle of the lines vertically
-            var archerFaces = MiddleFaces(dcel1);
-            var swordsmenFaces = MiddleFaces(dcel2);
-            var mageFaces = MiddleFaces(dcel3);
+            var archerFaces = MiddleFaces(dcel1, lines1);
+            var swordsmenFaces = MiddleFaces(dcel2, lines2);
+            var mageFaces = MiddleFaces(dcel3, lines3);
 
             // obtain cut lines for the dcel middle faces
             return FindCutlinesInDual(archerFaces, swordsmenFaces, mageFaces);
@@ -133,47 +133,24 @@
         /// <returns></returns>
         public static List<Line> FindCutlinesInDual(List<Face> a_region1, List<Face> a_region2, List<Face> a_region3)
         {
-            //Assume each list of faces has an strict y-order (i.e. each aface is above the other)
             a_region1.Sort((f1, f2) => f1.BoundingBox().yMin.CompareTo(f2.BoundingBox().yMin));
             a_region2.Sort((f1, f2) => f1.BoundingBox().yMin.CompareTo(f2.BoundingBox().yMin));
             a_region3.Sort((f1, f2) => f1.BoundingBox().yMin.CompareTo(f2.BoundingBox().yMin));
 
-            //assert this 
-            for (int i = 0; i < a_region1.Count - 1; i++)
-            {
-                if (!MathUtil.EqualsEps(a_region1[i].BoundingBox().yMax, a_region1[i + 1].BoundingBox().yMin))
-                {
-                    throw new GeomException("List has no unique y-order " + a_region1[i].BoundingBox().yMax + " " + a_region1[i + 1].BoundingBox().yMin);
-                }
-            }
-            for (int i = 0; i < a_region2.Count - 1; i++)
-            {
-                if (!MathUtil.EqualsEps(a_region2[i].BoundingBox().yMax, a_region2[i + 1].BoundingBox().yMin))
-                {
-                    throw new GeomException("List has no unique y-order " + a_region2[i].BoundingBox().yMax + " " + a_region2[i + 1].BoundingBox().yMin);
-                }
-            }
-            for (int i = 0; i < a_region3.Count - 1; i++)
-            {
-                if (!MathUtil.EqualsEps(a_region3[i].BoundingBox().yMax, a_region3[i + 1].BoundingBox().yMin))
-                {
-                    throw new GeomException("List has no unique y-order" + a_region3[i].BoundingBox().yMax + " " + a_region3[i + 1].BoundingBox().yMin);
-                }
-            }
-
-            var region1 = a_region1.Select(x => x.Polygon).ToList();
-            var region2 = a_region2.Select(x => x.Polygon).ToList();
-            var region3 = a_region3.Select(x => x.Polygon).ToList();
+            var region1 = a_region1.Select(x => x.Polygon.Outside).ToList();
+            var region2 = a_region2.Select(x => x.Polygon.Outside).ToList();
+            var region3 = a_region3.Select(x => x.Polygon.Outside).ToList();
 
             var intermediateList = new List<Polygon2D>();
+
             //Intersect first two lists
             var list1index = 0;
             var list2index = 0;
 
-            do
+            while (list1index < region1.Count && list2index < region2.Count)
             {
                 //progress trough y coordinates
-                var intersection = Polygon2D.IntersectConvex(region1[list1index].Outside, region2[list2index].Outside);
+                var intersection = Polygon2D.IntersectConvex(region1[list1index], region2[list2index]);
                 if (intersection != null)
                 {
                     intermediateList.Add(intersection);
@@ -188,7 +165,6 @@
                     list1index++;
                 }
             }
-            while (list1index < region1.Count && list2index < region2.Count);
 
             var result = new List<Polygon2D>();
             //Intersect intermediate list and last list
@@ -198,7 +174,7 @@
             do
             {
                 //progress trough y coordinates
-                var intersection = Polygon2D.IntersectConvex(intermediateList[intermediateIndex], region3[list3index].Outside);
+                var intersection = Polygon2D.IntersectConvex(intermediateList[intermediateIndex], region3[list3index]);
                 if (intersection != null)
                 {
                     result.Add(intersection);
@@ -222,90 +198,134 @@
         /// <summary>
         /// Finds faces that are vertically right in middle of the dual lines in the given dcel.
         /// </summary>
+        /// <remarks>
+        /// Output may be unexpected for vertical lines.
+        /// Assumes the dcel was constructed using the given dual lines, 
+        /// with a bounding box with a slight margin (to avoid vertices with too many intersecting lines)
+        /// </remarks>
         /// <param name="m_dcel"></param>
         /// <returns></returns>
-        public static List<Face> MiddleFaces(DCEL m_dcel)
+        public static List<Face> MiddleFaces(DCEL m_dcel, IEnumerable<Line> m_dualLines)
         {
             if (m_dcel == null) return new List<Face>();
 
-            //returns the faces in which the dual point may lie to represent a cut
-            // cutting a given army in two equal parts in the primal plane.
-            var workingedge = m_dcel.OuterFace.InnerComponents[0];
+            var workingEdge = LeftMostMiddleHalfEdge(m_dcel, m_dualLines);
+
+            var middleFaces = new List<Face>();
+            // iterate trough the faces until we hit the outer face again
+            while (workingEdge.Face != m_dcel.OuterFace)
+            {
+                // get edge of face on the right
+
+                if (middleFaces.Contains(workingEdge.Face))
+                {
+                    throw new GeomException("Middle face added twice");
+                }
+                middleFaces.Add(workingEdge.Face);
+
+                // loop until finding edge to rightmost vertex of face
+                var dbstartedge = workingEdge;
+                while (!IsEdgeLeadingToRightMostVertex(workingEdge))
+                {
+                    workingEdge = workingEdge.Next;
+                    Debug.Assert((workingEdge != dbstartedge), "Returned to starting Edge");
+                }
+
+                if (workingEdge.Twin.Face == m_dcel.OuterFace) break;
+
+                workingEdge = workingEdge.Twin.Prev.Twin;  // Goes from  *\ / to \/*
+            }
+
+            return middleFaces;
+        }
+        
+        /// <summary>
+        /// Returns a halfedge of the leftmost middle face.
+        /// </summary>
+        /// <param name="m_dcel"></param>
+        /// <param name="m_dualLines"></param>
+        /// <returns></returns>
+        private static HalfEdge LeftMostMiddleHalfEdge(DCEL m_dcel, IEnumerable<Line> m_dualLines)
+        {
             var bbox = m_dcel.InitBoundingBox.Value;
 
-            var lineIntersectionEdges = new List<HalfEdge>();                //Will contain edges whose From is an intersection with a line
+            // get all intersections with left line of bounding box
+            var leftLine = new Line(new Vector2(bbox.xMin, bbox.yMin), new Vector2(bbox.xMin, bbox.yMax));
+            var intersections = m_dualLines
+                .Where(l => !l.IsVertical)
+                .Select(l => leftLine.Intersect(l).Value)
+                .ToList();
 
-            while (!(MathUtil.EqualsEps(workingedge.From.Pos.x, bbox.xMin) && workingedge.From.Pos.y > 0 && workingedge.To.Pos.y < 0))
+            // sort on y value
+            intersections.Sort((v1, v2) => v1.y.CompareTo(v2.y));
+
+            // find edge between middle intersections
+            var middleIntersectBot = intersections[intersections.Count / 2 - 1];
+            var middleIntersectTop = intersections[intersections.Count / 2];
+            var edgeInterval = new FloatInterval(middleIntersectBot.y, middleIntersectTop.y);
+
+            // get corresponding halfedge in dcel
+            HalfEdge workingEdge;
+            if (bbox.yMin < edgeInterval.Min && bbox.yMax > edgeInterval.Max)
             {
-                workingedge = workingedge.Next;
+                // both intersections contained on left segment of bounding box
+
+                workingEdge = DCEL.Cycle(m_dcel.OuterFace.InnerComponents[0])
+                   .FirstOrDefault(e => e.From.Pos.x == bbox.xMin &&
+                       edgeInterval.ContainsEpsilon(e.From.Pos.y) &&
+                       edgeInterval.ContainsEpsilon(e.To.Pos.y));
             }
-            //only one edge satisfies the above conditions the edge on the left boundray first crossing the origin line.
-
-            workingedge = workingedge.Next; //workingedge is now the first edge with both from.y and to.y <0
-
-            while (workingedge.From.Pos.y < 0)
+            else if (bbox.yMin >= edgeInterval.Min)
             {
-                if (MathUtil.EqualsEps(workingedge.From.Pos.y, bbox.yMin) && (MathUtil.EqualsEps(workingedge.From.Pos.x, bbox.xMin) || MathUtil.EqualsEps(workingedge.From.Pos.x, bbox.xMax)))
-                {
-                    //From is a corner. Do not add to prevent duplicity
-                }
-                else
-                {
-                    lineIntersectionEdges.Add(workingedge);
-                }
-                workingedge = workingedge.Next;
-            }
+                // bottom intersection lies below left segment
 
-            if (lineIntersectionEdges.Count % 2 == 1)
-            {
-                Debug.LogError("Unexpected odd number of lineIntersectionedges  " + lineIntersectionEdges.Count);
-            }
+                // find halfedge pointing to bottom left corner
+                workingEdge = DCEL.Cycle(m_dcel.OuterFace.InnerComponents[0])
+                   .FirstOrDefault(e => MathUtil.Equals(e.From.Pos, new Vector2(bbox.xMin, bbox.yMin)));
 
-            //TODO Assumption, feasibleFaces are arrenged in a vertical manner!
-
-            var middleEdge = lineIntersectionEdges[(lineIntersectionEdges.Count / 2) - 1];
-            var startingFace = middleEdge.Twin.Face;
-            var midllefaces = new List<Face>
-            {
-                startingFace
-            };
-
-            //itrate trough the faces until we hit the outer face again
-            workingedge = middleEdge.Twin;
-            while (true)
-            {
-                var dbstartedge = workingedge;
-                while (!IsEdgeLeadingToTopMostVertex(workingedge))
+                // traverse outer cycle until we find line with the corresponding bottom intersection
+                while (workingEdge.Twin.Prev.Segment.Line.IsVertical ||
+                    !MathUtil.EqualsEps(workingEdge.Twin.Prev.Segment.Line.Intersect(leftLine).Value, middleIntersectBot))
                 {
-                    workingedge = workingedge.Next;
-                    Debug.Assert((workingedge != dbstartedge), "OMG returned to starting Edge");
-                }
-                if (workingedge.Twin.Face == m_dcel.OuterFace)
-                {
-                    //hit the left or right side
-                    break;
-                }
-                workingedge = workingedge.Twin.Prev.Twin;  // Goes from  *\/ to \/*
-                if (workingedge.Face == m_dcel.OuterFace)
-                {
-                    break;
-                }
-                else
-                {
-                    midllefaces.Add(workingedge.Face);
-                    if (midllefaces.Count > 100)
-                    {
-                        throw new System.Exception("Unexpected large amount of feasible faces");
-                    }
+                    workingEdge = workingEdge.Next;
                 }
             }
-            return midllefaces;
+            else
+            {
+                // top intersection lies above left segment
+
+                // find halfedge pointing away from top left corner
+                workingEdge = DCEL.Cycle(m_dcel.OuterFace.InnerComponents[0])
+                  .FirstOrDefault(e => MathUtil.Equals(e.To.Pos, new Vector2(bbox.xMin, bbox.yMax)));
+
+                // traverse outer cycle until we find line with the corresponding top intersection
+                while (workingEdge.Twin.Next.Segment.Line.IsVertical ||
+                    !MathUtil.EqualsEps(workingEdge.Twin.Next.Segment.Line.Intersect(leftLine).Value, middleIntersectTop))
+                {
+                    workingEdge = workingEdge.Prev;
+                }
+            }
+
+            // middle edge should always exist
+            if (workingEdge == null)
+            {
+                throw new GeomException("working edge not found");
+            }
+
+            // return twin (edge of middle face, not outer face)
+            return workingEdge.Twin;
         }
 
-        private static bool IsEdgeLeadingToTopMostVertex(HalfEdge edge)
+        /// <summary>
+        /// Check whether given edge leads to the rightmost vertex.
+        /// Edge is unique if there are no vertical edges.
+        /// </summary>
+        /// <param name="edge"></param>
+        /// <returns></returns>
+        private static bool IsEdgeLeadingToRightMostVertex(HalfEdge edge)
         {
-            return MathUtil.LEQEps(edge.From.Pos.y, edge.To.Pos.y) && 
-                MathUtil.GEQEps(edge.Next.From.Pos.y, edge.Next.To.Pos.y);
+            return MathUtil.LEQEps(edge.From.Pos.x, edge.To.Pos.x) && 
+                MathUtil.GEQEps(edge.Next.From.Pos.x, edge.Next.To.Pos.x);
         }
     }
 }

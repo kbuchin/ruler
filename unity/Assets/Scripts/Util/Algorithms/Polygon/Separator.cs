@@ -31,7 +31,7 @@
             
             if (!poly.IsClockwise())
             {
-                poly.Reverse();
+                poly = new Polygon2D(poly.Vertices.Reverse());
             }
 
             var upperhull = ConvexHull.ComputeUpperHull(poly).ToList();
@@ -40,14 +40,13 @@
             if (a_isBoundingBoxFace)
             {
                 //Check if the boundingboxface has only 2 real neighbouring lines(in the dual) and return the bisector (in the primal) in this case 
-                var reallines = poly.Segments.Where(seg => 
-                        !(float.IsInfinity(seg.Line.Slope) || MathUtil.EqualsEps(seg.Line.Slope, 0f)))
+                var reallines = poly.Segments
                     .Select(seg => seg.Line)
+                    .Where(line => !line.IsHorizontal && !line.IsVertical)
                     .ToList();
 
                 if (reallines.Count < 2)
                 {
-                    Debug.Log(poly);
                     throw new GeomException("Found impossibly low amount of real lines");
                 }
                 else if (reallines.Count == 2)
@@ -59,6 +58,7 @@
                     var lineTroughBothPoints = PointLineDual.Dual(reallines[0].Intersect(reallines[1]).Value);
                     var perpLineSlope = -1 / lineTroughBothPoints.Slope;
                     var perpPoint = averagepoint + Vector2.right + Vector2.up * perpLineSlope;
+
                     return new LineSeparation(new Line(averagepoint, perpPoint), 0);
 
                     //we choose separtion 0 because a line with three constraints in the outer boundingboxface is more important?
@@ -68,10 +68,10 @@
             }
 
 
-            //zero is the starting corner, 1 is the first intresting point
+            //zero is the starting corner, 1 is the first interesting point
             var upperhullIterator = 0;
             var lowerhullIterator = 0;
-            Vector2 candidatePoint = new Vector2(0, 0); //dummy value
+            var candidatePoint = new Vector2(0, 0); //dummy value
             var currentSeparation = 0f;
 
             float currentx = upperhull[0].x;
@@ -132,7 +132,7 @@
                 float baseheigth = nextheight - nextx * heightchange;
 
                 float candidatex = heightchange / baseheigth;
-                if (currentx < candidatex && candidatex < nextx)
+                if (new FloatInterval(currentx, nextx).Contains(candidatex))
                 {
                     var candidateheigth = baseheigth + heightchange * candidatex;
                     testCandidatePoint(candidatex, candidateheigth);

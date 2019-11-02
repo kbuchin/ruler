@@ -11,6 +11,7 @@
     using Util.Geometry.Polygon;
     using Util.Algorithms.DCEL;
     using System.Linq;
+    using Util.Math;
 
     /// <summary>
     /// Game controller for the voronoi game.
@@ -265,7 +266,7 @@
                 var me = new Vector2(pos.x, pos.z);
 
                 // check if vertex already in graph to avoid degenerate cases
-                if (m_ownership.ContainsKey(me))
+                if (m_ownership.ToList().Exists(v => MathUtil.EqualsEps(v.Key, me)))
                 {
                     Debug.Log("Cannot click on existing vertex");
                     return;

@@ -15,6 +15,7 @@
     using Util.Algorithms.DCEL;
     using General.Controller;
     using Util.Math;
+    using Util.Geometry;
 
     /// <summary>
     /// Main controller for the divide game.
@@ -66,6 +67,8 @@
 
         // dcel for the dual lines related to soldiers
         private DCEL m_archerDcel, m_spearmenDcel,  m_mageDcel;
+        private List<Line> m_archerLines, m_spearmenLines, m_mageLines;
+        private List<Face> m_archerFaces, m_spearmenFaces, m_mageFaces;
 
         //Unity references
         private DivideLineDrawer m_lineDrawer;
@@ -111,16 +114,19 @@
             {
                 // toggle archer dcel 
                 m_graphDrawer.Graph = m_graphDrawer.Graph == m_archerDcel ? null : m_archerDcel;
+                m_graphDrawer.MiddleFaces = m_archerFaces;
             }
             if (Input.GetKeyDown("s"))
             {
                 // toggle spearmen dcel
                 m_graphDrawer.Graph = m_graphDrawer.Graph == m_spearmenDcel ? null : m_spearmenDcel;
+                m_graphDrawer.MiddleFaces = m_spearmenFaces;
             }
             if (Input.GetKeyDown("d"))
             {
                 // toggle mage dcel
                 m_graphDrawer.Graph = m_graphDrawer.Graph == m_mageDcel ? null : m_mageDcel;
+                m_graphDrawer.MiddleFaces = m_mageFaces;
             }
             if (Input.GetKeyDown(KeyCode.Minus) || Input.GetKeyDown(KeyCode.KeypadMinus))
             {
@@ -211,8 +217,8 @@
         {
             // obtain line and point data of game objects
             var line = m_mouseLine.Line;
-            var archersPos = m_mages.Select(x => (Vector2)x.transform.position);
-            var spearmenPos = m_mages.Select(x => (Vector2)x.transform.position);
+            var archersPos = m_archers.Select(x => (Vector2)x.transform.position);
+            var spearmenPos = m_spearmen.Select(x => (Vector2)x.transform.position);
             var magesPos = m_mages.Select(x => (Vector2)x.transform.position);
 
             if (line.NumberOfPointsAbove(archersPos) == m_archers.Count / 2
@@ -314,31 +320,31 @@
         public void FindSolution()
         {
             // obtain dual lines for game objects
-            var archerlines = PointLineDual.Dual(m_archers.Select(x => (Vector2)x.transform.position));
-            var swordsmenlines = PointLineDual.Dual(m_spearmen.Select(x => (Vector2)x.transform.position));
-            var magelines = PointLineDual.Dual(m_mages.Select(x => (Vector2)x.transform.position));
+            m_archerLines = PointLineDual.Dual(m_archers.Select(x => (Vector2)x.transform.position)).ToList();
+            m_spearmenLines = PointLineDual.Dual(m_spearmen.Select(x => (Vector2)x.transform.position)).ToList();
+            m_mageLines = PointLineDual.Dual(m_mages.Select(x => (Vector2)x.transform.position)).ToList();
 
             // add lines together
-            var allLines = archerlines.Concat(swordsmenlines.Concat(magelines));
+            var allLines = m_archerLines.Concat(m_spearmenLines.Concat(m_mageLines));
 
             // calculate bounding box around line intersections with some margin
             var bBox = BoundingBoxComputer.FromLines(allLines, 10f);
 
             // calculate dcel for line inside given bounding box
-            m_archerDcel = new DCEL(archerlines, bBox);
-            m_spearmenDcel = new DCEL(swordsmenlines, bBox);
-            m_mageDcel = new DCEL(magelines, bBox);
+            m_archerDcel = new DCEL(m_archerLines, bBox);
+            m_spearmenDcel = new DCEL(m_spearmenLines, bBox);
+            m_mageDcel = new DCEL(m_mageLines, bBox);
 
             // find faces in the middle of the lines vertically
-            var archerFaces = HamSandwich.MiddleFaces(m_archerDcel);
-            var swordsmenFaces = HamSandwich.MiddleFaces(m_spearmenDcel);
-            var mageFaces = HamSandwich.MiddleFaces(m_mageDcel);
+            m_archerFaces = HamSandwich.MiddleFaces(m_archerDcel, m_archerLines);
+            m_spearmenFaces = HamSandwich.MiddleFaces(m_spearmenDcel, m_spearmenLines);
+            m_mageFaces = HamSandwich.MiddleFaces(m_mageDcel, m_mageLines);
 
             // obtain cut lines for the dcel middle faces and final possible cutlines
-            m_solution = new DivideSolution(HamSandwich.FindCutlinesInDual(archerFaces),
-                HamSandwich.FindCutlinesInDual(swordsmenFaces),
-                HamSandwich.FindCutlinesInDual(mageFaces),
-                HamSandwich.FindCutlinesInDual(archerFaces, swordsmenFaces, mageFaces));
+            m_solution = new DivideSolution(HamSandwich.FindCutlinesInDual(m_archerFaces),
+                HamSandwich.FindCutlinesInDual(m_spearmenFaces),
+                HamSandwich.FindCutlinesInDual(m_mageFaces),
+                HamSandwich.FindCutlinesInDual(m_archerFaces, m_spearmenFaces, m_mageFaces));
 
             // update solution to the drawer
             m_lineDrawer.Solution = m_solution;

@@ -62,6 +62,7 @@
      <Compile Include="Assets\Scripts\Editor\Tests\Algorithms\Graph\SpannerTest.cs" />
      <Compile Include="Assets\Scripts\Editor\Tests\Algorithms\Graph\TSPTest.cs" />
      <Compile Include="Assets\Scripts\Editor\Tests\Algorithms\Graph\VoronoiTest.cs" />
+     <Compile Include="Assets\Scripts\Editor\Tests\Algorithms\Polygon\ClipperTest.cs" />
      <Compile Include="Assets\Scripts\Editor\Tests\Algorithms\Polygon\VisibilityTest.cs" />
      <Compile Include="Assets\Scripts\Editor\Tests\Util\Core\IntersectionTest.cs" />
      <Compile Include="Assets\Scripts\Editor\Tests\Util\Core\LineSegmentTest.cs" />

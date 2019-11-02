@@ -237,27 +237,21 @@
             }
 
             // obtain vertices that lie inside both polygons
-            var resultVertices = a_poly1.Vertices.Where(v => a_poly2.Contains(v))
+            var resultVertices = a_poly1.Vertices
+                .Where(v => a_poly2.Contains(v))
                 .Concat(a_poly2.Vertices.Where(v => a_poly1.Contains(v)))
                 .ToList();
 
             // add intersections between two polygon segments
-            foreach (LineSegment seg1 in a_poly1.Segments)
-            {
-                foreach (LineSegment seg2 in a_poly2.Segments)
-                {
-                    var intersection = seg1.Intersect(seg2);
-                    if (intersection.HasValue)
-                    {
-                        resultVertices.Add(intersection.Value);
-                    }
-                }
-            }
-            
+            resultVertices.AddRange(a_poly1.Segments.SelectMany(seg => seg.Intersect(a_poly2.Segments)));
+
+            // remove any duplicates
+            var resultVertexSet = new HashSet<Vector2>(resultVertices);
+
             // retrieve convex hull of relevant vertices
-            if (resultVertices.Count >= 3)
+            if (resultVertexSet.Count >= 3)
             {
-                var poly = ConvexHull.ComputeConvexHull(new Polygon2D(resultVertices));
+                var poly = ConvexHull.ComputeConvexHull(resultVertexSet);
                 Debug.Assert(poly.IsConvex());
                 return poly;
             }

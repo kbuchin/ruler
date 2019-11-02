@@ -11,6 +11,7 @@
     using Util.Algorithms.Polygon;
     using General.Controller;
     using General.Model;
+    using System;
 
     /// <summary>
     /// Main controller for the art gallery game.
@@ -125,9 +126,10 @@
         /// </summary>
         public void AdvanceLevel()
         {
+            m_levelCounter++;
+
             if (m_levelCounter < m_levels.Count)
             {
-                m_levelCounter++;
                 InitLevel();
             }
             else
@@ -171,6 +173,11 @@
             {
                 // calculate new visibility polygon
                 var vision = Visibility.Vision(LevelPolygon, m_lighthouse.Pos);
+
+                if (vision == null)
+                {
+                    throw new Exception("Vision polygon cannot be null");
+                }
 
                 // update lighthouse visibility
                 m_lighthouse.VisionPoly = vision;

@@ -243,8 +243,11 @@
             var rayTarget = a_ray.origin + a_ray.direction;
             var ret = Intersect(a_seg, new Line(a_ray.origin, rayTarget));
 
-            if (ret == null || MathUtil.EqualsEps(MathUtil.Angle(a_ray.origin, a_ray.origin + new Vector2(1, 0), rayTarget),
-                MathUtil.Angle(a_ray.origin, a_ray.origin + new Vector2(1, 0), (Vector2)ret)))
+            if (ret == null) return null;
+
+            // check if intersection in wrong direction
+            if (!MathUtil.EqualsEps(ret.Value, a_ray.origin) &&
+                Math.Sign(Vector2.Dot((ret.Value - a_ray.origin), a_ray.direction)) < 0)
             {
                 return null;
             }
@@ -286,6 +289,29 @@
             return intersections;
         }
 
+        /// <summary>
+        /// returns a list of intersections of a segment with the given segments.
+        /// Sorted with the one closest to point1 of given segment.
+        /// </summary>
+        /// <param name="a_segments"></param>
+        /// <returns></returns>
+        public static List<Vector2> Intersect(LineSegment a_seg, IEnumerable<LineSegment> a_segments)
+        {
+            var intersections = new List<Vector2>();
+
+            //find all intersections
+            foreach (var segment in a_segments)
+            {
+                var intersection = Intersect(a_seg, segment);
+                if (intersection.HasValue)
+                {
+                    intersections.Add(intersection.Value);
+                }
+            }
+
+            return intersections;
+        }
+
         // Some helper methods for easy use that point to static corresponding methods
 
         internal Vector2? Intersect(LineSegment a_seg)
@@ -316,6 +342,11 @@
         public List<Vector2> Intersect(Rect a_rect)
         {
             return Intersect(this, a_rect);
+        }
+
+        public List<Vector2> Intersect(IEnumerable<LineSegment> a_segments)
+        {
+            return Intersect(this, a_segments);
         }
 
         /// <summary>
@@ -349,38 +380,12 @@
         }
 
         /// <summary>
-        /// returns a list of intersections with the given segments. Sorted with the one closest to point1 on top.
-        /// </summary>
-        /// <param name="a_segments"></param>
-        /// <returns></returns>
-        public List<Vector2> IntersectionWithSegments(IEnumerable<LineSegment> a_segments)
-        {
-            var intersections = new List<Vector2>();
-
-            //find all intersections
-            foreach (LineSegment segment in a_segments)
-            {
-                Vector2? intersection = Intersect(segment);
-                if (intersection.HasValue)
-                {
-                    intersections.Add(intersection.Value);
-                }
-            }
-
-            //sort them
-            intersections.Sort(ClosestToPoint1Comparer);
-
-
-            return intersections;
-        }
-
-        /// <summary>
         /// Compares two points based on distance to start point of line segment
         /// </summary>
         /// <param name="a_1"></param>
         /// <param name="a_2"></param>
         /// <returns></returns>
-        private int ClosestToPoint1Comparer(Vector2 a_1, Vector2 a_2)
+        public int ClosestToPoint1Comparer(Vector2 a_1, Vector2 a_2)
         {
             var dist_1 = Vector2.Distance(Point1, a_1);
             var dist_2 = Vector2.Distance(Point1, a_2);

@@ -191,7 +191,7 @@
                 };
 
             MNMatrix orientMatrix = MNMatrix.Build.DenseOfArray(orientArray);
-            return (int)Math.Sign(orientMatrix.Determinant());
+            return Math.Sign(orientMatrix.Determinant());
         }
 
         /// <summary>

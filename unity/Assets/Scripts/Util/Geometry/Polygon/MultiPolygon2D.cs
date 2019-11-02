@@ -11,7 +11,7 @@
     /// </summary>
     public class MultiPolygon2D : IPolygon2D
     {
-        private readonly List<Polygon2D> m_Polygons;
+        private readonly List<Polygon2D> m_Polygons = new List<Polygon2D>();
 
         public ICollection<Vector2> Vertices {
             get
@@ -51,6 +51,30 @@
             get { return m_Polygons; }
         }
 
+        /// <summary>
+        /// Simple Constructor 
+        /// </summary>
+        public MultiPolygon2D()
+        { }
+
+        /// <summary>
+        /// Simple Constructor 
+        /// </summary>
+        public MultiPolygon2D(Polygon2D polygon) : this()
+        {
+            AddPolygon(polygon);
+        }
+
+        /// <summary>
+        /// Constructs a clockwise polygon with the given vertices.
+        /// </summary>
+        /// <param name="a_vertices"></param>
+        public MultiPolygon2D(IEnumerable<Polygon2D> a_polygons) : this()
+        {
+            foreach (var p in a_polygons) AddPolygon(p);
+        }
+
+
         public Vector2? Next(Vector2 pos)
         {
             foreach (var p in m_Polygons)
@@ -71,6 +95,10 @@
 
         public void AddPolygon(Polygon2D polygon)
         {
+            if (polygon == null)
+            {
+                throw new GeomException("Cannot add null polygon");
+            }
             m_Polygons.Add(polygon);
         }
 
@@ -124,31 +152,6 @@
         }
 
         /// <summary>
-        /// Simple Constructor 
-        /// </summary>
-        public MultiPolygon2D()
-        {
-            m_Polygons = new List<Polygon2D>();
-        }
-
-        /// <summary>
-        /// Simple Constructor 
-        /// </summary>
-        public MultiPolygon2D(Polygon2D polygon) : this()
-        {
-            AddPolygon(polygon);
-        }
-
-        /// <summary>
-        /// Constructs a clockwise polygon with the given vertices.
-        /// </summary>
-        /// <param name="a_vertices"></param>
-        public MultiPolygon2D(IEnumerable<Polygon2D> a_polygons) : this()
-        {
-            foreach (var p in a_polygons) AddPolygon(p);
-        }
-
-        /// <summary>
         /// Tests wheter this polygon is clockwise and convex by verifying that each tripple of points constitues a right turn
         /// </summary>
         public bool IsConvex()
@@ -177,10 +180,10 @@
 
         public override string ToString()
         {
-            var str = "MultiPolygon: {";
+            var str = "MultiPolygon: {\n";
             foreach (var p in m_Polygons)
             {
-
+                str += p + "\n";
             }
             return str + "}";
         }

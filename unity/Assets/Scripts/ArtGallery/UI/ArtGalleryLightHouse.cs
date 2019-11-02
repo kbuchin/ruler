@@ -46,7 +46,7 @@
         public Polygon2D VisionPoly { get; set; }
 
         // Use this for initialization
-        void Start()
+        void Awake()
         {
             m_controller = FindObjectOfType<ArtGalleryController>();
             

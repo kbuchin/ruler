@@ -7,7 +7,7 @@
     /// </summary>
     public class Quiter : MonoBehaviour
     {
-        public virtual void Start()
+        public virtual void Awake()
         {
             // run when using WEBGL
             #if UNITY_WEBGL

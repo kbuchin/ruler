@@ -14,7 +14,7 @@
             var dcel = new DCEL();
 
             Assert.Zero(dcel.InnerFaces.Count());
-            Assert.Zero(dcel.OuterFace.OuterVertices.Count());
+            Assert.Zero(dcel.OuterFace.InnerComponents.Count());
             Assert.IsTrue(dcel.OuterFace.Contains(new Vector2(0, 0)));
         }
 
@@ -27,7 +27,7 @@
 
             var dcel = new DCEL(segs, new Rect(new Vector2(-1, -1), new Vector2(2, 2)));
 
-            Assert.AreEqual(4, dcel.OuterFace.OuterVertices.Count());
+            Assert.AreEqual(4, dcel.OuterFace.InnerHalfEdges.Count());
 
             Assert.AreEqual(2, dcel.InnerFaces.Count());
             foreach (var f in dcel.InnerFaces)

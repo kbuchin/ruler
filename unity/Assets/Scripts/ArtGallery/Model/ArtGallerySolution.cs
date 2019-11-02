@@ -33,7 +33,7 @@
                 // add visibility polygons, cutting out the overlap
                 foreach (ArtGalleryLightHouse lighthouse in m_lighthouses.Skip(1))
                 {
-                    Clipper.CutOut(visiblePolygon, lighthouse.VisionPoly);
+                    visiblePolygon = Clipper.CutOut(visiblePolygon, lighthouse.VisionPoly);
                     visiblePolygon.AddPolygon(lighthouse.VisionPoly);
                 }
 

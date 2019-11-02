@@ -15,8 +15,6 @@
         private readonly List<Vertex> m_complete4pos;
         private readonly IGraph m_complete4;
 
-        private static float eps = MathUtil.EPS;
-
         public TSPTest()
         {
             m_complete4pos = new List<Vertex>() {
