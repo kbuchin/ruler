@@ -1,9 +1,7 @@
 ﻿namespace Util.Algorithms.Graph
 {
-    using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
-    using UnityEngine;
     using Util.Geometry;
     using Util.Geometry.Graph;
 
@@ -35,7 +33,7 @@
         /// <param name="a_result"></param>
         /// <returns></returns>
         public static IEnumerable<Edge> GreedyMinimumWeightPerfectMatching(IGraph a_result)
-        { 
+        {
             if (a_result.VertexCount % 2 == 1)
             {
                 throw new GeomException("odd number of vertices, perfect matching impossible");

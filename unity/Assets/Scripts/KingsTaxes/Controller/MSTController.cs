@@ -1,10 +1,10 @@
 ﻿namespace KingsTaxes
 {
-    using Util.Geometry.Graph;
     using System.Collections.Generic;
     using System.Linq;
     using UnityEngine;
     using Util.Algorithms.Graph;
+    using Util.Geometry.Graph;
 
     /// <summary>
     /// Game controller for the MST minigame of the Kings Taxes game.
@@ -29,7 +29,7 @@
             if (m_graph.Equals(m_goalgraph))
             {
                 m_advanceButton.Enable();
-            }   
+            }
         }
 
         protected override List<Vector2> InitEndlessLevel(int level, float width, float height)
@@ -52,8 +52,8 @@
         {
             // Divide solution already displayed
             if (m_solutionMode) return;
-            
-            m_solutionMode = true; 
+
+            m_solutionMode = true;
 
             // create solution roads for given graph
             foreach (var edge in m_goalgraph.Edges)

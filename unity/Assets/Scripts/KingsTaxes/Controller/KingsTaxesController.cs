@@ -2,14 +2,13 @@
 {
     using General.Controller;
     using General.Model;
-    using System.Collections;
+    using KingsTaxes.Model;
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using UnityEngine;
     using UnityEngine.SceneManagement;
     using Util.Geometry.Graph;
-    using KingsTaxes.Model;
-    using System;
 
     /// <summary>
     /// Parent controller for all game controllers related to the Kings Taxes game
@@ -77,16 +76,16 @@
                 var width = height * Camera.main.aspect;
                 List<Vector2> positions = InitEndlessLevel(m_endlessDifficulty, width, height);
 
-                foreach (var positon in positions)
+                foreach (var position in positions)
                 {
                     GameObject obj;
                     if (UnityEngine.Random.Range(0f, 1f) < .75f)
                     {
-                        obj = Instantiate(m_villagePrefab, positon, Quaternion.identity);
+                        obj = Instantiate(m_villagePrefab, position, Quaternion.identity);
                     }
                     else
                     {
-                        obj = Instantiate(m_castlePrefab, positon, Quaternion.identity);
+                        obj = Instantiate(m_castlePrefab, position, Quaternion.identity);
                     }
                     instantObjects.Add(obj);
                 }
@@ -147,7 +146,7 @@
         {
             if (m_levelCounter >= m_levels.Count && m_endlessMode)
             {
-                if(!m_solutionMode)
+                if (!m_solutionMode)
                 {
                     // update number of endless levels solved
                     var m_endlessDifficulty = PlayerPrefs.GetInt(m_endlessScoreKey);
@@ -192,7 +191,7 @@
 
             // remember road for destroyal later
             instantObjects.Add(roadmesh);
-            
+
             // create road mesh
             var roadmeshScript = roadmesh.GetComponent<ReshapingMesh>();
             roadmeshScript.CreateNewMesh(settlement1.transform.position, settlement2.transform.position);

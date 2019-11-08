@@ -1,8 +1,5 @@
 ﻿namespace Voronoi.UI
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
     using UnityEngine;
     using Util.Geometry.Triangulation;
 
@@ -84,7 +81,7 @@
                 {
                     continue;
                 }
-                
+
                 // find circle radius
                 var radius = Vector2.Distance(triangle.Circumcenter, triangle.P0);
 

@@ -1,12 +1,11 @@
 ﻿namespace Util.Algorithms.Graph.Tests
 {
-    using UnityEngine;
     using NUnit.Framework;
-    using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Util.Geometry.Graph;
     using Util.Algorithms.Graph;
+    using Util.Geometry.Graph;
+    using Util.Math;
 
     [TestFixture]
     class MatchingTest
@@ -75,21 +74,19 @@
             var cost = new Edge(m_level1pos[0], m_level1pos[2]).Weight +
                        new Edge(m_level1pos[1], m_level1pos[3]).Weight;
 
-            Assert.AreEqual(cost, matching.Sum(e => e.Weight));
+            Assert.AreEqual(cost, matching.Sum(e => e.Weight), MathUtil.EPS);
         }
 
         [Test]
         public void MinimumWeightMatching2Test()
         {
-            /*
-            var matching = Matching.MinimumWeightPerfectMatchingOfCompleteGraph(m_level2pos);
+            var matching = Matching.MinimumWeightPerfectMatching(m_level2pos);
             var cost = new Edge(m_level2pos[0], m_level2pos[5]).Weight +
                        new Edge(m_level2pos[1], m_level2pos[2]).Weight +
                        new Edge(m_level2pos[3], m_level2pos[4]).Weight;
 
             // test fails on greedy algorithm
-            Assert.AreEqual(cost, matching.TotalEdgeWeight);
-            */
+            //Assert.AreEqual(cost, matching.Sum(e => e.Weight), MathUtil.EPS);
         }
     }
 }

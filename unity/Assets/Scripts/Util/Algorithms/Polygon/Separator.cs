@@ -2,12 +2,10 @@
 {
     using System;
     using System.Linq;
-    using System.Collections.Generic;
     using UnityEngine;
     using Util.Geometry;
     using Util.Geometry.Duality;
     using Util.Geometry.Polygon;
-    using Util.Math;
 
     /// <summary>
     /// Collection of algorithms related to seperation.
@@ -28,7 +26,7 @@
             {
                 throw new GeomException("Only support computing lines of greatest seperation for convex polygons");
             }
-            
+
             if (!poly.IsClockwise())
             {
                 poly = new Polygon2D(poly.Vertices.Reverse());

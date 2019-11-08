@@ -1,14 +1,13 @@
 ﻿namespace Util.Geometry.Triangulation
 {
-    using System.Linq;
     using System.Collections.Generic;
+    using System.Linq;
     using UnityEngine;
-    using Util.Algorithms;
     using Util.Math;
 
     /// <summary>
     /// Class that holds a triangulation, i.e. a collection of triangles.
-    /// Triangles are stored as a tuple of three triangle edges.
+    /// Triangles are stored as a tuple of three triangle edges in clockwise order.
     /// 
     /// Similar to a DCEL, each triangle edge is a halfedge, 
     /// which will store a pointer to its twin whenever it exist.
@@ -17,40 +16,42 @@
     public class Triangulation
     {
 
-        private readonly LinkedList<Triangle> m_Triangles = new LinkedList<Triangle>();
+        private readonly List<Triangle> m_Triangles = new List<Triangle>();
 
         /// <summary>
         /// Collection of triangles in the triangulation.
         /// </summary>
-        public IEnumerable<Triangle> Triangles { get { return m_Triangles; } }
+        public ICollection<Triangle> Triangles { get { return m_Triangles; } }
 
         /// <summary>
         /// All triangle edges inside the triangulation.
         /// Will return two half edges for every edge in triangulation.
         /// </summary>
-        public IEnumerable<TriangleEdge> Edges {
+        public IEnumerable<TriangleEdge> Edges
+        {
             get
             {
-                return m_Triangles
-                    .Select(t => t.E0)
-                    .Union(m_Triangles.Select(t => t.E1))
-                    .Union(m_Triangles.Select(t => t.E2));
+                return m_Triangles.SelectMany(t => t.Edges);
             }
         }
 
         /// <summary>
         /// Returns the unique vertices in the triangulation (no duplicates).
         /// </summary>
-        public IEnumerable<Vector2> Vertices {
+        public IEnumerable<Vector2> Vertices
+        {
             get
             {
-                var vertices = m_Triangles
-                    .Select(t => t.P0)
-                    .Union(m_Triangles.Select(t => t.P1))
-                    .Union(m_Triangles.Select(t => t.P2));
+                // removes duplicates
+                return m_Triangles.SelectMany(t => t.Vertices).Distinct();
+            }
+        }
 
-                // remove duplicates
-                return vertices.GroupBy(v => v.GetHashCode()).Select(x => x.FirstOrDefault());
+        public float Area
+        {
+            get
+            {
+                return m_Triangles.Sum(t => t.Area);
             }
         }
 
@@ -69,15 +70,27 @@
         /// </summary>
         /// <param name="a_Points"></param>
         public Triangulation(IEnumerable<Vector2> a_Points) : this()
-        { 
+        {
             var Points = a_Points.ToList();
             for (var i = 1; i < Points.Count - 1; i++)
             {
-                AddTriangle(new Triangle(
+                var t = new Triangle(
                     Points[0],
                     Points[i],
                     Points[i + 1]
-                ));
+                );
+
+                // check triangles are clockwise
+                if (!t.IsClockwise())
+                {
+                    t = new Triangle(
+                        Points[0],
+                        Points[i + 1],
+                        Points[i]
+                    );
+                }
+
+                AddTriangle(t);
             }
         }
 
@@ -99,6 +112,14 @@
             AddTriangle(triangle);
         }
 
+        public Triangulation(IEnumerable<Triangle> a_triangles)
+        {
+            foreach (var tr in a_triangles)
+            {
+                AddTriangle(new Triangle(tr.P0, tr.P1, tr.P2));
+            }
+        }
+
         /// <summary>
         /// Add a single triangle to the triangulation.
         /// Assumes triangle's edges are already correctly set.
@@ -110,7 +131,7 @@
         /// <param name="t"></param>
         public void AddTriangle(Triangle t)
         {
-            m_Triangles.AddLast(t);
+            m_Triangles.Add(t);
         }
 
         /// <summary>
@@ -180,7 +201,7 @@
         /// <param name="t"></param>
         public void RemoveTriangle(Triangle t)
         {
-            m_Triangles.Remove(t);
+            m_Triangles.RemoveAll(tr => t.Equals(tr));
         }
 
         /// <summary>
@@ -199,7 +220,7 @@
         public void RemoveInitialTriangle()
         {
             // get all triangles that contain initial endpoints
-            var ToRemove = m_Triangles.Where(t => ContainsInitialPoint(t));
+            var ToRemove = m_Triangles.Where(t => ContainsInitialPoint(t)).ToList();
 
             // remove such triangles
             foreach (var t in ToRemove)
@@ -249,7 +270,6 @@
                     {
                         throw new GeomException("Triangulation is misformed");
                     }
-
                     if (MathUtil.EqualsEps(e1.Point1, e2.Point2) || MathUtil.EqualsEps(e1.Point2, e2.Point1))
                     {
                         e1.Twin = e2;
@@ -272,14 +292,14 @@
             var vertices = new Dictionary<Vector2, int>();
             var index = 0;
             foreach (var t in m_Triangles)
-                foreach(var v in t.Vertices)
+                foreach (var v in t.Vertices)
                     if (!vertices.ContainsKey(v))
                         vertices.Add(v, index++);
 
             var vertexList = vertices.Keys.ToList();
-            
+
             // Calculate UV's
-            var bbox = BoundingBoxComputer.FromVector2(vertexList, 0.1f);
+            var bbox = BoundingBoxComputer.FromPoints(vertexList, 0.1f);
             var newUV = vertexList.Select<Vector2, Vector2>(p => Rect.PointToNormalized(bbox, p));
 
             // Calculate mesh triangles

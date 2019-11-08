@@ -1,12 +1,10 @@
 ﻿namespace Util.Algorithms.Graph
 {
-    using System.Collections;
     using System.Collections.Generic;
-    using Util.DataStructures.Queue;
-    using Util.Geometry.Graph;
-    using Util.Geometry;
-    using System;
     using System.Linq;
+    using Util.DataStructures.Queue;
+    using Util.Geometry;
+    using Util.Geometry.Graph;
 
     /// <summary>
     /// Static collection of algorithms related to minimum spanning trees (MST).
@@ -34,7 +32,7 @@
         /// <returns>A graph representing the minimum spanning tree</returns>
         public static IGraph MinimumSpanningTree(IGraph a_graph)
         {
-            if(a_graph.Type.DIRECTED)
+            if (a_graph.Type.DIRECTED)
             {
                 throw new GeomException("Minimum Spanning Tree is not defined on a directed graph.");
             }
@@ -49,13 +47,13 @@
 
             //initialize data structures
             var visitedVertices = new HashSet<Vertex>() { root };
-            var edgesToConsider = new BinaryHeap<Edge>( a_graph.OutEdgesOf(root) );
+            var edgesToConsider = new BinaryHeap<Edge>(a_graph.OutEdgesOf(root));
 
             while (visitedVertices.Count < a_graph.VertexCount)
             {
                 var edge = edgesToConsider.Pop();
 
-                if(!visitedVertices.Contains(edge.Start))
+                if (!visitedVertices.Contains(edge.Start))
                 {
                     // should be impossible
                     throw new GeomException("Start vertex of edge has not been visited");
@@ -82,4 +80,4 @@
         }
     }
 }
-   
+

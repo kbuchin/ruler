@@ -1,6 +1,5 @@
 ﻿namespace Divide.Model
 {
-    using System;
     using System.Collections.Generic;
     using UnityEngine;
 
@@ -15,8 +14,8 @@
         public int NumberOfSwaps = 0;
 
         [Header("Soldiers")]
-        public List<Vector2> Spearmen;
-        public List<Vector2> Archers;
-        public List<Vector2> Mages;
+        public List<Vector2> Spearmen = new List<Vector2>();
+        public List<Vector2> Archers = new List<Vector2>();
+        public List<Vector2> Mages = new List<Vector2>();
     }
 }

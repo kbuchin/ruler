@@ -157,14 +157,11 @@
         {
             if (a_line1.IsVertical && a_line2.IsVertical)
             {
-                //Debug.Log("Vertical");
                 return null;
-                //throw new GeomException("Two vertical lines ");
             }
 
             if (MathUtil.EqualsEps(a_line1.Slope, a_line2.Slope))
             {
-                //Debug.Log("Parallel");
                 return null;
                 //throw new GeomException("Two parallel lines");
             }
@@ -208,7 +205,7 @@
         /// <returns></returns>
         public bool IsOnLine(Vector2 a_Point)
         {
-            return float.IsInfinity(Slope) ? MathUtil.EqualsEps(Point1.x, a_Point.x) 
+            return float.IsInfinity(Slope) ? MathUtil.EqualsEps(Point1.x, a_Point.x)
                 : MathUtil.EqualsEps(Y(a_Point.x), a_Point.y);
         }
 
@@ -255,7 +252,7 @@
 
             if (float.IsInfinity(Slope))
             {
-                return Point2.y < Point1.y ? a_point.x < Point1.x: a_point.x > Point1.x;
+                return Point2.y < Point1.y ? a_point.x < Point1.x : a_point.x > Point1.x;
             }
 
             //consider orientation
@@ -267,7 +264,7 @@
         /// </summary>
         /// <param name="v"></param>
         /// <returns></returns>
-        internal float DistanceToPoint(Vector2 v)
+        public float DistanceToPoint(Vector2 v)
         {
             var normalLine = new Line(v, v + Normal);
             var intersection = Intersect(normalLine);       // cannot be null

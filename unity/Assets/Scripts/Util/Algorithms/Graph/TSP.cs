@@ -1,16 +1,15 @@
 ﻿namespace Util.Algorithms.Graph
 {
-    using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
-    using UnityEngine;
+    using Util.Geometry;
     using Util.Geometry.Graph;
 
     /// <summary>
     /// Collection of algorithms related to TSP and Hamiltonicity.
     /// </summary>
-    public static class TSP {
+    public static class TSP
+    {
 
         /// <summary>
         /// Check if the current graph stores a TSP tour
@@ -26,7 +25,7 @@
             Vertex v = Graph.Vertices.FirstOrDefault();
             var visited = new HashSet<Vertex>();
 
-            while(true)
+            while (true)
             {
                 // each vertex should have degree 2
                 if (Graph.DegreeOf(v) != 2) return false;
@@ -37,7 +36,7 @@
                 bool change = false;
                 foreach (Edge e in Graph.OutEdgesOf(v))
                 {
-                    if(!change && !visited.Contains(e.End))
+                    if (!change && !visited.Contains(e.End))
                     {
                         v = e.End;
                         change = true;
@@ -61,19 +60,9 @@
         {
             if (!IsHamiltonian(graph))
             {
-                throw new ArgumentException("Graph should be hamiltonian");
+                throw new GeomException("Graph should be hamiltonian");
             }
             return graph.TotalEdgeWeight;
-        }
-
-        /// <summary>
-        /// Finds the lenth of a TSPtour, provided by christofides algorithm.
-        /// </summary>
-        /// <param name="graph"></param>
-        /// <returns></returns>
-        public static float FindTSPLength(IGraph graph)
-        {
-            return FindTSPLength(graph.Vertices);
         }
 
         /// <summary>
@@ -100,7 +89,6 @@
             var oddDegreeMatching = Matching.MinimumWeightPerfectMatching(oddDegreePos);
             var matchWeight = oddDegreeMatching.Sum(e => e.Weight);
 
-            Debug.Log("mst length: " + mst.TotalEdgeWeight + "  om length: " + matchWeight);
             return mst.TotalEdgeWeight + matchWeight;
         }
     }

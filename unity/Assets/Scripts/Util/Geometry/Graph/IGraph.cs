@@ -1,9 +1,7 @@
 ﻿namespace Util.Geometry.Graph
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
-    using UnityEngine;
 
     /// <summary>
     /// Graph interface that defines several methods related to adding/removing vertices/edges,
@@ -18,7 +16,7 @@
 
         ICollection<Vertex> Vertices { get; }
         ICollection<Edge> Edges { get; }
-        
+
         int VertexCount { get; }
         int EdgeCount { get; }
 
@@ -136,7 +134,7 @@
         /// <param name="v"></param>
         /// <returns></returns>
         Vertex RemoveVertex(Vertex v);
-        
+
         /// <summary>
         /// Remove all vertices in the given collection.
         /// </summary>
@@ -186,7 +184,7 @@
     /// </summary>
     /// <typeparam name="V"></typeparam>
     /// <typeparam name="E"></typeparam>
-    public interface IGraph<V,E> : IGraph<E>
+    public interface IGraph<V, E> : IGraph<E>
     {
         V GetVertexProp(Vertex v);
         void SetVertexProp(Vertex v, V val);

@@ -1,23 +1,23 @@
 ﻿namespace Voronoi.Controller
 {
-    using UnityEngine;
-    using System.Collections.Generic;
     using System;
-    using Voronoi.UI;
-    using Util.Geometry.DCEL;
-    using Util.Algorithms.Triangulation;
-    using Util.Geometry.Triangulation;
-    using UnityEngine.SceneManagement;
-    using Util.Geometry.Polygon;
-    using Util.Algorithms.DCEL;
+    using System.Collections.Generic;
     using System.Linq;
+    using UnityEngine;
+    using UnityEngine.SceneManagement;
+    using Util.Algorithms.DCEL;
+    using Util.Algorithms.Triangulation;
+    using Util.Geometry.DCEL;
+    using Util.Geometry.Polygon;
+    using Util.Geometry.Triangulation;
     using Util.Math;
+    using Voronoi.UI;
 
     /// <summary>
     /// Game controller for the voronoi game.
     /// </summary>
     public class VoronoiController : MonoBehaviour
-    {        
+    {
         // prefab instances for click objects
         public GameObject m_Player1Prefab;
         public GameObject m_Player2Prefab;
@@ -49,7 +49,7 @@
 
         // mapping of vertices to ownership enum
         private readonly Dictionary<Vector2, EOwnership> m_ownership = new Dictionary<Vector2, EOwnership>();
-        
+
         private enum EOwnership
         {
             UNOWNED,
@@ -240,7 +240,7 @@
         /// </summary>
         private void ProcessTurn()
         {
-            if(m_halfTurnsTaken == 0)
+            if (m_halfTurnsTaken == 0)
             {
                 // game has just been started
                 m_GUIManager.OnStartClicked();
@@ -268,7 +268,6 @@
                 // check if vertex already in graph to avoid degenerate cases
                 if (m_ownership.ToList().Exists(v => MathUtil.EqualsEps(v.Key, me)))
                 {
-                    Debug.Log("Cannot click on existing vertex");
                     return;
                 }
 
@@ -280,7 +279,7 @@
                 // instantiate the relevant game object at click position
                 var prefab = player1Turn ? m_Player1Prefab : m_Player2Prefab;
                 var onClickObject = Instantiate(prefab, pos, Quaternion.identity) as GameObject;
-                
+
                 if (onClickObject == null)
                 {
                     throw new InvalidProgramException("Couldn't instantiate m_PlayerPrefab!");

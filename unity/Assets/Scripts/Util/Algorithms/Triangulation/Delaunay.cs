@@ -1,17 +1,16 @@
 ﻿namespace Util.Algorithms.Triangulation
 {
-    using System;
-    using System.Collections;
     using System.Collections.Generic;
-    using UnityEngine;
-    using Util.Geometry.Triangulation;
-    using Util.Geometry;
     using System.Linq;
+    using UnityEngine;
+    using Util.Geometry;
+    using Util.Geometry.Triangulation;
 
     /// <summary>
-    /// Collection of algorithms related to Delaunay traingulation.
+    /// Collection of algorithms related to Delaunay triangulation.
     /// </summary>
-    public static class Delaunay {
+    public static class Delaunay
+    {
 
         private const float m_farAway = 999f;
 
@@ -22,8 +21,8 @@
         public static Triangulation Create()
         {
             var v0 = new Vector2(-m_farAway, -m_farAway);
-            var v1 = new Vector2(m_farAway, -m_farAway);
-            var v2 = new Vector2(0, m_farAway);
+            var v1 = new Vector2(0, m_farAway);
+            var v2 = new Vector2(m_farAway, -m_farAway);
 
             return new Triangulation(v0, v1, v2);
         }
@@ -41,6 +40,9 @@
             {
                 AddVertex(T, v);
             }
+
+            T.RemoveInitialTriangle();
+
             return T;
         }
 
@@ -66,15 +68,15 @@
 
             if (a_Edge == null || a_Edge.T == null || a_Edge.Twin == null || a_Edge.Twin.T == null)
             {
-                throw new GeomException("Invalid triangle edge - Cannot legalize edge");
+                throw new GeomException("Invalid triangle edge - null pointers");
             }
 
             var a_triangle = a_Edge.T;
             var a_Twin = a_Edge.Twin.T;
 
             // Points to test
-            var u = (Vector2)a_Edge.T.OtherVertex(a_Edge);
-            var v = (Vector2)a_Edge.Twin.T.OtherVertex(a_Edge.Twin);
+            var u = a_Edge.T.OtherVertex(a_Edge).Value;
+            var v = a_Edge.Twin.T.OtherVertex(a_Edge.Twin).Value;
 
             return !a_triangle.InsideCircumcircle(v) && !a_Twin.InsideCircumcircle(u);
         }
@@ -86,7 +88,7 @@
         /// <param name="T"></param>
         /// <param name="a_vertex"></param>
         /// <returns></returns>
-        public static bool AddVertex(Triangulation T, Vector2 a_vertex)
+        public static void AddVertex(Triangulation T, Vector2 a_vertex)
         {
             // find triangle that contains X
             var triangle = T.FindContainingTriangle(a_vertex);
@@ -97,8 +99,6 @@
             LegalizeEdge(T, a_vertex, triangle.E0);
             LegalizeEdge(T, a_vertex, triangle.E1);
             LegalizeEdge(T, a_vertex, triangle.E2);
-
-            return true;
         }
 
         /// <summary>

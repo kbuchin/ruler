@@ -5,8 +5,6 @@
     using System.Linq;
     using UnityEngine;
     using Util.Geometry;
-    using Util.Geometry.Polygon;
-    using Util.Math;
 
     /// <summary>
     /// Class for computing the bounding box (Rect) around various structures.
@@ -28,7 +26,7 @@
                 vertices.Add(seg.Point1);
                 vertices.Add(seg.Point2);
             }
-            return FromVector2(vertices, margin);
+            return FromPoints(vertices, margin);
         }
 
         /// <summary>
@@ -43,24 +41,24 @@
 
             if (lines.Count < 2)
             {
-                throw new ArgumentException("Not enough lines provided");
+                throw new GeomException("Bounding box not defined for less than 2 lines");
             }
 
             lines.Sort(); //Sorts on slope by implementation of compareTo in line 
 
             //Outermost (in both x and y) intersections are between lines of adjecent slope
-            
+
             var candidatepoints = new List<Vector2>();
-            for (var i = 0; i < lines.Count - 1; i++)
+            for (var i = 0; i < lines.Count; i++)
             {
-                var intersect = Line.Intersect(lines[i], lines[i + 1]);
-                if (intersect != null)
+                var intersect = Line.Intersect(lines[i], lines[(i + 1) % lines.Count]);
+                if (intersect.HasValue)
                 {
                     candidatepoints.Add(intersect.Value);
                 }
             }
 
-            return FromVector2(candidatepoints, margin);
+            return FromPoints(candidatepoints, margin);
         }
 
         /// <summary>
@@ -70,11 +68,11 @@
         /// <param name="a_points"></param>
         /// <param name="margin"></param>
         /// <returns></returns>
-        public static Rect FromVector2(IEnumerable<Vector2> a_points, float margin = 0f)
+        public static Rect FromPoints(IEnumerable<Vector2> a_points, float margin = 0f)
         {
-            if(a_points.Count() == 0)
+            if (a_points.Count() == 0)
             {
-                throw new ArgumentException("Bounding box not defined on empty vector list");
+                throw new GeomException("Bounding box not defined on empty vector list");
             }
 
             var result = new Rect(a_points.FirstOrDefault(), Vector2.zero);

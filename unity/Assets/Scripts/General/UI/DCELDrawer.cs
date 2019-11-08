@@ -1,13 +1,10 @@
 ﻿namespace Drawing
 {
+    using System.Collections.Generic;
     using UnityEngine;
     using UnityEngine.UI;
-    using System.Collections.Generic;
-    using General;
-    using Util.Geometry.DCEL;
-    using System;
     using Util.Algorithms.Triangulation;
-    using Util.Algorithms.DCEL;
+    using Util.Geometry.DCEL;
 
     /// <summary>
     /// Draws a DCEL made from a collection of intersecting lines.
@@ -45,7 +42,7 @@
         /// Faces in between dual lines. 
         /// For drawing of DCEL construction with dual lines.
         /// </summary>
-        public IEnumerable<Face> MiddleFaces { get; set; }
+        public List<Face> MiddleFaces { get; set; }
 
         /// <summary>
         /// Enable text boxes to display additioanl information
@@ -165,7 +162,7 @@
                 GL.End();
             }
         }
-        
+
         /// <summary>
         /// Draws the faces in between the lines.
         /// </summary>
@@ -216,7 +213,7 @@
                     GL.Vertex3(bbox.xMax, bbox.yMin, 0);
                     GL.End();
                 }
-                
+
                 GL.PopMatrix();
             }
         }

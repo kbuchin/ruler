@@ -1,7 +1,5 @@
 ﻿namespace General.Model
 {
-    using System;
-    using System.Collections;
     using UnityEngine;
     using Util.Algorithms.Triangulation;
     using Util.Geometry.Polygon;
@@ -58,6 +56,7 @@
         {
             if (m_polygon == null || m_polygon.Vertices.Count < 3)
             {
+                m_meshFilter.mesh = new Mesh();
                 return;
             }
 

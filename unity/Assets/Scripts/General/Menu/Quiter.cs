@@ -10,10 +10,10 @@
         public virtual void Awake()
         {
             // run when using WEBGL
-            #if UNITY_WEBGL
+#if UNITY_WEBGL
             Debug.Log("WebPlayer");
             gameObject.SetActive(false);
-            #endif
+#endif
         }
 
         /// <summary>

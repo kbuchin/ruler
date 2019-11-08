@@ -3,7 +3,7 @@
     using System;
     using System.Collections.Generic;
     using UnityEngine;
-    
+
     /// <summary>
     /// Polygon interface that defines vertices, segments, adding/removing vertices
     /// and some auxiliary methods.
@@ -85,7 +85,7 @@
         /// Remove last point from the polygon.
         /// </summary>
         void RemoveLast();
-    
+
         /// <summary>
         /// Clears all points of the polygon.
         /// </summary>
@@ -96,7 +96,14 @@
         /// </summary>
         /// <param name="pos"></param>
         /// <returns></returns>
-        bool Contains(Vector2 pos);
+        bool ContainsInside(Vector2 pos);
+
+        /// <summary>
+        /// Checks whether the point is a vertex in the polygon.
+        /// </summary>
+        /// <param name="pos"></param>
+        /// <returns></returns>
+        bool ContainsVertex(Vector2 pos);
 
         /// <summary>
         /// Check whether the polygon is convex.

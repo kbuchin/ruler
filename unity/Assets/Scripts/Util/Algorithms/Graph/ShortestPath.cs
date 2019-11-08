@@ -1,16 +1,16 @@
 ﻿namespace Util.Algorithms.Graph
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using Util.DataStructures.Queue;
-    using Util.Geometry.Graph;
     using Util.Geometry;
-    
+    using Util.Geometry.Graph;
+
     /// <summary>
     /// Static collection of algorithms related to shortest path
     /// </summary>
-    public static class ShortestPath {
+    public static class ShortestPath
+    {
 
         // auxilliary variables used in the dijkstra algorithm
         private readonly static Dictionary<Vertex, VertexDist> ParentDist = new Dictionary<Vertex, VertexDist>();
@@ -83,7 +83,7 @@
         private static void Dijkstra(IGraph a_graph, Vertex a_start, Vertex a_end)
         {
             ParentDist.Clear();
-            var Queue = new BinaryHeap<VertexDist>();
+            var queue = new BinaryHeap<VertexDist>();
 
             foreach (Vertex v in a_graph.Vertices)
             {
@@ -91,15 +91,15 @@
             }
 
             //set start vertex O(n)
-            Queue.Push(new VertexDist(a_start, 0));
+            queue.Push(new VertexDist(a_start, 0));
             ParentDist[a_start] = new VertexDist(a_start, 0f);
 
-            while (Queue.Count > 0)
+            while (queue.Count > 0)
             {
                 //get cheapest vertex, O( n log n) in total
-                var distance = Queue.Peek().Dis;
-                var currentVertex = Queue.Peek().V;
-                Queue.Pop();
+                var distance = queue.Peek().Dis;
+                var currentVertex = queue.Peek().V;
+                queue.Pop();
 
                 //Check for termination
                 if (currentVertex == a_end) return;
@@ -114,7 +114,7 @@
                     {
                         // insert new vertex-distance pair into priority queue
                         ParentDist[edge.End] = new VertexDist(currentVertex, distance + edge.Length);
-                        Queue.Push(new VertexDist(edge.End, distance + edge.Length));
+                        queue.Push(new VertexDist(edge.End, distance + edge.Length));
                     }
                 }
             }

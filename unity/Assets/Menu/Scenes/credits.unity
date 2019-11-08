@@ -725,7 +725,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 22485368, guid: 47375d1ad9de78947b5dddba6bf6a125, type: 2}
       propertyPath: m_AnchoredPosition.y
-      value: -10
+      value: -9.999908
       objectReference: {fileID: 0}
     - target: {fileID: 22485368, guid: 47375d1ad9de78947b5dddba6bf6a125, type: 2}
       propertyPath: m_SizeDelta.x
@@ -762,8 +762,8 @@ Prefab:
     - target: {fileID: 11497240, guid: 47375d1ad9de78947b5dddba6bf6a125, type: 2}
       propertyPath: m_Text
       value: "Project Lead: \t\tKevin Buchin\r\n\nProgramming:\t\tSander Beekhuis,
-        Kevin Buchin, \n\t\t\t\t\t\t\tThom Hurks\r and Stijn Slot\n\nArt: \t\t\t\t\t\tWillem
-        Sonke and Thom Castermans\r\n\nFont:\t\t\t\t\t\tEagle Lake and Arial"
+        Kevin Buchin,\n\t\t\t\t\t\t\tThom Hurks, Stijn Slot\n\nArt: \t\t\t\t\t\tWillem
+        Sonke, Thom Castermans\n\nFont:\t\t\t\t\tEagle Lake, Arial"
       objectReference: {fileID: 0}
     - target: {fileID: 11497240, guid: 47375d1ad9de78947b5dddba6bf6a125, type: 2}
       propertyPath: m_FontData.m_VerticalOverflow

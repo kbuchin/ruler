@@ -1,12 +1,9 @@
 ﻿namespace Util.Algorithms.Graph.Tests
 {
-    using UnityEngine;
     using NUnit.Framework;
     using System.Collections.Generic;
-    using System.Linq;
     using Util.Algorithms.Graph;
     using Util.Geometry.Graph;
-    using Util.Math;
 
     [TestFixture]
     public class SpannerTest

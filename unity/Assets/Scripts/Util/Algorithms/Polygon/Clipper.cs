@@ -1,10 +1,8 @@
 ﻿namespace Util.Algorithms.Polygon
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using UnityEngine;
-    using Util.Geometry;
     using Util.Geometry.Polygon;
     using Util.Math;
 
@@ -91,17 +89,18 @@
                 {
                     foreach (var vertex in a_subjectList)
                     {
-                        if (MathUtil.EqualsEps(vertex, start)) //more liberal then Equals
+                        if (MathUtil.EqualsEps(vertex, start, MathUtil.EPS * 10)) //more liberal then Equals
                         {
                             startnode = a_subjectList.Find(vertex);
                         }
                     }
                 }
 
-                Debug.Assert(startnode != null, startnode);
-                var workingvertex = startnode.Next;
+                // incorrect input
+                // fail softly
+                if (startnode == null) return result;
 
-                if (workingvertex == null) workingvertex = a_subjectList.First;
+                var workingvertex = startnode.Next ?? a_subjectList.First;
 
                 while (workingvertex.Value != start)
                 {
@@ -114,15 +113,13 @@
                         intersection = a_clipList.Find(workingvertex.Value);
 
                         //fallback
-                        var iterationvertex = a_clipList.First;
-                        while (iterationvertex != null)
+                        for (var node = a_clipList.First; node != null; node = node.Next)
                         {
-                            if (MathUtil.EqualsEps(workingvertex.Value, iterationvertex.Value))
+                            if (MathUtil.EqualsEps(workingvertex.Value, node.Value))
                             {
-                                intersection = iterationvertex;
+                                intersection = node;
                                 break;
                             }
-                            iterationvertex = iterationvertex.Next;
                         }
 
                     }
@@ -131,22 +128,20 @@
                         intersection = a_subjectList.Find(workingvertex.Value);
 
                         //fallback
-                        var iterationvertex = a_subjectList.First;
-                        while (iterationvertex != null)
+                        for (var node = a_subjectList.First; node != null; node = node.Next)
                         {
-                            if (MathUtil.EqualsEps(workingvertex.Value, iterationvertex.Value))
+                            if (MathUtil.EqualsEps(workingvertex.Value, node.Value))
                             {
-                                intersection = iterationvertex;
+                                intersection = node;
                                 break;
                             }
-                            iterationvertex = iterationvertex.Next;
                         }
                     }
 
                     if (intersection != null)
                     {
                         //toggle activeList
-                        activeList = activeList == WAList.Subject ? WAList.Clip : WAList.Subject; 
+                        activeList = activeList == WAList.Subject ? WAList.Clip : WAList.Subject;
                         workingvertex = intersection.Next;
                     }
                     //otherwise, advance in own list

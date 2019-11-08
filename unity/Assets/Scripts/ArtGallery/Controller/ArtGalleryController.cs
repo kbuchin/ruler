@@ -1,17 +1,15 @@
 ﻿namespace ArtGallery
 {
-    using UnityEngine;
-    using System.Collections.Generic;
-    using System.Linq;
-    using UnityEngine.SceneManagement;
-    using UnityEngine.UI;
-    using KingsTaxes;
-    using Util.Math;
-    using Util.Geometry.Polygon;
-    using Util.Algorithms.Polygon;
     using General.Controller;
     using General.Model;
     using System;
+    using System.Collections.Generic;
+    using UnityEngine;
+    using UnityEngine.SceneManagement;
+    using UnityEngine.UI;
+    using Util.Algorithms.Polygon;
+    using Util.Geometry.Polygon;
+    using Util.Math;
 
     /// <summary>
     /// Main controller for the art gallery game.
@@ -35,8 +33,8 @@
         private Text m_lighthouseText;
 
         // stores the current level index
-        private int m_levelCounter = 0;
-        
+        private int m_levelCounter = -1;
+
         // specified max number of lighthouses in level
         private int m_maxNumberOfLighthouses;
 
@@ -53,8 +51,8 @@
             m_solution = ScriptableObject.CreateInstance<ArtGallerySolution>();
             m_levelMesh = GetComponentInChildren<ArtGalleryIsland>();
 
-            // initialize island polygon
-            InitLevel();
+            // go to initial island polygon
+            AdvanceLevel();
         }
 
         // Update is called once per frame
@@ -75,7 +73,7 @@
             if (Input.GetMouseButtonUp(0))
             {
                 //check whether lighthouse is over the island
-                if (!LevelPolygon.Contains(m_selectedLighthouse.Pos))
+                if (!LevelPolygon.ContainsInside(m_selectedLighthouse.Pos))
                 {
                     // destroy the lighthouse
                     m_solution.RemoveLighthouse(m_selectedLighthouse);
@@ -112,7 +110,7 @@
             // calculate ratio of area visible
             var ratio = m_solution.Area / LevelPolygon.Area;
 
-            Debug.Log(ratio + " part is visible");
+            //Debug.Log(ratio + " part is visible");
 
             // see if entire polygon is covered
             if (MathUtil.EqualsEps(ratio, 1f))
@@ -169,7 +167,7 @@
         /// <param name="m_lighthouse"></param>
         public void UpdateVision(ArtGalleryLightHouse m_lighthouse)
         {
-            if (LevelPolygon.Contains(m_lighthouse.Pos))
+            if (LevelPolygon.ContainsInside(m_lighthouse.Pos))
             {
                 // calculate new visibility polygon
                 var vision = Visibility.Vision(LevelPolygon, m_lighthouse.Pos);

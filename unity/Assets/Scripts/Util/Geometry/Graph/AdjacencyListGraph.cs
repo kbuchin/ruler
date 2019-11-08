@@ -1,10 +1,8 @@
 ﻿namespace Util.Geometry.Graph
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
-    using UnityEngine;
 
     /// <summary>
     /// Basic implementation of the graph interface, using adjacency lists to store vertex-edge information 
@@ -58,7 +56,7 @@
                 foreach (var edgelist in m_Edges.Values)
                 {
                     foreach (var e in edgelist)
-                        if(Type.DIRECTED || !edges.Contains(e.Twin))
+                        if (Type.DIRECTED || !edges.Contains(e.Twin))
                             edges.Add(e);
                 }
                 return edges;
@@ -71,7 +69,8 @@
 
         public float TotalEdgeLength
         {
-            get {
+            get
+            {
                 var sum = Edges.Sum(e => e.Length);
                 //if (!Type.DIRECTED) sum /= 2f;
                 return sum;
@@ -80,7 +79,8 @@
 
         public float TotalEdgeWeight
         {
-            get {
+            get
+            {
                 var sum = Edges.Sum(e => e.Weight);
                 //if (!Type.DIRECTED) sum /= 2f;
                 return sum;
@@ -92,7 +92,7 @@
             // add edge between all vertices
             foreach (var u in m_Vertices)
             {
-                if(!m_Edges.ContainsKey(u))
+                if (!m_Edges.ContainsKey(u))
                 {
                     throw new GeomException("Vertex is not present in edge dictionary");
                 }
@@ -109,9 +109,9 @@
 
         public Edge AddEdge(Edge e)
         {
-            if(!m_Edges.ContainsKey(e.Start) || !m_Edges.ContainsKey(e.End))
+            if (!m_Edges.ContainsKey(e.Start) || !m_Edges.ContainsKey(e.End))
             {
-                throw new ArgumentException("Edge contains vertices not in the graph");
+                throw new GeomException("Edge contains vertices not in the graph");
             }
 
             // edge already exists
@@ -187,7 +187,8 @@
             {
                 throw new ArgumentException("Edge cannot be null");
             }
-            return m_Edges[e.Start].Contains(e);
+            if (!m_Edges.ContainsKey(e.Start)) return false;
+            else return m_Edges[e.Start].Contains(e);
         }
 
         public bool ContainsEdge(Vertex u, Vertex v)
@@ -345,7 +346,7 @@
         /// <returns></returns>
         public bool Equals(IGraph other)
         {
-            
+
             //equal size
             if (VertexCount != other.VertexCount)
             {
@@ -430,7 +431,7 @@
 
         public E GetEdgeProp(Edge e)
         {
-            if(!ContainsEdge(e))
+            if (!ContainsEdge(e))
             {
                 throw new GeomException("Graph does not contain edge parameter.");
             }
@@ -447,7 +448,7 @@
         }
     }
 
-    public class AdjacencyListGraph<V,E> : AdjacencyListGraph<E>, IGraph<V,E>
+    public class AdjacencyListGraph<V, E> : AdjacencyListGraph<E>, IGraph<V, E>
     {
 
         private readonly Dictionary<Vertex, V> VertexProp = new Dictionary<Vertex, V>();

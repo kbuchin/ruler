@@ -1,6 +1,6 @@
 ﻿namespace KingsTaxes
 {
-    using Util.Geometry.Graph;
+    using General.Model;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -8,7 +8,7 @@
     using UnityEngine.SceneManagement;
     using UnityEngine.UI;
     using Util.Algorithms.Graph;
-    using General.Model;
+    using Util.Geometry.Graph;
 
     /// <summary>
     /// Game controller for the t-spanner minigame in the Kings Taxes game.
@@ -47,7 +47,7 @@
             // check for clicks to destroy all hints
             if (Input.GetMouseButtonDown(0))
             {
-                foreach (GameObject g in m_hintRoads)
+                foreach (var g in m_hintRoads)
                 {
                     Destroy(g);
                 }
@@ -71,7 +71,7 @@
 
             //calculate goal
             var greedySpanner = Spanner.GreedySpanner(
-                m_settlements.Select<Settlement, Vertex>(go => new Vertex(go.Pos)).ToList(),
+                m_settlements.Select(go => new Vertex(go.Pos)).ToList(),
                 m_t
             );
             m_thresholdscore = greedySpanner.TotalEdgeWeight + 0.0001f;
@@ -157,7 +157,7 @@
             {
                 return;
             }
-            
+
             // check if graph spanner
             var spannerVerifier = Spanner.VerifySpanner(m_graph, m_t);
             if (spannerVerifier.IsSpanner)
@@ -187,12 +187,13 @@
         /// </summary>
         private void UpdateHintButton()
         {
-            if(m_numberOfHints > 0)
+            if (m_numberOfHints > 0)
             {
                 m_hintButton.SetText("Hint (" + m_numberOfHints + ")");
                 m_hintButton.Enable();
 
-            } else
+            }
+            else
             {
                 m_hintButton.Disable();
             }
@@ -245,13 +246,14 @@
                 text += "Hence it's NO " + m_t.ToString("0.##") + "-spanner.\n";
             }
 
-            text += "The greedy 1.5-spanner has length: " + m_thresholdscore.ToString("0.##") + "\n";
+            text += "The greedy " + m_t.ToString("0.##") + "-spanner has length: " + m_thresholdscore.ToString("0.##") + "\n";
 
 
 
             if (!m_endlessMode)
             {
-                text += "The shorthest 1.5-spanner on this instance had length: " + m_highscore.ToString("0.##");
+                text += "The shorthest 1.5-spanner on this instance had length: " +
+                    (m_highscore == float.PositiveInfinity ? "Infinity" : m_highscore.ToString("0.##"));
             }
 
             m_scoreText.text = text;

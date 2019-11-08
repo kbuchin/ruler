@@ -1,9 +1,6 @@
 ﻿namespace Util.Geometry.Triangulation
 {
-    using System;
-    using System.Collections.Generic;
     using UnityEngine;
-    using Util.Geometry.Graph;
 
     /// <summary>
     /// Half edge in triangulation that connects two points (extension of line segment).

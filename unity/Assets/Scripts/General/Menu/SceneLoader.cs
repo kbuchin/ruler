@@ -7,7 +7,7 @@
     /// Simple class encapsulating load scene method.
     /// </summary>
     public class SceneLoader : MonoBehaviour
-    { 
+    {
         /// <summary>
         /// Run when loading a new scene.
         /// </summary>

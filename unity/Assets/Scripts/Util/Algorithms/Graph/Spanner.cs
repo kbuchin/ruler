@@ -1,11 +1,8 @@
 ﻿namespace Util.Algorithms.Graph
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
-    using UnityEngine;
-    using Util.Geometry;
     using Util.Geometry.Graph;
 
     /// <summary>

@@ -51,7 +51,7 @@ public class KeyEditorWindow : EditorWindow
         {
 
             PlayerPrefsValueType type = GetType(searchKey_m);
-            
+
             // Delete
             if (GUILayout.Button("Delete"))
             {
@@ -64,7 +64,7 @@ public class KeyEditorWindow : EditorWindow
             searchNewVal_m = EditorGUILayout.TextField("New value", searchNewVal_m);
             if (type == PlayerPrefsValueType.Unknown)
             {
-                searchValType_m = (PlayerPrefsValueType) EditorGUILayout.EnumPopup("Type", searchValType_m);
+                searchValType_m = (PlayerPrefsValueType)EditorGUILayout.EnumPopup("Type", searchValType_m);
                 EditorGUILayout.HelpBox("The value for the key is a default value so the type cannot be determined. It is your responsibility to set the value in correct type.", MessageType.Warning);
             }
             else
@@ -82,7 +82,7 @@ public class KeyEditorWindow : EditorWindow
                 EditorGUILayout.HelpBox(searchResponse_m.Message, searchResponse_m.MessageType);
             }
 
-            
+
         }
         else
         {
@@ -211,7 +211,7 @@ public class KeyEditorWindow : EditorWindow
                 throw new ArgumentOutOfRangeException("type");
         }
     }
-    
+
     /// <summary>
     /// Helper class to return values from TrySetValue function
     /// </summary>

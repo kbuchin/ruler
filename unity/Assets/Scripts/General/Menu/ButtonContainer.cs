@@ -1,8 +1,7 @@
 ﻿namespace General.Model
 {
-    using UnityEngine;
     using System;
-    using System.Collections;
+    using UnityEngine;
     using UnityEngine.UI;
 
     /// <summary>
@@ -20,7 +19,7 @@
             m_child = transform.Find("Button").gameObject;
             m_text = m_child.transform.Find("Text").gameObject.GetComponent<Text>();
 
-            if(m_child == null || m_text == null)
+            if (m_child == null || m_text == null)
             {
                 throw new Exception("Could not find child button and corresponding text");
             }

@@ -1,6 +1,5 @@
 ﻿namespace Util.Algorithms.DCEL
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using UnityEngine;
@@ -18,7 +17,7 @@
     /// </summary>
     public static class HamSandwich
     {
-        public static List<Line> FindCutlines(IEnumerable<Vector2> a_points)
+        public static List<Line> FindCutLines(IEnumerable<Vector2> a_points)
         {
             // obtain dual lines for points
             var lines = PointLineDual.Dual(a_points);
@@ -41,7 +40,7 @@
         /// <returns></returns>
         public static List<Line> FindCutlinesInDual(IEnumerable<Face> a_region)
         {
-            return FindCutlinesInDual(a_region.Select(f => f.Polygon.Outside));
+            return FindCutLinesInDual(a_region.Select(f => f.Polygon.Outside));
         }
 
         /// <summary>
@@ -51,7 +50,7 @@
         /// </summary>
         /// <param name="a_region"></param>
         /// <returns></returns>
-        public static List<Line> FindCutlinesInDual(IEnumerable<Polygon2D> a_region)
+        public static List<Line> FindCutLinesInDual(IEnumerable<Polygon2D> a_region)
         {
             if (a_region.Count() <= 0) // no valid faces are supplied
             {
@@ -86,7 +85,7 @@
 
             return lines;
         }
-        
+
         /// <summary>
         /// Find cut lines that separates all point sets equally.
         /// Generates dcel of dual lines and generates cut lines through intersection of middle faces.
@@ -95,7 +94,7 @@
         /// <param name="a_points2"></param>
         /// <param name="a_points3"></param>
         /// <returns></returns>
-        public static List<Line> FindCutLines(IEnumerable<Vector2> a_points1, IEnumerable<Vector2> a_points2, 
+        public static List<Line> FindCutLines(IEnumerable<Vector2> a_points1, IEnumerable<Vector2> a_points2,
             IEnumerable<Vector2> a_points3)
         {
             // obtain dual lines for game objects
@@ -133,9 +132,9 @@
         /// <returns></returns>
         public static List<Line> FindCutlinesInDual(List<Face> a_region1, List<Face> a_region2, List<Face> a_region3)
         {
-            a_region1.Sort((f1, f2) => f1.BoundingBox().yMin.CompareTo(f2.BoundingBox().yMin));
-            a_region2.Sort((f1, f2) => f1.BoundingBox().yMin.CompareTo(f2.BoundingBox().yMin));
-            a_region3.Sort((f1, f2) => f1.BoundingBox().yMin.CompareTo(f2.BoundingBox().yMin));
+            a_region1.Sort((f1, f2) => f1.BoundingBox().xMin.CompareTo(f2.BoundingBox().xMin));
+            a_region2.Sort((f1, f2) => f1.BoundingBox().xMin.CompareTo(f2.BoundingBox().xMin));
+            a_region3.Sort((f1, f2) => f1.BoundingBox().xMin.CompareTo(f2.BoundingBox().xMin));
 
             var region1 = a_region1.Select(x => x.Polygon.Outside).ToList();
             var region2 = a_region2.Select(x => x.Polygon.Outside).ToList();
@@ -156,7 +155,7 @@
                     intermediateList.Add(intersection);
                 }
 
-                if (region2[list2index].BoundingBox().yMax < region1[list1index].BoundingBox().yMax)
+                if (region2[list2index].BoundingBox().xMax < region1[list1index].BoundingBox().xMax)
                 {
                     list2index++;
                 }
@@ -171,7 +170,7 @@
             var intermediateIndex = 0;
             var list3index = 0;
 
-            do
+            while (intermediateIndex < intermediateList.Count && list3index < region3.Count)
             {
                 //progress trough y coordinates
                 var intersection = Polygon2D.IntersectConvex(intermediateList[intermediateIndex], region3[list3index]);
@@ -180,7 +179,7 @@
                     result.Add(intersection);
                 }
 
-                if (region3[list3index].BoundingBox().yMax < intermediateList[intermediateIndex].BoundingBox().yMax)
+                if (region3[list3index].BoundingBox().xMax < intermediateList[intermediateIndex].BoundingBox().xMax)
                 {
                     list3index++;
                 }
@@ -189,10 +188,9 @@
                     intermediateIndex++;
                 }
             }
-            while (intermediateIndex < intermediateList.Count && list3index < region3.Count);
 
             //Convert polygons to lines
-            return FindCutlinesInDual(result);
+            return FindCutLinesInDual(result);
         }
 
         /// <summary>
@@ -238,7 +236,7 @@
 
             return middleFaces;
         }
-        
+
         /// <summary>
         /// Returns a halfedge of the leftmost middle face.
         /// </summary>
@@ -324,7 +322,7 @@
         /// <returns></returns>
         private static bool IsEdgeLeadingToRightMostVertex(HalfEdge edge)
         {
-            return MathUtil.LEQEps(edge.From.Pos.x, edge.To.Pos.x) && 
+            return MathUtil.LEQEps(edge.From.Pos.x, edge.To.Pos.x) &&
                 MathUtil.GEQEps(edge.Next.From.Pos.x, edge.Next.To.Pos.x);
         }
     }

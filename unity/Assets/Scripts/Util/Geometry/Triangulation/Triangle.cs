@@ -4,7 +4,6 @@
     using System.Collections.Generic;
     using System.Linq;
     using UnityEngine;
-    using Util.Geometry.Graph;
     using Util.Math;
 
     /// <summary>
@@ -26,7 +25,7 @@
         /// <summary>
         /// Collection of the three vertices in the triangle for easy iteration.
         /// </summary>
-        public IEnumerable<Vector2> Vertices
+        public List<Vector2> Vertices
         {
             get { return new List<Vector2> { P0, P1, P2 }; }
         }
@@ -34,7 +33,7 @@
         /// <summary>
         /// Collection of the three edges in the triangle for easy iteration.
         /// </summary>
-        public IEnumerable<TriangleEdge> Edges
+        public List<TriangleEdge> Edges
         {
             get { return new List<TriangleEdge> { E0, E1, E2 }; }
         }
@@ -42,7 +41,8 @@
         /// <summary>
         /// Area covered by the triangle
         /// </summary>
-        public float Area {
+        public float Area
+        {
             get
             {
                 // check degenerate cases
@@ -92,9 +92,9 @@
 
         public Triangle(TriangleEdge a_edge0, TriangleEdge a_edge1, TriangleEdge a_edge2)
         {
-            if(a_edge0.Point2 != a_edge1.Point1 || a_edge1.Point2 != a_edge2.Point1 || a_edge2.Point2 != a_edge0.Point1)
+            if (a_edge0.Point2 != a_edge1.Point1 || a_edge1.Point2 != a_edge2.Point1 || a_edge2.Point2 != a_edge0.Point1)
             {
-                throw new ArgumentException("Invalid triangle edges given.");
+                throw new GeomException("Invalid triangle edges given.");
             }
 
             E0 = a_edge0;
@@ -105,8 +105,9 @@
             a_edge0.T = a_edge1.T = a_edge2.T = this;
 
             // calculate circumcenter if possible
-            if (!Degenerate) {
-                if(IsClockwise()) Circumcenter = MathUtil.CalculateCircumcenter(P0, P1, P2);
+            if (!Degenerate)
+            {
+                if (IsClockwise()) Circumcenter = MathUtil.CalculateCircumcenter(P0, P1, P2);
                 else Circumcenter = MathUtil.CalculateCircumcenter(P0, P2, P1);
             }
         }
@@ -118,6 +119,12 @@
         /// <returns></returns>
         public bool Contains(Vector2 a_pos)
         {
+            // edge case when pos is on boundary triangle
+            if (E0.IsOnSegment(a_pos) || E1.IsOnSegment(a_pos) || E2.IsOnSegment(a_pos))
+            {
+                return true;
+            }
+
             int firstSide = Math.Sign(MathUtil.Orient2D(P0, P1, a_pos));
             int secondSide = Math.Sign(MathUtil.Orient2D(P1, P2, a_pos));
             int thirdSide = Math.Sign(MathUtil.Orient2D(P2, P0, a_pos));
@@ -166,7 +173,7 @@
             }
             return OtherVertex(a_edge.Point1, a_edge.Point2);
         }
-        
+
         /// <summary>
         /// Find the vertex
         /// </summary>
@@ -175,6 +182,10 @@
         /// <returns></returns>
         public Vector2? OtherVertex(Vector2 a_vertex0, Vector2 a_vertex1)
         {
+            if (!Vertices.Contains(a_vertex0) || !Vertices.Contains(a_vertex1))
+            {
+                throw new GeomException("One of the vertices not contained in triangle");
+            }
             return Vertices.ToList().Find(v => v != a_vertex0 && v != a_vertex1);
         }
 
@@ -186,7 +197,11 @@
         /// <returns></returns>
         public TriangleEdge OtherEdge(TriangleEdge a_edge0, TriangleEdge a_edge1)
         {
-            return Edges.ToList().Find(e => e != a_edge0 && e != a_edge1);
+            if (!Edges.Contains(a_edge0) || !Edges.Contains(a_edge1))
+            {
+                throw new GeomException("One of the edges not contained in triangle");
+            }
+            return Edges.Find(e => e != a_edge0 && e != a_edge1);
         }
 
         /// <summary>
@@ -197,7 +212,11 @@
         /// <returns></returns>
         public TriangleEdge OtherEdge(TriangleEdge a_edge, Vector2 a_vertex)
         {
-            return Edges.ToList().Find(e => e != a_edge && e.IsEndpoint(a_vertex));
+            if (!Edges.Contains(a_edge) || !Vertices.Contains(a_vertex))
+            {
+                throw new GeomException("Edge or vertex not contained in triangle");
+            }
+            return Edges.Find(e => e != a_edge && e.IsEndpoint(a_vertex));
         }
 
         public override string ToString()
@@ -207,9 +226,12 @@
 
         public bool Equals(Triangle a_triangle)
         {
-            return P0.Equals(a_triangle.P0) && 
-                P1.Equals(a_triangle.P1) && 
-                P2.Equals(a_triangle.P2);
+            // allow relabeling of vertices to be equal
+            // as long as orientation equal
+            return
+            (MathUtil.EqualsEps(P0, a_triangle.P0) && MathUtil.EqualsEps(P1, a_triangle.P1) && MathUtil.EqualsEps(P2, a_triangle.P2)) ||
+            (MathUtil.EqualsEps(P0, a_triangle.P1) && MathUtil.EqualsEps(P1, a_triangle.P2) && MathUtil.EqualsEps(P2, a_triangle.P0)) ||
+            (MathUtil.EqualsEps(P0, a_triangle.P2) && MathUtil.EqualsEps(P1, a_triangle.P0) && MathUtil.EqualsEps(P2, a_triangle.P1));
         }
 
         public override int GetHashCode()

@@ -1,9 +1,5 @@
 ﻿namespace KingsTaxes
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
     using UnityEngine;
 
     class RoadBuilder : MonoBehaviour
@@ -64,7 +60,7 @@
         {
             // enable line drawing
             m_line.enabled = true;
-            
+
             // set first settlement of road
             m_firstSettlement = a_target;
 
@@ -105,7 +101,7 @@
             // update road line to mouse position
             var pos = Camera.main.ScreenToWorldPoint(Input.mousePosition + 10 * Vector3.forward);
             m_line.SetPosition(1, pos);
-        }      
+        }
 
         /// <summary>
         /// Resets the line drawing to the initial state

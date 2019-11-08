@@ -1,8 +1,8 @@
 ﻿namespace Divide.UI
 {
+    using Divide.Controller;
     using UnityEngine;
     using Util.Geometry;
-    using Divide.Controller;
 
     /// <summary>
     /// Deals with user drawn lines.
@@ -40,7 +40,7 @@
             {
                 // stop update line
                 m_updating = false;
-                
+
                 // calculate difference vector
                 var d = startPos - curPos;
 

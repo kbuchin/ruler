@@ -71,7 +71,7 @@
         private void UpdateLines()
         {
             ClearLines();
-            
+
             // draw lines that are enabled by adding lines to LineDrawer
             if (m_displayArcherLines)
             {
@@ -83,11 +83,11 @@
             }
             if (m_displayMageLines)
             {
-                AddLines(m_solution.Mages, MageColor); 
+                AddLines(m_solution.Mages, MageColor);
             }
             if (m_displayAllLines)
             {
-                AddLines(m_solution.All, AllColor); 
+                AddLines(m_solution.All, AllColor);
             }
         }
     }

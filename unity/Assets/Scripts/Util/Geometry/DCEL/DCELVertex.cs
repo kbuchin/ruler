@@ -1,7 +1,5 @@
 ﻿namespace Util.Geometry.DCEL
 {
-    using System;
-    using System.Collections.Generic;
     using UnityEngine;
     using Util.Geometry.Graph;
 

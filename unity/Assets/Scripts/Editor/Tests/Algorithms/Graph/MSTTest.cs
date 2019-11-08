@@ -1,12 +1,11 @@
 ﻿namespace Util.Algorithms.Graph.Tests
 {
-    using UnityEngine;
     using NUnit.Framework;
-    using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Util.Geometry.Graph;
     using Util.Algorithms.Graph;
+    using Util.Geometry.Graph;
+    using Util.Math;
 
     [TestFixture]
     public class MSTTest
@@ -45,7 +44,7 @@
                        new Edge(level2vertices[2], level2vertices[3]).Weight +
                        new Edge(level2vertices[3], level2vertices[4]).Weight;
 
-            Assert.AreEqual(cost, mst.TotalEdgeWeight);
+            Assert.AreEqual(cost, mst.TotalEdgeWeight, MathUtil.EPS);
         }
 
         [Test]

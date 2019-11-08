@@ -704,7 +704,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4614073768657234, guid: 7b5763fd39fd72d499d739ba5a4079ca, type: 2}
       propertyPath: m_LocalPosition.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4614073768657234, guid: 7b5763fd39fd72d499d739ba5a4079ca, type: 2}
       propertyPath: m_LocalPosition.z
@@ -740,6 +740,29 @@ Prefab:
       propertyPath: m_scoreText
       value: 
       objectReference: {fileID: 339342947}
+    - target: {fileID: 114634757760810928, guid: 7b5763fd39fd72d499d739ba5a4079ca,
+        type: 2}
+      propertyPath: m_levels.Array.data[0]
+      value: 
+      objectReference: {fileID: 11400000, guid: fd2b576d7ca067e42bee6300d46c1dab,
+        type: 3}
+    - target: {fileID: 114634757760810928, guid: 7b5763fd39fd72d499d739ba5a4079ca,
+        type: 2}
+      propertyPath: m_levels.Array.data[1]
+      value: 
+      objectReference: {fileID: 11400000, guid: 1deb3204f343ef14c870f1f81e75494f,
+        type: 3}
+    - target: {fileID: 114634757760810928, guid: 7b5763fd39fd72d499d739ba5a4079ca,
+        type: 2}
+      propertyPath: m_levels.Array.data[2]
+      value: 
+      objectReference: {fileID: 11400000, guid: 6c2f22e305c2e324d8b0f4880811cfe5,
+        type: 3}
+    - target: {fileID: 20059110107358646, guid: 7b5763fd39fd72d499d739ba5a4079ca,
+        type: 2}
+      propertyPath: orthographic size
+      value: 4
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7b5763fd39fd72d499d739ba5a4079ca, type: 2}
   m_IsPrefabAsset: 0

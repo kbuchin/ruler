@@ -1,8 +1,6 @@
 ﻿namespace KingsTaxes
 {
-    using System;
     using System.Collections.Generic;
-    using System.Linq;
     using UnityEngine;
     using UnityEngine.SceneManagement;
     using UnityEngine.UI;
@@ -21,7 +19,7 @@
         private float m_bestPlayerScore;
         private float m_highscore;
         private string m_scorekey;
-        
+
         public TSPController()
         {
             m_endlessScoreKey = "tsp_score";
@@ -32,7 +30,7 @@
         {
             // set score variables
             m_bestPlayerScore = float.PositiveInfinity;
-            m_thresholdscore = TSP.FindTSPLength(m_graph) + 0.0001f;        // use greedy tsp length as threshold
+            m_thresholdscore = TSP.FindTSPLength(m_graph.Vertices) + 0.0001f;        // use greedy tsp length as threshold
             m_scorekey = SceneManager.GetActiveScene().name + "score" + m_levelCounter;
             m_highscore = PlayerPrefs.GetFloat(m_scorekey, float.PositiveInfinity);
 
@@ -99,7 +97,8 @@
 
             if (!m_endlessMode)
             {
-                text += "\nThe best score achieved in this level is: " + m_highscore.ToString("0.##");
+                text += "\nThe best score achieved in this level is: " +
+                    (m_highscore == float.PositiveInfinity ? "Infinity" : m_highscore.ToString("0.##"));
             }
 
             m_scoreText.text = text;

@@ -1,11 +1,11 @@
 ﻿namespace Util.Algorithms.Polygon.Tests
 {
-    using System.Collections.Generic;
     using NUnit.Framework;
-    using UnityEngine;
-    using Util.Geometry.Polygon;
-    using Util.Algorithms.Polygon;
     using System;
+    using System.Collections.Generic;
+    using UnityEngine;
+    using Util.Algorithms.Polygon;
+    using Util.Geometry.Polygon;
     using Util.Math;
 
     [TestFixture]
@@ -13,6 +13,7 @@
     {
         private readonly Polygon2D arrowPoly;
         private readonly Polygon2D diamondPoly;
+        private readonly Polygon2D LShape;
 
         public VisibilityTest()
         {
@@ -30,14 +31,18 @@
             {
                 m_topVertex, m_rightVertex, m_botVertex, m_leftVertex
             });
+
+            LShape = new Polygon2D(new List<Vector2>()
+            {
+                new Vector2(0,0), new Vector2(0,4), new Vector2(4,4),
+                new Vector2(4,2), new Vector2(2,2), new Vector2(2,0)
+            });
         }
-       
+
         [Test]
         public void AreaTest()
         {
             var vision = Visibility.Vision(arrowPoly, new Vector2(1.5f, 0));
-            Debug.Log(arrowPoly);
-            Debug.Log(vision);
             Assert.IsTrue(MathUtil.EqualsEps(arrowPoly.Area, vision.Area));
 
             vision = Visibility.Vision(diamondPoly, Vector2.zero);
@@ -49,6 +54,15 @@
         {
             // check if exception is thrown when given point outside polygon
             Assert.Throws<ArgumentException>(() => Visibility.Vision(arrowPoly, new Vector2(-1f, 0)));
+        }
+
+        [Test]
+        public void LShapeVisionTest()
+        {
+            var poly = Visibility.Vision(LShape, new Vector2(3.427403f, 3.464213f));
+
+            // check percentage
+            Assert.Greater(0.88f, poly.Area / LShape.Area);
         }
     }
 }

@@ -1,22 +1,22 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEditor.Experimental.AssetImporters;
-using UnityEditor;
-using System.Xml.Linq;
-using System.Linq;
-using Util.Math;
-using ArtGallery;
+﻿using ArtGallery;
+using Divide.Model;
 using General.Model;
 using KingsTaxes.Model;
-using Divide.Model;
+using System.Collections.Generic;
 using System.IO;
-using Util.Algorithms;
+using System.Linq;
+using System.Xml.Linq;
+using UnityEditor;
+using UnityEditor.Experimental.AssetImporters;
+using UnityEngine;
+using Util.Math;
 
 [ScriptedImporter(1, "ipe")]
 public class LoadLevelEditor : ScriptedImporter
 {
-    private readonly float SIZE = 5f;
+    private readonly float agSIZE = 8f;
+    private readonly float ktSIZE = 6f;
+    private readonly float divSIZE = 5f;
 
     /// <summary>
     /// Defines a custom method for importing .ipe files into unity.
@@ -94,13 +94,13 @@ public class LoadLevelEditor : ScriptedImporter
         }
 
         // normalize coordinates
-        var rect = BoundingBoxComputer.FromVector2(points);
-        Normalize(rect, ref points);
+        var rect = BoundingBoxComputer.FromPoints(points);
+        Normalize(rect, agSIZE, ref points);
 
         // create relevant Vector2Array
         asset.Outer = new Vector2Array(points.ToArray());
 
-        if(!asset.Polygon.IsClockwise())
+        if (!asset.Polygon.IsClockwise())
         {
             points.Reverse();
             asset.Outer = new Vector2Array(points.ToArray());
@@ -137,9 +137,9 @@ public class LoadLevelEditor : ScriptedImporter
         var total = new List<Vector2>();
         total.AddRange(asset.Villages);
         total.AddRange(asset.Castles);
-        var rect = BoundingBoxComputer.FromVector2(total);
-        Normalize(rect, ref asset.Villages);
-        Normalize(rect, ref asset.Castles);
+        var rect = BoundingBoxComputer.FromPoints(total);
+        Normalize(rect, ktSIZE, ref asset.Villages);
+        Normalize(rect, ktSIZE, ref asset.Castles);
 
         // give warning if no relevant data found
         if (asset.Villages.Count + asset.Castles.Count == 0)
@@ -163,7 +163,7 @@ public class LoadLevelEditor : ScriptedImporter
                 return asset;
             }
         }
-        
+
         return asset;
     }
 
@@ -178,17 +178,17 @@ public class LoadLevelEditor : ScriptedImporter
         // get marker data into respective vector list
         asset.Spearmen.AddRange(GetMarkers(items, "disk"));
         asset.Archers.AddRange(GetMarkers(items, "square"));
-        asset.Mages.AddRange(GetMarkers(items, "square"));
+        asset.Mages.AddRange(GetMarkers(items, "cross"));
 
         // normalize coordinates
         var total = new List<Vector2>();
         total.AddRange(asset.Spearmen);
         total.AddRange(asset.Archers);
         total.AddRange(asset.Mages);
-        var rect = BoundingBoxComputer.FromVector2(total);
-        Normalize(rect, ref asset.Spearmen);
-        Normalize(rect, ref asset.Archers);
-        Normalize(rect, ref asset.Mages);
+        var rect = BoundingBoxComputer.FromPoints(total);
+        Normalize(rect, divSIZE, ref asset.Spearmen);
+        Normalize(rect, divSIZE, ref asset.Archers);
+        Normalize(rect, divSIZE, ref asset.Mages);
 
         // give warning if no relevant data found
         if (asset.Spearmen.Count + asset.Archers.Count + asset.Mages.Count == 0)
@@ -260,7 +260,7 @@ public class LoadLevelEditor : ScriptedImporter
                 x = transformation[0] * x + transformation[2] * y + transformation[4];
                 y = transformation[1] * x + transformation[3] * y + transformation[5];
             }
-            
+
             // add to result
             result.Add(new Vector2(x, y));
         }
@@ -269,18 +269,20 @@ public class LoadLevelEditor : ScriptedImporter
     }
 
     /// <summary>
-    /// Normalizes the coordinate vector to fall within bounds specified by XSIZE and YSIZE, centered around (0, 0).
+    /// Normalizes the coordinate vector to fall within bounds specified by rect.
+    /// Also adds random perturbations to create general positions.
     /// </summary>
     /// <param name="rect">Bounding box</param>
     /// <param name="coords"></param>
-    private void Normalize(Rect rect, ref List<Vector2> coords)
+    private void Normalize(Rect rect, float SIZE, ref List<Vector2> coords)
     {
         var scale = SIZE / Mathf.Max(rect.width, rect.height);
+        var rnd = 0.0001f; // for general positions
 
         coords = coords
             .Select(p => new Vector2(
-                (p[0] - rect.xMin - rect.width / 2f) * scale, 
-                (p[1] - rect.yMin - rect.height / 2f) * scale))
+                (p[0] - (rect.xMin + rect.width / 2f) + Random.Range(-rnd, rnd)) * scale,
+                (p[1] - (rect.yMin + rect.height / 2f) + Random.Range(-rnd, rnd)) * scale))
             .ToList();
     }
 }

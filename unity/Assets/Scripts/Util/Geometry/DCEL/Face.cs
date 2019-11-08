@@ -1,6 +1,5 @@
 ﻿namespace Util.Geometry.DCEL
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using UnityEngine;
@@ -122,7 +121,9 @@
         {
             get
             {
-                return InnerComponents.Select(f => f.Twin.Face.Polygon);
+                return InnerComponents
+                    .Where(e => e.Twin.Face != this)    // do not select dangling edges
+                    .Select(f => f.Twin.Face.Polygon);
             }
         }
 
@@ -142,10 +143,10 @@
             {
                 // check whether point is contained inside the outer polygon of one of the innercomponents
 
-                return !InnerComponents.Exists(e => e.Twin.Face.PolygonWithoutHoles.Contains(a_pos));
+                return !InnerComponents.Exists(e => e.Twin.Face.PolygonWithoutHoles.ContainsInside(a_pos));
             }
 
-            return Polygon.Contains(a_pos);
+            return Polygon.ContainsInside(a_pos);
         }
 
         /// <summary>
@@ -157,7 +158,7 @@
         {
             if (IsOuter) throw new GeomException("Bounding box is ill-defined for outer face");
 
-            return BoundingBoxComputer.FromVector2(OuterVertices.Select(x => x.Pos), margin);
+            return BoundingBoxComputer.FromPoints(OuterVertices.Select(x => x.Pos), margin);
         }
 
         public override string ToString()
@@ -184,10 +185,16 @@
                 {
                     result += halfEdge.From + ", ";
                 }
+                foreach (var comp in InnerComponents)
+                {
+                    result += "\nComponent: ";
+                    foreach (var halfEdge in DCEL.Cycle(comp))
+                    {
+                        result += halfEdge.From + ", ";
+                    }
+                }
                 return result;
             }
-
-            
         }
     }
 }

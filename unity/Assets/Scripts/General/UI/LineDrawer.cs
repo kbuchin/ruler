@@ -1,7 +1,7 @@
 ﻿namespace General.Drawing
 {
-    using UnityEngine;
     using System.Collections.Generic;
+    using UnityEngine;
     using Util.Geometry;
 
     /// <summary>

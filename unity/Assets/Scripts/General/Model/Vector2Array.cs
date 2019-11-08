@@ -1,7 +1,6 @@
 ﻿namespace General.Model
 {
     using System;
-    using System.Collections.Generic;
     using UnityEngine;
 
     /// <summary>

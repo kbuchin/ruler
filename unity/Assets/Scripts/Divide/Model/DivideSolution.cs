@@ -1,6 +1,7 @@
 ﻿namespace Divide
 {
     using System.Collections.Generic;
+    using System.Linq;
     using Util.Geometry;
 
     /// <summary>
@@ -9,20 +10,20 @@
     /// </summary>
     public struct DivideSolution
     {
-        public IEnumerable<Line> Archers { get; private set; }
-        public IEnumerable<Line> Spearmen { get; private set; }
-        public IEnumerable<Line> Mages { get; private set; }
-        public IEnumerable<Line> All { get; private set; }
+        public List<Line> Archers { get; private set; }
+        public List<Line> Spearmen { get; private set; }
+        public List<Line> Mages { get; private set; }
+        public List<Line> All { get; private set; }
 
         public DivideSolution(IEnumerable<Line> a_archers,
-            IEnumerable<Line> a_spearmen, 
+            IEnumerable<Line> a_spearmen,
             IEnumerable<Line> a_mages,
             IEnumerable<Line> a_all)
         {
-            Archers = a_archers;
-            Spearmen = a_spearmen;
-            Mages = a_mages;
-            All = a_all;
+            Archers = a_archers.ToList();
+            Spearmen = a_spearmen.ToList();
+            Mages = a_mages.ToList();
+            All = a_all.ToList();
         }
     }
 }

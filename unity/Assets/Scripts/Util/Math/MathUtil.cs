@@ -1,11 +1,8 @@
 ﻿namespace Util.Math
 {
     using System;
-    using System.Collections;
-    using System.Collections.Generic;
     using UnityEngine;
     using Util.Geometry;
-    using Util.Geometry.Triangulation;
     using MNMatrix = MathNet.Numerics.LinearAlgebra.Matrix<double>;
 
     /// <summary>
@@ -17,7 +14,7 @@
         /// <summary>
         /// Small value used for floating point comparison
         /// </summary>
-        public static float EPS = 1e-5f;
+        public const float EPS = 1e-5f;
 
         /// <summary>
         /// Some constants (based on Mathf)
@@ -51,9 +48,9 @@
         /// <param name="a_val1"></param>
         /// <param name="a_val2"></param>
         /// <returns> True when the difference between <paramref name="a_val1"/> and <paramref name="a_val2"/> is less then a small Epsilon</returns>
-        public static bool EqualsEps(float a_val1, float a_val2)
+        public static bool EqualsEps(float a_val1, float a_val2, float eps = EPS)
         {
-            return Mathf.Abs(a_val1 - a_val2) < EPS;
+            return Mathf.Abs(a_val1 - a_val2) < eps;
         }
 
         /// <summary>
@@ -62,9 +59,9 @@
         /// <param name="a_val1"></param>
         /// <param name="a_val2"></param>
         /// <returns></returns>
-        public static bool EqualsEps(Vector2 a_val1, Vector2 a_val2)
+        public static bool EqualsEps(Vector2 a_val1, Vector2 a_val2, float eps = EPS)
         {
-            return (a_val1 - a_val2).sqrMagnitude < EPS;
+            return (a_val1 - a_val2).sqrMagnitude < eps;
         }
 
         /// <summary>
@@ -73,9 +70,9 @@
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static bool GEQEps(float a, float b)
+        public static bool GEQEps(float a, float b, float eps = EPS)
         {
-            return EqualsEps(a, b) || (a > b);
+            return EqualsEps(a, b, eps) || (a > b);
         }
 
         /// <summary>
@@ -84,9 +81,9 @@
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static bool LEQEps(float a, float b)
+        public static bool LEQEps(float a, float b, float eps = EPS)
         {
-            return EqualsEps(a, b) || (a < b);
+            return EqualsEps(a, b, eps) || (a < b);
         }
 
         /// <summary>
@@ -95,9 +92,9 @@
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static bool GreaterEps(float a, float b)
+        public static bool GreaterEps(float a, float b, float eps = EPS)
         {
-            return a > b && !EqualsEps(a, b);
+            return a > b && !EqualsEps(a, b, eps);
         }
 
         /// <summary>
@@ -106,20 +103,9 @@
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static bool LessEps(float a, float b)
+        public static bool LessEps(float a, float b, float eps = EPS)
         {
-            return a < b && !EqualsEps(a, b);
-        }
-
-        /// <summary>
-        /// A positive modulo operation. (i.e. mod(-3, 4) == 1)
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="m"></param>
-        /// <returns></returns>
-        public static float PositiveMod(float a, float m)
-        {
-            return (a % m + m) % m;
+            return a < b && !EqualsEps(a, b, eps);
         }
 
         /// <summary>
@@ -148,7 +134,7 @@
 
             if (SignedAngle < -Math.PI - EPS || SignedAngle > Math.PI + EPS)
             {
-                throw new Exception("Invalid angle");
+                throw new GeomException("Invalid angle");
             }
 
             if ((float)SignedAngle >= 0) return (float)SignedAngle;
@@ -208,7 +194,7 @@
             int orientation = Math.Sign(MathUtil.Orient2D(a, b, c));
             if (orientation == 0)
             {
-                Debug.LogWarning("Tried to compute InCircle on degenerate circle");
+                // straight line, so degenerate circle
                 return false;
             }
 
@@ -271,7 +257,7 @@
 
             if (!IsFinite((float)Ox) || !IsFinite((float)Oy))
             {
-                throw new Exception("Result of CalculateCircumcenterStable was invalid!");
+                throw new GeomException("Result of CalculateCircumcenterStable was invalid!");
             }
 
             return new Vector2((float)Ox, (float)Oy);

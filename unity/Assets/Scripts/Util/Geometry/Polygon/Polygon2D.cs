@@ -4,9 +4,9 @@
     using System.Collections.Generic;
     using System.Linq;
     using UnityEngine;
-    using Util.Math;
-    using Util.Algorithms.Triangulation;
     using Util.Algorithms.Polygon;
+    using Util.Algorithms.Triangulation;
+    using Util.Math;
 
     /// <summary>
     /// Simple 2D polygon class without holes.
@@ -53,14 +53,12 @@
             {
                 if (VertexCount <= 1) return new List<LineSegment>();
 
-                var result = new List<LineSegment>(VertexCount);
-                var node = m_vertices.First;
-                while (node.Next != null)
+                var result = new List<LineSegment>();
+                for (var node = m_vertices.First; node != null; node = node.Next)
                 {
-                    result.Add(new LineSegment(node.Value, node.Next.Value));
-                    node = node.Next;
+                    var nextNode = node.Next ?? m_vertices.First;
+                    result.Add(new LineSegment(node.Value, nextNode.Value));
                 }
-                result.Add(new LineSegment(m_vertices.Last.Value, m_vertices.First.Value));
                 return result;
             }
         }
@@ -69,18 +67,14 @@
         {
             var node = m_vertices.Find(pos);
             if (node == null) return null;
-            node = node.Next;
-            if (node == null) node = m_vertices.First;
-            return node.Value;
+            return node.Next != null ? node.Next.Value : m_vertices.First.Value;
         }
 
         public Vector2? Prev(Vector2 pos)
         {
             var node = m_vertices.Find(pos);
             if (node == null) return null;
-            node = node.Previous;
-            if (node == null) node = m_vertices.Last;
-            return node.Value;
+            return node.Previous != null ? node.Previous.Value : m_vertices.Last.Value;
         }
 
         public void AddVertex(Vector2 pos)
@@ -95,7 +89,7 @@
 
         public void AddVertexAfter(Vector2 pos, Vector2 after)
         {
-            if (!Contains(after))
+            if (!ContainsVertex(after))
             {
                 throw new ArgumentException("Polygon does not contain vertex after which to add");
             }
@@ -143,7 +137,8 @@
         /// <param name="a_vertices"></param>
         public Polygon2D(IEnumerable<Vector2> a_vertices) : this()
         {
-            foreach (var v in a_vertices) AddVertex(v);
+            foreach (var v in a_vertices)
+                AddVertex(new Vector2(v.x, v.y));
         }
 
         /// <summary>
@@ -159,40 +154,42 @@
             // flip orientation if polygon counter clockwise 
             var dir = (IsClockwise() ? 1 : -1);
 
-            var node = m_vertices.First;
-            while(node.Next.Next != null)
+            for (var node = m_vertices.First; node != null; node = node.Next)
             {
-                if (dir * MathUtil.Orient2D(node.Value, node.Next.Value, node.Next.Next.Value) > 0)
+                var prevNode = node.Previous ?? m_vertices.Last;
+                var nextNode = node.Next ?? m_vertices.First;
+
+                // do not consider degenerate case with two equal nodes
+                if (MathUtil.EqualsEps(node.Value, nextNode.Value)) continue;
+
+                // check for dangling edges
+                if (MathUtil.EqualsEps(prevNode.Value, nextNode.Value)) return false;
+
+                // check for illegal left/right turn
+                if (dir * MathUtil.Orient2D(prevNode.Value, node.Value, nextNode.Value) > 0)
                     return false;
-                node = node.Next;
             }
 
             return true;
         }
 
-        public bool Contains(Vector2 a_pos)
+        public bool ContainsInside(Vector2 a_pos)
         {
             // cannot contain without area
             if (Area == 0) return false;
-            
+
             if (IsConvex())
             {
                 bool inv = IsClockwise();
-                LineSegment segment;
-                var node = m_vertices.First;
-                while(node.Next != null)
+
+                for (var node = m_vertices.First; node != null; node = node.Next)
                 {
-                    segment = new LineSegment(node.Value, node.Next.Value);
+                    var nextNode = node.Next ?? m_vertices.First;
+                    var segment = new LineSegment(node.Value, nextNode.Value);
                     if (inv != segment.IsRightOf(a_pos))
                     {
                         return false;
                     }
-                    node = node.Next;
-                }
-                segment = new LineSegment(m_vertices.Last.Value, m_vertices.First.Value);
-                if (inv != segment.IsRightOf(a_pos))
-                {
-                    return false;
                 }
 
                 return true;
@@ -208,6 +205,11 @@
                 // check for triangle that contains point
                 return triangles.Exists(t => t.Contains(a_pos));
             }
+        }
+
+        public bool ContainsVertex(Vector2 pos)
+        {
+            return m_vertices.Find(pos) != null;
         }
 
         /// <summary>
@@ -238,20 +240,20 @@
 
             // obtain vertices that lie inside both polygons
             var resultVertices = a_poly1.Vertices
-                .Where(v => a_poly2.Contains(v))
-                .Concat(a_poly2.Vertices.Where(v => a_poly1.Contains(v)))
+                .Where(v => a_poly2.ContainsInside(v))
+                .Concat(a_poly2.Vertices.Where(v => a_poly1.ContainsInside(v)))
                 .ToList();
 
             // add intersections between two polygon segments
             resultVertices.AddRange(a_poly1.Segments.SelectMany(seg => seg.Intersect(a_poly2.Segments)));
 
             // remove any duplicates
-            var resultVertexSet = new HashSet<Vector2>(resultVertices);
+            resultVertices = resultVertices.Distinct().ToList();
 
             // retrieve convex hull of relevant vertices
-            if (resultVertexSet.Count >= 3)
+            if (resultVertices.Count() >= 3)
             {
-                var poly = ConvexHull.ComputeConvexHull(resultVertexSet);
+                var poly = ConvexHull.ComputeConvexHull(resultVertices);
                 Debug.Assert(poly.IsConvex());
                 return poly;
             }
@@ -301,7 +303,8 @@
             {
                 foreach (var seg2 in Segments)
                 {
-                    if (seg1 != seg2 && seg1.IntersectProper(seg2) != null) { Debug.Log(seg1); Debug.Log(seg2); return false; }
+                    if (seg1 != seg2 && seg1.IntersectProper(seg2) != null)
+                        return false;
                 }
             }
             return true;
@@ -309,7 +312,7 @@
 
         public Rect BoundingBox(float margin = 0f)
         {
-            return BoundingBoxComputer.FromVector2(Vertices, margin);
+            return BoundingBoxComputer.FromPoints(Vertices, margin);
         }
 
         /// <summary>
@@ -322,7 +325,7 @@
         /// <returns></returns>
         public static Polygon2D RemoveDanglingEdges(Polygon2D poly)
         {
-            var result = new Polygon2D(poly.Vertices);
+            var result = new List<Vector2>(poly.Vertices);
 
             // iterate until no more dangling edges
             bool containsDanglingEdge = true;
@@ -332,25 +335,27 @@
 
                 // find dangling edge
                 Vector2? toRemove = null;
-                foreach (var vertex in result.Vertices)
+                for (var i = 0; i < result.Count; i++)
                 {
-                    if (vertex == result.Next(vertex) || vertex == result.Prev(vertex) 
-                        || result.Prev(vertex) == result.Next(vertex))
+                    var prev = MathUtil.PositiveMod(i - 1, result.Count);
+                    var next = MathUtil.PositiveMod(i + 1, result.Count);
+                    if (MathUtil.EqualsEps(result[i], result[next]) || MathUtil.EqualsEps(result[i], result[prev])
+                        || MathUtil.EqualsEps(result[prev], result[next]))
                     {
                         containsDanglingEdge = true;
-                        toRemove = vertex;
+                        toRemove = result[i];
                         break;
                     }
                 }
-                
+
                 // remove dangling edge
                 if (containsDanglingEdge)
                 {
-                    result.Vertices.Remove(toRemove.Value);
+                    result.Remove(toRemove.Value);
                 }
             }
 
-            return result;
+            return new Polygon2D(result);
         }
 
         public bool Equals(IPolygon2D other)
@@ -365,7 +370,7 @@
 
             for (var i = 0; i < VertexCount; i++)
             {
-                if (vertices[i] != otherVertices[i]) return false;
+                if (!vertices[i].Equals(otherVertices[i])) return false;
             }
 
             return true;

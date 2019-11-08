@@ -5,10 +5,10 @@
     using System.Linq;
     using UnityEngine;
     using Util.Geometry;
+    using Util.Geometry.DCEL;
     using Util.Geometry.Polygon;
     using Util.Geometry.Triangulation;
     using Util.Math;
-    using Util.Geometry.DCEL;
 
     /// <summary>
     /// Collection of algorithms related to the creation of Triangulations for various concepts.
@@ -63,10 +63,9 @@
         public static Triangulation Triangulate(IPolygon2D polygon)
         {
             // cannot yet triangulate non-simple polygons
-            if(!polygon.IsSimple())
+            if (!polygon.IsSimple())
             {
-                Debug.Log(polygon);
-                throw new ArgumentException("Polygon must be simple");
+                throw new ArgumentException("Polygon must be simple: " + polygon);
             }
 
             var vertices = polygon.Vertices.ToList();
@@ -96,20 +95,20 @@
             var nextVertex = vertices[MathUtil.PositiveMod(index + 1, vertices.Count)];
 
             //Create triangle with diagonal
-
             Debug.Assert(leftVertex != prevVertex && leftVertex != nextVertex && prevVertex != nextVertex);
 
             var triangle = new Triangle(prevVertex, leftVertex, nextVertex);
 
             //check for other vertices inside the candidate triangle
             var baseline = new Line(prevVertex, nextVertex);
-            float distance = 0;
+            float distance = -1f;
             int diagonalIndex = -1;
 
             for (int i = 0; i < vertices.Count; i++)
             {
                 var v = vertices[i];
-                if (triangle.Contains(v))
+                if (v != leftVertex && v != prevVertex && v != nextVertex &&
+                    triangle.Contains(v))
                 {
                     if (baseline.DistanceToPoint(v) > distance)
                     {
@@ -138,8 +137,8 @@
                 var minIndex = Mathf.Min(index, diagonalIndex);
                 var maxIndex = Mathf.Max(index, diagonalIndex);
 
-                var poly1List = polygon.Vertices.Skip(minIndex).Take(maxIndex - minIndex + 1);
-                var poly2List = vertices.Skip(maxIndex).Concat(polygon.Vertices.Take(minIndex + 1));
+                var poly1List = vertices.Skip(minIndex).Take(maxIndex - minIndex + 1);
+                var poly2List = vertices.Skip(maxIndex).Concat(vertices.Take(minIndex + 1));
 
                 triangulation.AddTriangulation(Triangulate(new Polygon2D(poly1List)));
                 triangulation.AddTriangulation(Triangulate(new Polygon2D(poly2List)));

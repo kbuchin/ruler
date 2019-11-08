@@ -1,7 +1,6 @@
 ﻿namespace Util.Algorithms
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using UnityEngine;
     using Util.DataStructures.BST;
@@ -99,7 +98,7 @@
         public void RadialSweep(Vector2 a_pos, HandleEvent eventHandler)
         {
             ISweepEvent<T> ev;
-            while(Events.FindMin(out ev))
+            while (Events.FindMin(out ev))
             {
                 Events.DeleteMin();
 

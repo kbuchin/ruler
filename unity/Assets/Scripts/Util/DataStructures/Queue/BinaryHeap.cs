@@ -47,7 +47,7 @@
         /// </remarks>
         public void BuildHeap(IEnumerable<T> init)
         {
-            
+
             Items.Clear();
             foreach (T item in init) Items.Add(item);
 
@@ -128,16 +128,16 @@
 
         public IEnumerator GetEnumerator()
         {
-            return GetEnumerator();
+            return Items.GetEnumerator();
         }
 
         /// <summary>
         /// Removes item at given index.
         /// </summary>
         /// <param name="i">Index into the list <paramref name="Items"/></param>
-        internal void RemoveAt(int i)
+        public void RemoveAt(int i)
         {
-            if(i >= Items.Count)
+            if (i < 0 || i >= Items.Count)
             {
                 throw new ArgumentOutOfRangeException();
             }

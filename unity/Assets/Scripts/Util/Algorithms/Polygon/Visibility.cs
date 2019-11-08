@@ -1,13 +1,12 @@
 ﻿namespace Util.Algorithms.Polygon
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using UnityEngine;
     using Util.Geometry;
     using Util.Geometry.Polygon;
-    using System.Linq;
-    using System.Collections.Generic;
-    using UnityEngine;
     using Util.Math;
-    using Util.Geometry.Core;
 
     /// <summary>
     /// Collection of algorithms related to visibility polygons.
@@ -30,7 +29,7 @@
                 return null;
             }
 
-            if (!polygon.Contains(z))
+            if (!polygon.ContainsInside(z))
             {
                 throw new ArgumentException("Visibility point must be inside polygon");
             }
@@ -42,27 +41,31 @@
 
             var v0 = vs.Get(0);
 
-            var s0 = new Stack<VertDispl>();
-            s0.Push(v0);
+            var s = new Stack<VertDispl>();
+            s.Push(v0);
 
             Debug.Assert(vs.n > 1);
 
-            List<VertDispl> s; // used to store the vertices of the visibility
-                               // polygon
             if (MathUtil.GEQEps(vs.Get(1).alpha, v0.alpha))
-                s = Advance(vs, s0, 0);
+                s = Advance(vs, s, 0);
             else
-                s = Scan(vs, s0, 0, null, true);  // CounterClockWise
+                s = Scan(vs, s, 0, null, true);  // CounterClockWise
 
-            Debug.Assert(MathUtil.EqualsEps(s[s.Count - 1].p.Cartesian, v0.p.Cartesian));
+            var sList = s.ToList();
 
-            var poly = Postprocess(s, vs, z, initAngle);
+            // error occurred due to robustness
+            if (sList.Count == 0) return new Polygon2D();
+
+            Debug.Assert(MathUtil.EqualsEps(sList[s.Count - 1].p.Cartesian, v0.p.Cartesian));
+
+            var poly = Postprocess(sList, vs, z, initAngle);
 
             return poly;
         }
 
         /// <summary>
-        /// Preprocess polygon such that z is at origin and vertices are stored as polar points with angular displacements.
+        /// Preprocess polygon such that z is at origin and
+        /// vertices are stored as polar points with angular displacements.
         /// Orders vertices based on angle to z.
         /// </summary>
         /// <param name="pol"></param>
@@ -114,8 +117,7 @@
             }
             else
             {
-                // v0 = vn
-                l.Add(new PolarPoint2D(v0.R, v0.Theta + 2 * MathUtil.PI));
+                l.Add(new PolarPoint2D(v0.R, v0.Theta));
             }
 
             // remember original angle
@@ -137,13 +139,14 @@
         }
 
         /// <summary>
-        /// 
+        /// Pushes a new vertex on the stack and calls the appropriated function
+        /// (advance, retard, scan) depending on the next vertex on the polygon.
         /// </summary>
         /// <param name="v"></param>
         /// <param name="s"></param>
         /// <param name="iprev"></param>
         /// <returns></returns>
-        public static List<VertDispl> Advance(VsRep v, Stack<VertDispl> s, int iprev)
+        public static Stack<VertDispl> Advance(VsRep v, Stack<VertDispl> s, int iprev)
         {
             var n = v.n - 1;
 
@@ -157,7 +160,7 @@
                 // TODO check order of returned list
                 if (i == n)
                 {
-                    return new List<VertDispl>(s);
+                    return s;
                 }
 
                 if (MathUtil.LessEps(v.Get(i + 1).alpha, v.Get(i).alpha)
@@ -168,7 +171,7 @@
                 }
                 else if (MathUtil.LessEps(v.Get(i + 1).alpha, v.Get(i).alpha)
                       && MathUtil.Orient2D(v.Get(i - 1).p.Cartesian, v.Get(i).p.Cartesian,
-                              v.Get(i + 1).p.Cartesian) == 1)
+                              v.Get(i + 1).p.Cartesian) > 0)
                 { // 1 is LeftTurn
                     return Retard(v, s, i);
                 }
@@ -181,15 +184,9 @@
             {
                 var v0 = v.Get(0);
 
-                if (s.Peek().alpha < MathUtil.PI2)
+                if (MathUtil.LEQEps(s.Peek().alpha, MathUtil.PI2))
                 {
                     var isect = (new LineSegment(v.Get(iprev).p.Cartesian, v.Get(iprev + 1).p.Cartesian)).Intersect(v0.p.Ray);
-
-                    if (isect == null)
-                    {
-                        Debug.Log(new LineSegment(v.Get(iprev).p.Cartesian, v.Get(iprev + 1).p.Cartesian));
-                        Debug.Log(v0.p.Ray);
-                    }
 
                     Debug.Assert(isect != null);
 
@@ -202,15 +199,25 @@
         }
 
         /// <summary>
-        /// 
+        /// Pops all vertices from the stack that have become invisible after the addition
+        /// of a new vertex.
+        /// Calls appropriate method (advance, scan, retard) after being done based on next vertex.
         /// </summary>
         /// <param name="v"></param>
         /// <param name="sOld"></param>
         /// <param name="iprev"></param>
         /// <returns></returns>
-        public static List<VertDispl> Retard(VsRep v, Stack<VertDispl> s, int iprev)
+        public static Stack<VertDispl> Retard(VsRep v, Stack<VertDispl> s, int iprev)
         {
+            // LocateSj will pop vertices from the stack
+            // until appropriated s_j is found
+            // see paper
             var sjNext = LocateSj(v.Get(iprev), v.Get(iprev + 1), s);
+
+            if (s.Count == 0)
+            {
+                return s;
+            }
 
             var sj = s.Peek();
 
@@ -221,12 +228,6 @@
                 var vi = v.Get(i);
                 var p = (new LineSegment(sj.p.Cartesian, sjNext.p.Cartesian)).Intersect(vi.p.Ray);
 
-                if (p == null)
-                {
-                    Debug.Log(new LineSegment(sj.p.Cartesian, sjNext.p.Cartesian));
-                    Debug.Log(vi.p.Ray);
-                    Debug.Log(vi.p.Cartesian);
-                }
                 Debug.Assert(p != null);
 
                 var st1 = DisplacementInBetween(new PolarPoint2D(p.Value), sj, sjNext);
@@ -240,14 +241,14 @@
                 if (i == v.n - 1)
                 {
                     // TODO order of returned list correct? (check stack to list conversion)
-                    return new List<VertDispl>(s);
+                    return s;
                 }
-                else if (MathUtil.GEQEps(v.Get(i + 1).alpha, vi.alpha) && 
-                    MathUtil.Orient2D(v.Get(i - 1).p.Cartesian, vi.p.Cartesian, v.Get(i + 1).p.Cartesian) < 0)
+                else if (MathUtil.GEQEps(v.Get(i + 1).alpha, vi.alpha) &&
+                    MathUtil.Orient2D(v.Get(i - 1).p.Cartesian, vi.p.Cartesian, v.Get(i + 1).p.Cartesian) <= 0)
                 { // -1 is RighTurn
                     return Advance(v, s, i);
                 }
-                else if (MathUtil.GreaterEps(v.Get(i + 1).alpha, vi.alpha) && 
+                else if (MathUtil.GreaterEps(v.Get(i + 1).alpha, vi.alpha) &&
                     MathUtil.Orient2D(v.Get(i - 1).p.Cartesian, vi.p.Cartesian, v.Get(i + 1).p.Cartesian) > 0)
                 {  // 1 is LeftTurn
                     s.Pop();
@@ -270,24 +271,26 @@
                 }
                 else
                 {
-                    VertDispl w = IntersectWithWindow(v.Get(iprev), v.Get(iprev + 1), sj, sjNext);
+                    var w = IntersectWithWindow(v.Get(iprev), v.Get(iprev + 1), sj, sjNext);
 
-                    Debug.Assert(w != null);
-                    return Scan(v, s, iprev, w, true); // CounterClockWise
+                    //Debug.Assert(w != null, iprev + " " + v.Get(iprev) + " " + v.Get(iprev + 1) + " " + sj + " " + sjNext);
+                    if (w == null) return s;
+                    else return Scan(v, s, iprev, w, true); // CounterClockWise
                 }
             }
         }
 
         /// <summary>
-        /// 
+        /// Scans the vertices on the polygon until either an advance or retard step can be made.
+        /// Used when iterating over a section of the polygon not visible from z.
         /// </summary>
         /// <param name="v"></param>
         /// <param name="s"></param>
         /// <param name="iprev"></param>
         /// <param name="windowEnd"></param>
         /// <param name="ccw"></param>
-        /// <returns></returns>
-        public static List<VertDispl> Scan(VsRep v, Stack<VertDispl> s, int iprev, VertDispl windowEnd, bool ccw)
+        /// <returns> The final list of </returns>
+        public static Stack<VertDispl> Scan(VsRep v, Stack<VertDispl> s, int iprev, VertDispl windowEnd, bool ccw)
         {
             for (int i = iprev + 1; i < v.n; i++)
             {
@@ -314,26 +317,48 @@
                 }
             }
 
-            throw new GeomException("Scan called for i >= n, error in preprocess");
+            return s;
         }
 
         /// <summary>
-        /// 
+        /// Either intersects two line segments defined by the given four polar points
+        /// or if endpoint is null, a line segment (a,b) and ray from point orig in the direction 
+        /// of its adjacent polygon segment.
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <param name="orig"></param>
         /// <param name="endpoint"></param>
-        /// <returns></returns>
+        /// <returns> A vertex-displacement pair associated with the intersection. </returns>
         public static VertDispl IntersectWithWindow(VertDispl a, VertDispl b, VertDispl orig, VertDispl endpoint)
         {
-            LineSegment s1 = new LineSegment(a.p, b.p);
+            if (a == null || b == null || orig == null) return null;
+
+            var s1 = new LineSegment(a.p, b.p);
+
+            if (s1.IsOnSegment(orig.p.Cartesian)) return orig;
 
             Vector2? res;
             if (endpoint != null)
             {
-                LineSegment s2 = new LineSegment(orig.p, endpoint.p);
-                res = s1.Intersect(s2);
+                var s2 = new LineSegment(orig.p, endpoint.p);
+
+                // check for parallel slopes
+                if (MathUtil.EqualsEps(s1.Line.Slope, s2.Line.Slope) &&
+                    s1.Line.IsOnLine(orig.p.Cartesian))
+                {
+                    res = s1.ClosestPoint(orig.p.Cartesian);
+
+                    if (!MathUtil.EqualsEps(res.Value, orig.p.Cartesian) &&
+                        Vector2.Dot((res.Value - orig.p.Cartesian), (endpoint.p.Cartesian - orig.p.Cartesian)) < 0)
+                    {
+                        return null;
+                    }
+                }
+                else
+                {
+                    res = s1.Intersect(s2);
+                }
             }
             else
             {
@@ -347,12 +372,13 @@
         }
 
         /// <summary>
-        /// 
+        /// Gives a displacement a(s) value between a(v1) and a(v2).
+        /// Increments/decrements a(s) with 2 * PI until between a(v1) and a(v2).
         /// </summary>
         /// <param name="s"></param>
         /// <param name="v1"></param>
         /// <param name="v2"></param>
-        /// <returns></returns>
+        /// <returns> The generated vertex-displacement pair. </returns>
         public static VertDispl DisplacementInBetween(PolarPoint2D s, VertDispl v1, VertDispl v2)
         {
             var bot = Mathf.Min(v1.alpha, v2.alpha);
@@ -367,18 +393,21 @@
             while (MathUtil.LessEps(temp, bot))
                 temp += MathUtil.PI2;
 
-            Debug.Assert(MathUtil.LEQEps(bot, temp) && MathUtil.LEQEps(temp, top));
+            // Debug.Assert(MathUtil.LEQEps(bot, temp) && MathUtil.LEQEps(temp, top));
+
             return new VertDispl(s, temp);
         }
 
         /// <summary>
-        /// 
+        /// Locates the vertex s_j on the stack with either a(s_j) <= a(v_i+1) <= a(s_j+1)
+        /// or a(v_i+1) <= a(s_j) and a(s_j) = a(s_j+1) and segments (v_i, v_i+1) and (s_j, s_j+1) intersect.
+        /// Pops nodes from the stack until s_j found.
         /// </summary>
         /// <param name="vi"></param>
         /// <param name="vi1"></param>
         /// <param name="ss"></param>
         /// <param name="outSj"></param>
-        /// <returns></returns>
+        /// <returns> The last node popped from the stack, s_j+1. </returns>
         public static VertDispl LocateSj(VertDispl vi, VertDispl vi1, Stack<VertDispl> ss)
         {
             var sj1 = ss.Pop();
@@ -387,39 +416,41 @@
             {
                 VertDispl sj = ss.Peek();
 
-                if (MathUtil.LessEps(sj.alpha, vi1.alpha) && MathUtil.LEQEps(vi1.alpha, sj1.alpha))
+                if (MathUtil.LEQEps(sj.alpha, vi1.alpha) && MathUtil.LEQEps(vi1.alpha, sj1.alpha))
                 {
                     // TODO check if order is correct
                     return sj1;
                 }
 
-                var y = (new LineSegment(vi.p.Cartesian, vi1.p.Cartesian)).Intersect(new LineSegment(sj.p.Cartesian, sj1.p.Cartesian));
-
-                if (y != null &&
-                    MathUtil.LEQEps(vi1.alpha, sj.alpha) &&
-                    MathUtil.EqualsEps(sj.alpha, sj1.alpha))// &&
-                    //!MathUtil.EqualsEps(y.Value, sj.p.Cartesian) &&
-                    //!MathUtil.EqualsEps(y.Value, sj1.p.Cartesian))
+                if (MathUtil.LEQEps(vi1.alpha, sj.alpha) &&
+                    MathUtil.EqualsEps(sj.alpha, sj1.alpha))
                 {
+                    var y = (new LineSegment(vi.p.Cartesian, vi1.p.Cartesian)).Intersect(new LineSegment(sj.p.Cartesian, sj1.p.Cartesian));
+
+                    if (y != null)
                     // TODO check if order is correct
-                    return sj1;
+                    {
+                        return sj1;
+                    }
                 }
 
                 // remove top vertex and continue iterating
                 sj1 = ss.Pop();
             }
-            return sj1;
-            //throw new GeomException("Retard called while no vertices in stack");
+
+            throw new GeomException("LocateSj removed all vertices in stack");
         }
 
         /// <summary>
-        /// 
+        /// Transforms the vertices on the stack to the final visibility polygon.
+        /// Reverses the pre-process steps, namely the translation and rotation.
+        /// Also removes one of endpoints if duplicate
         /// </summary>
         /// <param name="pre_s"></param>
         /// <param name="vs"></param>
         /// <param name="z"></param>
         /// <param name="initAngle"></param>
-        /// <returns></returns>
+        /// <returns> Final visibility polygon. </returns>
         private static Polygon2D Postprocess(List<VertDispl> pre_s, VsRep vs, Vector2 z, float initAngle)
         {
             // reverse order of stack to establish CCW order of final visibility polygon
@@ -457,10 +488,13 @@
         }
 
         /// <summary>
-        /// 
+        /// Computes the angular displacement of each polar vertex with respect to starting vertex.
+        /// As discussed in paper, the angular displacement of vertex is the previous displacement with 
+        /// either + angle or - angle based on whether the current vertex constitutes a left or right turn.
+        /// (or no addition/subtraction if the angle is exactly PI)
         /// </summary>
         /// <param name="v"></param>
-        /// <returns></returns>
+        /// <returns>A list of vertex-displacement pairs. </returns>
         private static List<VertDispl> ComputeAngularDisplacements(List<PolarPoint2D> v)
         {
             // used to store the result, vertices with their corresponding angular
@@ -486,7 +520,7 @@
                 var sigma = MathUtil.Orient2D(Vector2.zero, viprev.Cartesian, vi.Cartesian);
                 var alpha_vi = ret[i - 1].alpha + sigma * angle;
 
-                Debug.Assert(Mathf.Abs(alpha_vi - ret[i - 1].alpha) < MathUtil.PI);
+                Debug.Assert(MathUtil.LEQEps(Mathf.Abs(alpha_vi - ret[i - 1].alpha), MathUtil.PI));
 
                 ret.Add(new VertDispl(vi, alpha_vi));
             }
@@ -495,11 +529,12 @@
         }
 
         /// <summary>
-        /// Retrieve the original vertex, which should not be z and have the smallest positive angle compared to z.
+        /// Retrieve the original vertex, which should not be z and
+        /// have the smallest positive angle compared to z.
         /// </summary>
         /// <param name="shiftedPol"></param>
         /// <param name="zIsVertex">whether z is a vertex</param>
-        /// <returns>the polar point corresponding to the initial vertex</returns>
+        /// <returns> The polar point corresponding to the initial vertex. </returns>
         private static PolarPoint2D GetInitialVertex(Polygon2D shiftedPol, bool zIsVertex)
         {
             // if z is vertex then take vertex adjacent to z
@@ -624,9 +659,14 @@
                 n = (zIsVertex) ? vs.Count - 1 : vs.Count;
 
                 if (zIsVertex)
+                {
                     v = ComputeAngularDisplacements(vs.GetRange(1, vs.Count));
+                }
                 else
+                {
                     v = ComputeAngularDisplacements(vs);
+                    //Debug.Assert(MathUtil.GEQEps(vs[vs.Count - 1].Theta, MathUtil.PI2));
+                }
             }
 
             /// <summary>

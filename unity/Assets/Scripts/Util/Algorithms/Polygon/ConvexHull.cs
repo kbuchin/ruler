@@ -1,12 +1,11 @@
 ﻿namespace Util.Algorithms.Polygon
 {
-    using Util.Geometry;
-    using Util.Geometry.Polygon;
-    using Util.Math;
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using UnityEngine;
+    using Util.Geometry;
+    using Util.Geometry.Polygon;
+    using Util.Math;
 
     /// <summary>
     /// Collection of algorithms related to convex hulls.
@@ -29,19 +28,20 @@
         /// <returns></returns>
         public static Polygon2D ComputeConvexHull(IEnumerable<Vector2> a_vertices)
         {
-            var upperhull = ComputeUpperHull(a_vertices);
-            var lowerhull = ComputeLowerHull(a_vertices);
+            var vertices = a_vertices.Distinct();
+
+            var upperhull = ComputeUpperHull(vertices);
+            var lowerhull = ComputeLowerHull(vertices);
 
             //STITCH AND RETURN
             lowerhull.Reverse();
 
             var convexhull = new Polygon2D(upperhull.Concat(lowerhull.GetRange(1, lowerhull.Count - 2)));
-            
-            Debug.Assert(convexhull.IsConvex());
-            Debug.Assert(convexhull.Vertices.First() != convexhull.Vertices.Last());
-            //Debug.Log(a_vertices);
-            //Debug.Log("HULL: " + convexhull);
-            
+
+            Debug.Assert(convexhull.IsConvex(), convexhull);
+            Debug.Assert(!MathUtil.EqualsEps(convexhull.Vertices.First(), convexhull.Vertices.Last()),
+                convexhull);
+
 
             return convexhull;
         }
@@ -114,9 +114,12 @@
             //add point and check for removal
             foreach (var point in sortedVertices.Skip(2))
             {
+                // skip duplicate vertices
+                if (MathUtil.EqualsEps(point, upperhull.Last())) continue;
+
                 upperhull.Add(point);
                 var n = upperhull.Count;
-                while (n > 2 && dir * MathUtil.Orient2D(upperhull[n - 3], upperhull[n - 2], upperhull[n - 1]) > 0)
+                while (n > 2 && (dir * MathUtil.Orient2D(upperhull[n - 3], upperhull[n - 2], upperhull[n - 1]) >= 0))
                 {
                     upperhull.RemoveAt(n - 2);
                     n = upperhull.Count;

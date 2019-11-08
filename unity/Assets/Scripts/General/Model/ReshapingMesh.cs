@@ -1,12 +1,12 @@
 ﻿namespace KingsTaxes
 {
     using UnityEngine;
-    using Util.Geometry.Graph;
 
     /// <summary>
     /// Class that can modify a given mesh with given modifier variables
     /// </summary>
-    public class ReshapingMesh : MonoBehaviour {
+    public class ReshapingMesh : MonoBehaviour
+    {
 
         // shape modifiers
         public float repeatDistance = 5f;
@@ -39,8 +39,8 @@
             perp *= widthmodifier;
 
             //create 4 corner vertices
-            var newVertices = new Vector3[] { a_start- perp, a_start + perp, a_end- perp, a_end + perp};
-            var newTriangles = new int[] { 0, 1, 2, 3, 2, 1}; //quad
+            var newVertices = new Vector3[] { a_start - perp, a_start + perp, a_end - perp, a_end + perp };
+            var newTriangles = new int[] { 0, 1, 2, 3, 2, 1 }; //quad
             var newUV = new Vector2[] { new Vector2(0, 0), new Vector2(0, 1), new Vector2(1, 0), new Vector2(1, 1) };
 
             // set new mesh

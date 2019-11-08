@@ -1,8 +1,5 @@
 ﻿namespace ArtGallery
 {
-    using System;
-    using System.Collections.Generic;
-    using UnityEngine;
     using General.Model;
 
     /// <summary>

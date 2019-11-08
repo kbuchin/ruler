@@ -37,8 +37,8 @@
         /// <returns></returns>
         public bool ContainsEpsilon(float a_val)
         {
-            var epsilon = MathUtil.EPS;
-            return Min - epsilon <= a_val && a_val <= Max + epsilon;
+            var eps = MathUtil.EPS * 10;
+            return MathUtil.GEQEps(a_val, Min, eps) && MathUtil.LEQEps(a_val, Max, eps);
         }
 
         /// <summary>

@@ -1,9 +1,9 @@
 ﻿namespace Util.Geometry.Polygon
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using UnityEngine;
-    using System;
     using Util.Math;
 
     /// <summary>
@@ -13,7 +13,8 @@
     {
         private readonly List<Polygon2D> m_Polygons = new List<Polygon2D>();
 
-        public ICollection<Vector2> Vertices {
+        public ICollection<Vector2> Vertices
+        {
             get
             {
                 var vertices = new List<Vector2>();
@@ -62,7 +63,7 @@
         /// </summary>
         public MultiPolygon2D(Polygon2D polygon) : this()
         {
-            AddPolygon(polygon);
+            AddPolygon(new Polygon2D(polygon.Vertices));
         }
 
         /// <summary>
@@ -71,7 +72,7 @@
         /// <param name="a_vertices"></param>
         public MultiPolygon2D(IEnumerable<Polygon2D> a_polygons) : this()
         {
-            foreach (var p in a_polygons) AddPolygon(p);
+            foreach (var p in a_polygons) AddPolygon(new Polygon2D(p.Vertices));
         }
 
 
@@ -79,7 +80,7 @@
         {
             foreach (var p in m_Polygons)
             {
-                if (p.Contains(pos)) return p.Next(pos);
+                if (p.ContainsVertex(pos)) return p.Next(pos);
             }
             return null;
         }
@@ -88,7 +89,7 @@
         {
             foreach (var p in m_Polygons)
             {
-                if (p.Contains(pos)) return p.Prev(pos);
+                if (p.ContainsVertex(pos)) return p.Prev(pos);
             }
             return null;
         }
@@ -116,12 +117,13 @@
         {
             foreach (var p in m_Polygons)
             {
-                if (Contains(after))
+                if (p.ContainsVertex(after))
                 {
-                    AddVertexAfter(pos, after);
+                    p.AddVertexAfter(pos, after);
+                    return;
                 }
             }
-            throw new ArgumentException("Multi polygon does not contain vertex after which to add");
+            throw new GeomException("Multi polygon does not contain vertex after which to add");
         }
 
         public void RemoveVertex(Vector2 pos)
@@ -151,17 +153,19 @@
             m_Polygons.Clear();
         }
 
-        /// <summary>
-        /// Tests wheter this polygon is clockwise and convex by verifying that each tripple of points constitues a right turn
-        /// </summary>
         public bool IsConvex()
         {
-            return m_Polygons.TrueForAll(p => p.IsConvex());
+            throw new NotSupportedException("TODO");
         }
 
-        public bool Contains(Vector2 a_pos)
+        public bool ContainsInside(Vector2 a_pos)
         {
-            return m_Polygons.Exists(p => p.Contains(a_pos));
+            return m_Polygons.Exists(p => p.ContainsInside(a_pos));
+        }
+
+        public bool ContainsVertex(Vector2 pos)
+        {
+            return m_Polygons.Exists(p => p.ContainsVertex(pos));
         }
 
         /// <summary>
@@ -190,13 +194,12 @@
 
         public bool IsSimple()
         {
-            Debug.Log("Simple ill-defined on multiple polygons");
-            return m_Polygons.All(p => p.IsSimple()); // assumes polygons disjoint
+            throw new NotSupportedException("TODO");
         }
 
         public Rect BoundingBox(float margin = 0f)
         {
-            return BoundingBoxComputer.FromVector2(Vertices, margin);
+            return BoundingBoxComputer.FromPoints(Vertices, margin);
         }
 
         public bool Equals(IPolygon2D other)

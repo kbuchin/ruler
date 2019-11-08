@@ -1,6 +1,5 @@
 ﻿namespace Util.Geometry.Polygon
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using UnityEngine;
@@ -32,12 +31,7 @@
         {
             get
             {
-                var vertices = Outside.Vertices;
-                foreach (var p in m_holes)
-                {
-                    vertices.Concat(p.Vertices);
-                }
-                return vertices;
+                return OuterVertices.Concat(InnerVertices).ToList();
             }
         }
 
@@ -53,7 +47,7 @@
                 var vertices = new List<Vector2>();
                 foreach (var p in m_holes)
                 {
-                    vertices.Concat(p.Vertices);
+                    vertices.AddRange(p.Vertices);
                 }
                 return vertices;
             }
@@ -83,7 +77,7 @@
                     result -= hole.Area;
                 }
 
-                if (result < 0)
+                if (MathUtil.LessEps(result, 0f))
                 {
                     throw new GeomException("Holes cannot have more area than outside polygon");
                 }
@@ -100,10 +94,11 @@
             get
             {
                 // concat outer and inner segments
-                var segments = OuterSegments;
+                var segments = new List<LineSegment>();
+                segments.AddRange(OuterSegments);
                 foreach (var h in m_holes)
                 {
-                    segments.Concat(h.Segments);
+                    segments.AddRange(h.Segments);
                 }
                 return segments;
             }
@@ -128,7 +123,7 @@
                 var segments = new List<LineSegment>();
                 foreach (var h in m_holes)
                 {
-                    segments.Concat(h.Segments);
+                    segments.AddRange(h.Segments);
                 }
                 return segments;
             }
@@ -142,31 +137,31 @@
 
         public Polygon2DWithHoles(Polygon2D a_outside) : this()
         {
-            Outside = a_outside;
+            Outside = new Polygon2D(a_outside.Vertices);
         }
 
         public Polygon2DWithHoles(Polygon2D a_outside, IEnumerable<Polygon2D> a_holes)
         {
-            Outside = a_outside;
-            m_holes = a_holes.ToList();
+            Outside = new Polygon2D(a_outside.Vertices);
+            m_holes = a_holes.Select(p => new Polygon2D(p.Vertices)).ToList();
         }
 
         public Vector2? Next(Vector2 pos)
         {
-            if (Outside.Contains(pos)) return Outside.Next(pos);
+            if (Outside.ContainsVertex(pos)) return Outside.Next(pos);
             foreach (var p in m_holes)
             {
-                if (p.Contains(pos)) return p.Next(pos);
+                if (p.ContainsVertex(pos)) return p.Next(pos);
             }
             return null;
         }
 
         public Vector2? Prev(Vector2 pos)
         {
-            if (Outside.Contains(pos)) return Outside.Prev(pos);
+            if (Outside.ContainsVertex(pos)) return Outside.Prev(pos);
             foreach (var p in m_holes)
             {
-                if (p.Contains(pos)) return p.Prev(pos);
+                if (p.ContainsVertex(pos)) return p.Prev(pos);
             }
             return null;
         }
@@ -193,7 +188,7 @@
 
         public void RemoveHole(Polygon2D hole)
         {
-            m_holes.Remove(hole);
+            m_holes.RemoveAll(h => h.Equals(hole));
         }
 
         public void RemoveHoles()
@@ -220,6 +215,7 @@
         {
             Outside.Clear();
             foreach (var p in m_holes) p.Clear();
+            m_holes.Clear();
         }
 
         public bool IsConvex()
@@ -231,21 +227,27 @@
         {
             return Outside.IsSimple() && m_holes.Count == 0;
         }
-        
-        public bool Contains(Vector2 a_pos)
+
+        public bool ContainsInside(Vector2 a_pos)
         {
             foreach (var hole in m_holes)
             {
-                if (hole.Contains(a_pos)) { Debug.Log(a_pos); Debug.Log("Inside hole + " + hole); return false; }
+                if (hole.ContainsInside(a_pos))
+                    return false;
             }
 
-            return Outside.Contains(a_pos);
+            return Outside.ContainsInside(a_pos);
+        }
+
+        public bool ContainsVertex(Vector2 pos)
+        {
+            return Outside.ContainsVertex(pos) || m_holes.Exists(p => p.ContainsVertex(pos));
         }
 
         public bool IsClockwise()
         {
             bool ret = Outside.IsClockwise();
-            foreach (var p in m_holes) ret &= !p.IsClockwise();
+            foreach (var p in m_holes) ret &= p.IsClockwise();  // holes are also clockwise (not counterclockwise)
             return ret;
         }
 
@@ -257,7 +259,7 @@
 
         public Rect BoundingBox(float margin = 0f)
         {
-            return BoundingBoxComputer.FromVector2(Vertices, margin);
+            return BoundingBoxComputer.FromPoints(Vertices, margin);
         }
 
         public bool Equals(IPolygon2D other)

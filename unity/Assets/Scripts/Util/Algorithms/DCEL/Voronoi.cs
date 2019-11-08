@@ -1,19 +1,17 @@
 ﻿namespace Util.Algorithms.DCEL
 {
-    using System;
     using System.Collections.Generic;
     using UnityEngine;
-    using Util.Geometry.Triangulation;
-    using Util.Geometry.DCEL;
     using Util.Algorithms.Triangulation;
     using Util.Geometry;
-    using Util.Math;
-    using System.Linq;
+    using Util.Geometry.DCEL;
+    using Util.Geometry.Triangulation;
 
     /// <summary>
     /// Collection of algorithms related to Voronoi diagrams.
     /// </summary>
-    public static class Voronoi {
+    public static class Voronoi
+    {
 
         /// <summary>
         /// Create Voronoi DCEL from a collection of vertices.
@@ -55,7 +53,7 @@
 
             // remember which edges where visited
             // since each edge has a twin
-            var edgesVisited = new HashSet<TriangleEdge>();            
+            var edgesVisited = new HashSet<TriangleEdge>();
 
             foreach (var edge in m_Delaunay.Edges)
             {

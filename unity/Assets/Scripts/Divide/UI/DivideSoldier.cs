@@ -1,9 +1,7 @@
 ﻿namespace Divide.UI
 {
-    using UnityEngine;
-    using System.Collections;
-    using System;
     using Divide.Controller;
+    using UnityEngine;
 
     /// <summary>
     /// Class for the game objects (archer, spearmen, mage) that need to be divided.

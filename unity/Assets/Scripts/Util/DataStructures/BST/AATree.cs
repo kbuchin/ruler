@@ -13,12 +13,17 @@
     {
         // Sentinel.
         protected Node m_Bottom;
-        protected Node m_Tree;
+        protected Node m_Root;
 
         /// <summary>
-        /// 
+        /// Number of nodes of the tree.
         /// </summary>
-        protected int Size { get; private set; }
+        public int Count { get; private set; }
+
+        /// <summary>
+        /// Root node of the tree
+        /// </summary>
+        public Node Root { get { return m_Root; } }
 
         /// <summary>
         /// Stores data of a single node traversal, including parent and child information.
@@ -55,8 +60,8 @@
         public AATree()
         {
             m_Bottom = new Node(default(T), null, null, 0);
-            m_Tree = m_Bottom;
-            Size = 0;
+            m_Root = m_Bottom;
+            Count = 0;
         }
 
         public bool Contains(T data)
@@ -64,42 +69,36 @@
             return FindNodes(data).Count() > 0;
         }
 
-        public int Count
-        {
-            get { return ComputeSize(m_Tree); }
-        }
-
-
         public bool Insert(T data)
         {
-            if (!(data is ValueType) && EqualityComparer<T>.Default.Equals(data, default(T)))
+            if (!(data is ValueType) /* && EqualityComparer<T>.Default.Equals(data, default(T)) */)
             {
                 return false;
             }
-            else if (m_Tree == m_Bottom)
+            else if (m_Root == m_Bottom)
             {
                 // create root node
-                m_Tree = CreateNode(data);
+                m_Root = CreateNode(data);
                 return true;
             }
             else
             {
-                Node currentNode = m_Tree;
+                Node currentNode = m_Root;
                 Node parent = null;
                 int comparisonResult = 1;   // initial value for loop condition to hold
 
                 // store traversal history in stack
-                Stack<TraversalHistory> nodeStack = new Stack<TraversalHistory>((int)Math.Ceiling(Math.Log(Size + 1, 2)) + 1);
+                Stack<TraversalHistory> nodeStack = new Stack<TraversalHistory>((int)Math.Ceiling(Math.Log(Count + 1, 2)) + 1);
                 nodeStack.Push(new TraversalHistory(currentNode, parent, TraversalHistory.ECHILDSIDE.ISROOT));
 
-                while (currentNode != m_Bottom && comparisonResult != 0)
+                while (currentNode != m_Bottom)
                 {
                     parent = currentNode;
                     comparisonResult = CompareTo(data, currentNode.Data, COMPARISON_TYPE.INSERT);
                     TraversalHistory histEntry;
 
                     // switch between left or right
-                    if (comparisonResult < 0)
+                    if (comparisonResult <= 0)
                     {
                         currentNode = currentNode.Left;
                         histEntry = new TraversalHistory(currentNode, parent, TraversalHistory.ECHILDSIDE.LEFT);
@@ -118,7 +117,7 @@
                 if (nodeStack.Pop().node == m_Bottom) // This node must be m_Bottom.
                 {
                     // use last comparison result and parent to insert new node
-                    if (comparisonResult < 0)
+                    if (comparisonResult <= 0)
                     {
                         parent.Left = CreateNode(data);
                         didInsert = true;
@@ -170,15 +169,15 @@
 
         public bool Delete(T data)
         {
-            if (m_Tree == m_Bottom || EqualityComparer<T>.Default.Equals(data, default(T)))
+            if (m_Root == m_Bottom  /*|| EqualityComparer<T>.Default.Equals(data, default(T)) */)
             {
                 return false;
             }
 
-            Node currentNode = m_Tree;
+            Node currentNode = m_Root;
             Node parent = null;
             Node deleted = m_Bottom;
-            Stack<TraversalHistory> nodeStack = new Stack<TraversalHistory>((int)Math.Ceiling(Math.Log(Size + 1, 2)) + 1);
+            Stack<TraversalHistory> nodeStack = new Stack<TraversalHistory>((int)Math.Ceiling(Math.Log(Count + 1, 2)) + 1);
             nodeStack.Push(new TraversalHistory(currentNode, parent, TraversalHistory.ECHILDSIDE.ISROOT));
             while (currentNode != m_Bottom)
             {
@@ -237,10 +236,10 @@
                     }
                     else
                     {
-                        m_Tree = m_Bottom;
+                        m_Root = m_Bottom;
                     }
                 }
-                --Size;
+                --Count;
                 didDelete = true;
             }
 
@@ -286,8 +285,8 @@
         {
             // leave existing nodes for garbage collector
             m_Bottom = new Node(default(T), null, null, 0);
-            m_Tree = m_Bottom;
-            Size = 0;
+            m_Root = m_Bottom;
+            Count = 0;
         }
 
         /// <summary>
@@ -296,7 +295,7 @@
         /// <returns></returns>
         protected Node FindLeftmostNode()
         {
-            var min = m_Tree;
+            var min = m_Root;
             while (min.Left != m_Bottom)
             {
                 min = min.Left;
@@ -310,7 +309,7 @@
         /// <returns></returns>
         protected Node FindRightmostNode()
         {
-            var max = m_Tree;
+            var max = m_Root;
             while (max.Right != m_Bottom)
             {
                 max = max.Right;
@@ -324,18 +323,18 @@
         /// <returns></returns>
         public bool VerifyLevels()
         {
-            return VerifyLevels(m_Tree, m_Tree.Level);
+            return VerifyLevels(m_Root, m_Root.Level);
         }
 
         /// <summary>
-        /// Find array of 
+        /// Find a list of nodes with the given data value.
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
-        public IEnumerable<T> FindNodes(T data)
+        public List<T> FindNodes(T data)
         {
             var nodes = new List<T>();
-            FindNodes(data, m_Tree, nodes);
+            FindNodes(data, m_Root, nodes);
             return nodes;
         }
 
@@ -345,11 +344,11 @@
         /// <param name="minValue"></param>
         /// <param name="maxValue"></param>
         /// <returns></returns>
-        private bool VerifyBST(T minValue, T maxValue)
+        public bool VerifyBST(T minValue, T maxValue)
         {
-            return VerifyBST(m_Tree, minValue, maxValue, COMPARISON_TYPE.INSERT) &&
-            VerifyBST(m_Tree, minValue, maxValue, COMPARISON_TYPE.DELETE) &&
-            VerifyBST(m_Tree, minValue, maxValue, COMPARISON_TYPE.FIND);
+            return VerifyBST(m_Root, minValue, maxValue, COMPARISON_TYPE.INSERT) &&
+            VerifyBST(m_Root, minValue, maxValue, COMPARISON_TYPE.DELETE) &&
+            VerifyBST(m_Root, minValue, maxValue, COMPARISON_TYPE.FIND);
         }
 
         /// <summary>
@@ -358,9 +357,9 @@
         /// <returns></returns>
         public bool VerifyOrder()
         {
-            return VerifyOrder(m_Tree, COMPARISON_TYPE.INSERT) &&
-            VerifyOrder(m_Tree, COMPARISON_TYPE.DELETE) &&
-            VerifyOrder(m_Tree, COMPARISON_TYPE.FIND);
+            return VerifyOrder(m_Root, COMPARISON_TYPE.INSERT) &&
+            VerifyOrder(m_Root, COMPARISON_TYPE.DELETE) &&
+            VerifyOrder(m_Root, COMPARISON_TYPE.FIND);
         }
 
         /// <summary>
@@ -389,7 +388,7 @@
             }
             else
             {
-                m_Tree = oldLeft;
+                m_Root = oldLeft;
             }
             return oldLeft;
         }
@@ -423,7 +422,7 @@
             }
             else
             {
-                m_Tree = oldRight;
+                m_Root = oldRight;
             }
             ++oldRight.Level;
             return oldRight;
@@ -437,7 +436,7 @@
         private Node CreateNode(T data)
         {
             Node n = new Node(data, m_Bottom, m_Bottom, 1);
-            ++Size;
+            ++Count;
             return n;
         }
 
@@ -449,7 +448,7 @@
         /// <returns>whether the method was succesful.</returns>
         public bool FindNextBiggest(T data, out T out_NextBiggest)
         {
-            return FindNextBiggestOrSmallest(data, m_Tree, true, out out_NextBiggest);
+            return FindNextBiggestOrSmallest(data, m_Root, true, out out_NextBiggest);
         }
 
         /// <summary>
@@ -460,7 +459,7 @@
         /// <returns>whether the method was succesful.</returns>
         public bool FindNextSmallest(T data, out T out_NextSmallest)
         {
-            return FindNextBiggestOrSmallest(data, m_Tree, false, out out_NextSmallest);
+            return FindNextBiggestOrSmallest(data, m_Root, false, out out_NextSmallest);
         }
 
         /// <summary>
@@ -474,7 +473,7 @@
         /// <returns>whether the method was succesful.</returns>
         private bool FindNextBiggestOrSmallest(T data, Node t, bool a_Bigger, out T out_NextBiggest)
         {
-            if (t == m_Bottom || EqualityComparer<T>.Default.Equals(data, default(T)))
+            if (t == m_Bottom /* || EqualityComparer<T>.Default.Equals(data, default(T)) */)
             {
                 out_NextBiggest = default(T);
                 return false;
@@ -482,7 +481,6 @@
 
             var currentNode = t;
             var nextNode = t;
-            var target = m_Bottom;
             var lastSwitch = m_Bottom;
             while (nextNode != m_Bottom)
             {
@@ -499,7 +497,6 @@
                     else
                     {
                         nextNode = currentNode.Right;
-                        target = currentNode;
                     }
                 }
                 else
@@ -507,7 +504,6 @@
                     if (comparisonResult <= 0)
                     {
                         nextNode = currentNode.Left;
-                        target = currentNode;
                     }
                     else
                     {
@@ -517,18 +513,15 @@
                 }
             }
 
-            if (target != m_Bottom && CompareTo(data, target.Data, COMPARISON_TYPE.FIND) == 0)
+            if (currentNode != m_Bottom && CompareTo(data, currentNode.Data, COMPARISON_TYPE.FIND) != 0)
             {
-                if (currentNode != target && currentNode != m_Bottom)
-                {
-                    out_NextBiggest = currentNode.Data;
-                    return true;
-                }
-                else if (lastSwitch != m_Bottom)
-                {
-                    out_NextBiggest = lastSwitch.Data;
-                    return true;
-                }
+                out_NextBiggest = currentNode.Data;
+                return true;
+            }
+            else if (lastSwitch != m_Bottom && CompareTo(data, currentNode.Data, COMPARISON_TYPE.FIND) == 0)
+            {
+                out_NextBiggest = lastSwitch.Data;
+                return true;
             }
 
             // no bigger found, return default value
@@ -569,7 +562,7 @@
         /// </summary>
         /// <param name="t"></param>
         /// <returns></returns>
-        private int ComputeSize(Node t)
+        public int ComputeSize(Node t)
         {
             if (t == m_Bottom)
             {
@@ -698,7 +691,7 @@
         /// <summary>
         /// Class for all nodes in the tree.
         /// </summary>
-        protected internal class Node
+        public class Node
         {
             public Node Left { get; set; }
 
@@ -714,24 +707,8 @@
             public Node(T a_Data, Node a_Left, Node a_Right, int a_Level)
             {
                 Data = a_Data;
-                if (EqualityComparer<T>.Default.Equals(a_Data, default(T)))
-                {
-                    Left = this;
-                    Right = this;
-                    if (a_Level != 0)
-                    {
-                        throw new Exception("Cannot use default value for node other than Bottom!");
-                    }
-                }
-                else
-                {
-                    Left = a_Left;
-                    Right = a_Right;
-                    if (a_Level != 1)
-                    {
-                        throw new Exception("Cannot create node with level other than 1!");
-                    }
-                }
+                Left = a_Left ?? this;
+                Right = a_Right ?? this;
                 Level = a_Level;
             }
         }

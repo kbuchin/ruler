@@ -1,6 +1,5 @@
 ﻿namespace ArtGallery
 {
-    using General.Model;
     using UnityEngine;
     using Util.Geometry.Polygon;
 
@@ -49,9 +48,9 @@
         void Awake()
         {
             m_controller = FindObjectOfType<ArtGalleryController>();
-            
+
             // initialize the vision polygon
-            GameObject go = Instantiate(m_visionAreaPrefab, new Vector3(0,0,-1.5f), Quaternion.identity) as GameObject;
+            GameObject go = Instantiate(m_visionAreaPrefab, new Vector3(0, 0, -1.5f), Quaternion.identity) as GameObject;
             m_visionAreaMesh = go.GetComponent<ArtGalleryIsland>();
 
             m_controller.UpdateVision(this);
@@ -64,7 +63,7 @@
                 Destroy(m_visionAreaMesh.gameObject);
             }
         }
-        
+
         void OnMouseDown()
         {
             m_controller.SelectLighthouse(this);

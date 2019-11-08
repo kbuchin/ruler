@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using UnityEngine;
-    using Util.Geometry.Core;
     using Util.Math;
 
     /// <summary>
@@ -28,7 +27,8 @@
         /// <summary>
         /// A perpendicular line that crosses the segment in the midpoint.
         /// </summary>
-        public Line Bissector {
+        public Line Bissector
+        {
             get
             {
                 var perp = Vector2.Perpendicular(Point2 - Point1);
@@ -40,7 +40,7 @@
         /// Whether the segment is vertical.
         /// </summary>
         public bool IsVertical { get { return Line.IsVertical; } }
-        
+
         /// <summary>
         /// Whether the segment is horizontal.
         /// </summary>
@@ -68,7 +68,7 @@
             Point2 = new Vector2(a_point2.x, a_point2.y);
         }
 
-        public LineSegment(PolarPoint2D a_point1, PolarPoint2D a_point2) 
+        public LineSegment(PolarPoint2D a_point1, PolarPoint2D a_point2)
         {
             Point1 = a_point1.Cartesian;
             Point2 = a_point2.Cartesian;
@@ -91,7 +91,9 @@
         /// <returns></returns>
         public bool IsOnSegment(Vector2 a_Point)
         {
-            return XInterval.ContainsEpsilon(a_Point.x) && Line.IsOnLine(a_Point);
+            return XInterval.ContainsEpsilon(a_Point.x) &&
+                YInterval.ContainsEpsilon(a_Point.y)
+                && Line.IsOnLine(a_Point);
         }
 
         /// <summary>
@@ -148,7 +150,7 @@
             // and check if intersection point on both segments
             var intersect = Line.Intersect(a_seg1.Line, a_seg2.Line);
             if (intersect != null &&
-                intervalXIntersection.ContainsEpsilon(intersect.Value.x) && 
+                intervalXIntersection.ContainsEpsilon(intersect.Value.x) &&
                 intervalYIntersection.ContainsEpsilon(intersect.Value.y))
             {
                 return intersect;
@@ -200,10 +202,10 @@
             {
                 return null;
             }
-            
+
             var intersect = Line.Intersect(a_seg.Line, a_line);
-            if (intersect != null && 
-                a_seg.XInterval.ContainsEpsilon(intersect.Value.x) && 
+            if (intersect != null &&
+                a_seg.XInterval.ContainsEpsilon(intersect.Value.x) &&
                 a_seg.YInterval.ContainsEpsilon(intersect.Value.y)) //Double check to handle single vertical segments
             {
                 return intersect;
@@ -241,13 +243,28 @@
         public static Vector2? Intersect(LineSegment a_seg, Ray2D a_ray)
         {
             var rayTarget = a_ray.origin + a_ray.direction;
-            var ret = Intersect(a_seg, new Line(a_ray.origin, rayTarget));
+            var rayLine = new Line(a_ray.origin, rayTarget);
+
+            Vector2? ret;
+
+            if (MathUtil.EqualsEps(rayLine.Slope, a_seg.Line.Slope))
+            {   // lines are parallel
+
+                // check if ray origin is on line of line segment
+                if (!a_seg.Line.IsOnLine(a_ray.origin)) return null;
+
+                ret = a_seg.ClosestPoint(a_ray.origin);
+            }
+            else
+            {
+                ret = Intersect(a_seg, rayLine);
+            }
 
             if (ret == null) return null;
 
             // check if intersection in wrong direction
             if (!MathUtil.EqualsEps(ret.Value, a_ray.origin) &&
-                Math.Sign(Vector2.Dot((ret.Value - a_ray.origin), a_ray.direction)) < 0)
+                Vector2.Dot((ret.Value - a_ray.origin), a_ray.direction) < 0)
             {
                 return null;
             }

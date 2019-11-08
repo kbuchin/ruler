@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d46ea38d231ceef4d955bc70b8ffa4fc, type: 3}
+  m_Name: divLevel2_0
+  m_EditorClassIdentifier: 
+  NumberOfSwaps: 0
+  Spearmen:
+  - {x: -1.56, y: -1.67}
+  - {x: 1.2, y: -1.44}
+  Archers:
+  - {x: -1.58, y: 0.14}
+  - {x: 1.3, y: 0.2}
+  Mages:
+  - {x: -1, y: 1.43}
+  - {x: 2.2, y: 1.56}

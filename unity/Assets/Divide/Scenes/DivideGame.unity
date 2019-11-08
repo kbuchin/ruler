@@ -120,6 +120,11 @@ Prefab:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 114971161596505778, guid: 6167f5fff7937994a9f9d04932727a4e,
+        type: 2}
+      propertyPath: m_levels.Array.size
+      value: 9
+      objectReference: {fileID: 0}
     - target: {fileID: 4141939016517310, guid: 6167f5fff7937994a9f9d04932727a4e, type: 2}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -151,6 +156,47 @@ Prefab:
     - target: {fileID: 4141939016517310, guid: 6167f5fff7937994a9f9d04932727a4e, type: 2}
       propertyPath: m_RootOrder
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114971161596505778, guid: 6167f5fff7937994a9f9d04932727a4e,
+        type: 2}
+      propertyPath: m_levels.Array.data[3]
+      value: 
+      objectReference: {fileID: 11400000, guid: 0a6cc7e80a4c0ef448d9aeceea75e93d,
+        type: 3}
+    - target: {fileID: 114971161596505778, guid: 6167f5fff7937994a9f9d04932727a4e,
+        type: 2}
+      propertyPath: m_levels.Array.data[4]
+      value: 
+      objectReference: {fileID: 11400000, guid: 1f88944ccfd093a4fa163df56d2a0bc6,
+        type: 3}
+    - target: {fileID: 114971161596505778, guid: 6167f5fff7937994a9f9d04932727a4e,
+        type: 2}
+      propertyPath: m_levels.Array.data[5]
+      value: 
+      objectReference: {fileID: 11400000, guid: 7840d67371ac8954caa069b5e605a528,
+        type: 3}
+    - target: {fileID: 114971161596505778, guid: 6167f5fff7937994a9f9d04932727a4e,
+        type: 2}
+      propertyPath: m_levels.Array.data[6]
+      value: 
+      objectReference: {fileID: 11400000, guid: 78554109dcf0e7840b9dc1f07c162737,
+        type: 3}
+    - target: {fileID: 114971161596505778, guid: 6167f5fff7937994a9f9d04932727a4e,
+        type: 2}
+      propertyPath: m_levels.Array.data[7]
+      value: 
+      objectReference: {fileID: 11400000, guid: 27aff178e4757a442b8a4fe389bd4027,
+        type: 3}
+    - target: {fileID: 114971161596505778, guid: 6167f5fff7937994a9f9d04932727a4e,
+        type: 2}
+      propertyPath: m_levels.Array.data[8]
+      value: 
+      objectReference: {fileID: 11400000, guid: aeb4c19d2a4cd7a4491ea64d5be46b15,
+        type: 3}
+    - target: {fileID: 20470756970565140, guid: 6167f5fff7937994a9f9d04932727a4e,
+        type: 2}
+      propertyPath: orthographic size
+      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6167f5fff7937994a9f9d04932727a4e, type: 2}

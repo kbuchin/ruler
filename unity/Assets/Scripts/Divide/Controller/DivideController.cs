@@ -1,21 +1,20 @@
 ﻿namespace Divide.Controller
 {
-    using UnityEngine;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System;
-    using UnityEngine.SceneManagement;
-    using UnityEngine.UI;
-    using Util.Geometry.DCEL;
-    using Util.Geometry.Duality;
-    using Drawing;
     using Divide.Model;
     using Divide.UI;
-    using General.Menu;
-    using Util.Algorithms.DCEL;
+    using Drawing;
     using General.Controller;
-    using Util.Math;
+    using General.Menu;
+    using System.Collections.Generic;
+    using System.Linq;
+    using UnityEngine;
+    using UnityEngine.SceneManagement;
+    using UnityEngine.UI;
+    using Util.Algorithms.DCEL;
     using Util.Geometry;
+    using Util.Geometry.DCEL;
+    using Util.Geometry.Duality;
+    using Util.Math;
 
     /// <summary>
     /// Main controller for the divide game.
@@ -66,7 +65,7 @@
         private List<GameObject> m_mages = new List<GameObject>();
 
         // dcel for the dual lines related to soldiers
-        private DCEL m_archerDcel, m_spearmenDcel,  m_mageDcel;
+        private DCEL m_archerDcel, m_spearmenDcel, m_mageDcel;
         private List<Line> m_archerLines, m_spearmenLines, m_mageLines;
         private List<Face> m_archerFaces, m_spearmenFaces, m_mageFaces;
 
