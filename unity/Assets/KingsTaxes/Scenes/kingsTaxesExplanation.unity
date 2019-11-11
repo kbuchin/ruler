@@ -228,6 +228,18 @@ Prefab:
       propertyPath: m_Name
       value: BackButton
       objectReference: {fileID: 0}
+    - target: {fileID: 11474440, guid: 0f457870426536744b56e915b42f13f8, type: 2}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 11474440, guid: 0f457870426536744b56e915b42f13f8, type: 2}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 11474440, guid: 0f457870426536744b56e915b42f13f8, type: 2}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 11454658, guid: 0f457870426536744b56e915b42f13f8, type: 2}
   m_SourcePrefab: {fileID: 100100000, guid: 0f457870426536744b56e915b42f13f8, type: 2}

@@ -799,6 +799,10 @@ Prefab:
       value: 
       objectReference: {fileID: 11400000, guid: bfa1a0e5ec25fca4e96223009b9d7a7a,
         type: 3}
+    - target: {fileID: 1356252125741086, guid: df3d444a912111e4dada71b6deec06cc, type: 2}
+      propertyPath: m_Name
+      value: ArtGalleryController
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: df3d444a912111e4dada71b6deec06cc, type: 2}
   m_IsPrefabAsset: 0

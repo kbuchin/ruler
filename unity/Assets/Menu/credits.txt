@@ -1,7 +1,7 @@
 							CREDITS
 
 Project Lead: 		Kevin Buchin
-Programing: 		Sander Beekhuis, Kevin Buchin and Thom Hurks
+Programing: 		Sander Beekhuis, Kevin Buchin, Thom Hurks, and Stijn Slot
 Art: 						Willem Sonke and Thom Castermans
 Music: 				Kevin MacLeod ("Oppresive Gloom", "StormFront", "At Launch") and Alexandr Zhelanov ("Castlecall")
 Sound Effects: 	LittleRobotSoundFactory

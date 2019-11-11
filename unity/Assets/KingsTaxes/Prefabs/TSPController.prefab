@@ -158,7 +158,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1915998636218080}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4410779584282666}
@@ -321,10 +321,7 @@ MonoBehaviour:
   m_roadMeshPrefab: {fileID: 114764, guid: b17e4573237a4194ba10e3f42dd7a942, type: 2}
   m_castlePrefab: {fileID: 173870, guid: c04bc09f779a4494f877038eaf3fd0ba, type: 2}
   m_villagePrefab: {fileID: 159846, guid: d5a9e2b34636f89468037812ba05c32d, type: 2}
-  m_levels:
-  - {fileID: 11400000, guid: 799b171f211ae974ab141097d624962b, type: 2}
-  - {fileID: 11400000, guid: 42a496c049f84e84595610d2c43d3c80, type: 2}
-  - {fileID: 11400000, guid: 14046c83d39825c4885f57534e6faae3, type: 2}
+  m_levels: []
   m_victoryScene: tspvictory
   m_advanceButton: {fileID: 0}
   m_endlessMode: 0

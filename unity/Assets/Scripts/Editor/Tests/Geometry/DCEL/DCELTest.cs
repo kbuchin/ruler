@@ -78,7 +78,7 @@
             var e = dcel.AddEdge(v1, v2);
             Assert.AreEqual(e, v1.Leaving);
             Assert.AreEqual(e.Twin, v2.Leaving);
-            var v3 = dcel.AddVertex(new Vector2(1, 1));
+            dcel.AddVertex(new Vector2(1, 1));
             Assert.AreEqual(3, dcel.VertexCount);
             Assert.AreEqual(2, dcel.EdgeCount);
         }
@@ -105,9 +105,9 @@
             var dcel = new DCEL();
             var v1 = dcel.AddVertex(new DCELVertex(0, 0));
             var v2 = dcel.AddVertex(new Vector2(2, 2));
-            var e = dcel.AddEdge(v1, v2);
+            dcel.AddEdge(v1, v2);
             Assert.AreEqual(1, dcel.EdgeCount);
-            var e2 = dcel.AddEdge(new Vector2(0, 2), new Vector2(2, 0));
+            dcel.AddEdge(new Vector2(0, 2), new Vector2(2, 0));
             Assert.AreEqual(4, dcel.EdgeCount);
 
             Assert.Throws<GeomException>(() => dcel.AddEdge(new DCELVertex(-1, -1), v1));

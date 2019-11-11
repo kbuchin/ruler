@@ -266,9 +266,11 @@
                 {
                     if (e1 == e2) continue;
 
-                    if (e1.T == null || e2.T == null || (MathUtil.EqualsEps(e1.Point1, e2.Point1) && MathUtil.EqualsEps(e1.Point2, e2.Point2)))
+                    if (e1.T == null || e2.T == null || e1.Point1 == e2.Point1 && e1.Point2 == e2.Point2)
                     {
-                        throw new GeomException("Triangulation is misformed");
+                        //throw new GeomException("Triangulation is misformed");
+                        Debug.Log("Triangulation is misformed");
+                        continue;
                     }
                     if (MathUtil.EqualsEps(e1.Point1, e2.Point2) || MathUtil.EqualsEps(e1.Point2, e2.Point1))
                     {

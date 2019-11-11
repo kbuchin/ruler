@@ -8,138 +8,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Menu/Scenes/mainMenu.unity
     guid: 6729f412dd8dcab47b7f97123b1e7800
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 1
-    path: Assets/Voronoi/Scenes/voronoiLongGame.unity
-    guid: 33c44f1a9560f7744bfbcd8867b33ba7
   - enabled: 1
     path: Assets/Menu/Scenes/credits.unity
     guid: 6709c4ecc12eda04eafd9201abb7fac0
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
   - enabled: 1
     path: Assets/Voronoi/Scenes/voronoiMenu.unity
     guid: e820c880d338d754796e51fd12c85693
@@ -147,38 +18,23 @@ EditorBuildSettings:
     path: Assets/Voronoi/Scenes/voronoiExplanation.unity
     guid: ade196cb31761724ea2525fdfb2a8f3c
   - enabled: 1
+    path: Assets/Voronoi/Scenes/voronoiControls.unity
+    guid: eb93ccdb9f113be4aa3998479e319977
+  - enabled: 1
     path: Assets/Voronoi/Scenes/voronoiShortGame.unity
     guid: d8257bcb5f8a5bb469ee49f631eb16a8
   - enabled: 1
-    path: Assets/Voronoi/Scenes/voronoiControls.unity
-    guid: eb93ccdb9f113be4aa3998479e319977
+    path: Assets/Voronoi/Scenes/voronoiLongGame.unity
+    guid: 33c44f1a9560f7744bfbcd8867b33ba7
   - enabled: 1
     path: Assets/Voronoi/Scenes/redVictory.unity
     guid: 2d24295ee1e14004787103f659f4430a
   - enabled: 1
     path: Assets/Voronoi/Scenes/blueVictory.unity
     guid: b0686dbf6c206a8468752d323ef51ea1
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
   - enabled: 1
     path: Assets/Divide/Scenes/DivideMenu.unity
     guid: 6faa8aa1247c15d4f8c403a37bce0444
-  - enabled: 1
-    path: Assets/Divide/Scenes/DivideGame.unity
-    guid: 314fe9f570388134fb9b06e00dfd3b86
   - enabled: 1
     path: Assets/Divide/Scenes/DivideExplanation.unity
     guid: e31b66371028b6c45aa63c73569a2a15
@@ -186,8 +42,14 @@ EditorBuildSettings:
     path: Assets/Divide/Scenes/DivideControls.unity
     guid: a50bfeaaf59da4f41a85c08452971de8
   - enabled: 1
+    path: Assets/Divide/Scenes/DivideGame.unity
+    guid: 314fe9f570388134fb9b06e00dfd3b86
+  - enabled: 1
     path: Assets/Divide/Scenes/DivideVictory.unity
     guid: 1413e6ce0f20fe145b8db276b072567c
+  - enabled: 1
+    path: Assets/ArtGallery/Scenes/agMenu.unity
+    guid: a19d854029057a744b14bbccd3802998
   - enabled: 1
     path: Assets/ArtGallery/Scenes/agControls.unity
     guid: 86be4a400b3e6a243b530d63e155132f
@@ -198,23 +60,20 @@ EditorBuildSettings:
     path: Assets/ArtGallery/Scenes/agLevel.unity
     guid: 64ca2ce407867c84981fd4ff7153c312
   - enabled: 1
-    path: Assets/ArtGallery/Scenes/agMenu.unity
-    guid: a19d854029057a744b14bbccd3802998
+    path: Assets/ArtGallery/Scenes/agVictory.unity
+    guid: b014879cfd1bd3b45bd4a7deecee5de9
+  - enabled: 1
+    path: Assets/KingsTaxes/Scenes/kingsTaxesMenu.unity
+    guid: fb2785f340d1e6640b67df2eb4cf0672
   - enabled: 1
     path: Assets/KingsTaxes/Scenes/kingsTaxesExplanation.unity
     guid: 8171f98be334e56429a5fc2b03673386
   - enabled: 1
-    path: Assets/KingsTaxes/Scenes/kingsTaxesMenu.unity
-    guid: fb2785f340d1e6640b67df2eb4cf0672
-  - enabled: 0
-    path: 
-    guid: 88fd4d0bbbad92847a1d5bd686719b84
+    path: Assets/KingsTaxes/Scenes/MST/mststart.unity
+    guid: 05d83c350feec614faa8a3a6eae36304
   - enabled: 1
     path: Assets/KingsTaxes/Scenes/MST/mstlevel.unity
     guid: a7133ca0eaf92d54181e4807323af521
-  - enabled: 1
-    path: Assets/KingsTaxes/Scenes/MST/mststart.unity
-    guid: 05d83c350feec614faa8a3a6eae36304
   - enabled: 1
     path: Assets/KingsTaxes/Scenes/MST/mstvictory.unity
     guid: d8fe20ef69c966545b16ef2b4c84d732
@@ -222,17 +81,20 @@ EditorBuildSettings:
     path: Assets/KingsTaxes/Scenes/MST/mstendless.unity
     guid: feced4bb1a19522458c46c07c43ce9e6
   - enabled: 1
+    path: Assets/KingsTaxes/Scenes/Spanner/tspannerstart.unity
+    guid: 229256236dc7a4a4ba78b4841b13c750
+  - enabled: 1
     path: Assets/KingsTaxes/Scenes/Spanner/tspannerendless.unity
     guid: 7e61b1565a5120649b5e5dcf0e285ac2
   - enabled: 1
     path: Assets/KingsTaxes/Scenes/Spanner/tspannerlevel.unity
     guid: 9b2a36420a5e2d64c9ae345cbab07c02
   - enabled: 1
-    path: Assets/KingsTaxes/Scenes/Spanner/tspannerstart.unity
-    guid: 229256236dc7a4a4ba78b4841b13c750
-  - enabled: 1
     path: Assets/KingsTaxes/Scenes/Spanner/tspannervictory.unity
     guid: 7977132ba6ea02741a74b9ab34709826
+  - enabled: 1
+    path: Assets/KingsTaxes/Scenes/TSP/tspstart.unity
+    guid: 67268ee53fe7cb140bbec00d33c3976e
   - enabled: 1
     path: Assets/KingsTaxes/Scenes/TSP/tsplevel.unity
     guid: 31fd9c6bd3032bd4f8e1502948ce081d
@@ -240,12 +102,6 @@ EditorBuildSettings:
     path: Assets/KingsTaxes/Scenes/TSP/tspendless.unity
     guid: 9f8a4e33c8ef3fc4d98c0ef08ee00b05
   - enabled: 1
-    path: Assets/KingsTaxes/Scenes/TSP/tspstart.unity
-    guid: 67268ee53fe7cb140bbec00d33c3976e
-  - enabled: 1
     path: Assets/KingsTaxes/Scenes/TSP/tspvictory.unity
     guid: b3a987eebef3ca944b26627e7c335caa
-  - enabled: 1
-    path: Assets/ArtGallery/Scenes/agVictory.unity
-    guid: b014879cfd1bd3b45bd4a7deecee5de9
   m_configObjects: {}

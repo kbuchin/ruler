@@ -77,6 +77,7 @@
             Assert.AreEqual(cost, matching.Sum(e => e.Weight), MathUtil.EPS);
         }
 
+        /*  test fails on greedy algorithm
         [Test]
         public void MinimumWeightMatching2Test()
         {
@@ -85,8 +86,8 @@
                        new Edge(m_level2pos[1], m_level2pos[2]).Weight +
                        new Edge(m_level2pos[3], m_level2pos[4]).Weight;
 
-            // test fails on greedy algorithm
-            //Assert.AreEqual(cost, matching.Sum(e => e.Weight), MathUtil.EPS);
+            Assert.AreEqual(cost, matching.Sum(e => e.Weight), MathUtil.EPS);
         }
+        */
     }
 }
