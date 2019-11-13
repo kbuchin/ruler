@@ -1,8 +1,5 @@
-﻿namespace Divide.Controller
+﻿namespace Divide
 {
-    using Divide.Model;
-    using Divide.UI;
-    using Drawing;
     using General.Controller;
     using General.Menu;
     using System.Collections.Generic;
@@ -14,7 +11,6 @@
     using Util.Geometry;
     using Util.Geometry.DCEL;
     using Util.Geometry.Duality;
-    using Util.Math;
 
     /// <summary>
     /// Main controller for the divide game.
@@ -71,7 +67,7 @@
 
         //Unity references
         private DivideLineDrawer m_lineDrawer;
-        private DCELDrawer m_graphDrawer;
+        private DivideDCELDrawer m_graphDrawer;
         private DivideLine m_mouseLine;
 
         private bool m_levelSolved;
@@ -82,7 +78,7 @@
         {
             m_mouseLine = FindObjectOfType<DivideLine>();
             m_lineDrawer = FindObjectOfType<DivideLineDrawer>();
-            m_graphDrawer = FindObjectOfType<DCELDrawer>();
+            m_graphDrawer = FindObjectOfType<DivideDCELDrawer>();
 
             m_victoryOverlay.Callback = AdvanceLevel;
 

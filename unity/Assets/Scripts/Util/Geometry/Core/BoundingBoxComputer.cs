@@ -1,10 +1,10 @@
-﻿namespace Util.Math
+﻿namespace Util.Geometry
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using UnityEngine;
-    using Util.Geometry;
+    using Util.Math;
 
     /// <summary>
     /// Class for computing the bounding box (Rect) around various structures.

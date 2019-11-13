@@ -1,4 +1,4 @@
-﻿namespace Voronoi.Controller
+﻿namespace Voronoi
 {
     using UnityEngine;
     using UnityEngine.UI;

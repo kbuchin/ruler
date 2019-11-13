@@ -1,4 +1,4 @@
-﻿namespace General.Drawing
+﻿namespace General.UI
 {
     using System.Collections.Generic;
     using System.Linq;

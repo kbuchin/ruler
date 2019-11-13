@@ -1,8 +1,8 @@
 ﻿namespace KingsTaxes
 {
     using General.Controller;
+    using General.Menu;
     using General.Model;
-    using KingsTaxes.Model;
     using System;
     using System.Collections.Generic;
     using System.Linq;

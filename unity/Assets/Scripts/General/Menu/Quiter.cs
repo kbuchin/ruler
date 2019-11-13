@@ -1,4 +1,4 @@
-﻿namespace Menu
+﻿namespace General.Menu
 {
     using UnityEngine;
 

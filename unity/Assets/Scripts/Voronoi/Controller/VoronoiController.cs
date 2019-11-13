@@ -1,4 +1,4 @@
-﻿namespace Voronoi.Controller
+﻿namespace Voronoi
 {
     using System;
     using System.Collections.Generic;
@@ -6,12 +6,12 @@
     using UnityEngine;
     using UnityEngine.SceneManagement;
     using Util.Algorithms.DCEL;
+    using Util.Algorithms.Polygon;
     using Util.Algorithms.Triangulation;
     using Util.Geometry.DCEL;
     using Util.Geometry.Polygon;
     using Util.Geometry.Triangulation;
     using Util.Math;
-    using Voronoi.UI;
 
     /// <summary>
     /// Game controller for the voronoi game.
@@ -227,7 +227,7 @@
                 {
                     // update player area with face that intersects with window
                     var playerIndex = m_ownership[inputNode] == EOwnership.PLAYER1 ? 0 : 1;
-                    m_playerArea[playerIndex] += Polygon2D.IntersectConvex(m_meshRect, face.Polygon.Outside).Area;
+                    m_playerArea[playerIndex] += Intersector.IntersectConvex(m_meshRect, face.Polygon.Outside).Area;
                 }
             }
 

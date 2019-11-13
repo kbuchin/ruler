@@ -1,4 +1,4 @@
-﻿namespace KingsTaxes
+﻿namespace General.UI
 {
     using UnityEngine;
     using UnityEngine.UI;

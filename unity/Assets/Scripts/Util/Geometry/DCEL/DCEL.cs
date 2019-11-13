@@ -3,7 +3,6 @@
     using System.Collections.Generic;
     using System.Linq;
     using UnityEngine;
-    using Util.Geometry.Graph;
     using Util.Geometry.Polygon;
     using Util.Math;
 
@@ -684,7 +683,7 @@
         /// <param name="a_Vertex"></param>
         /// <param name="a_Edge"></param>
         /// <returns></returns>
-        private bool OnEdge(Vertex a_Vertex, out HalfEdge a_Edge)
+        private bool OnEdge(DCELVertex a_Vertex, out HalfEdge a_Edge)
         {
             a_Edge = m_Edges.FirstOrDefault(e => e.Segment.IsOnSegment(a_Vertex.Pos));
             return a_Edge != null;

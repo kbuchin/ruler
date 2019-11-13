@@ -114,6 +114,11 @@
                 throw new GeomException("Edge contains vertices not in the graph");
             }
 
+            if (Type.SIMPLE && e.Start == e.End)
+            {
+                throw new GeomException("Simple graph cannot have self-loops");
+            }
+
             // edge already exists
             if (Type.SIMPLE && ContainsEdge(e)) return e;
 

@@ -17,9 +17,9 @@
         private ArtGalleryController m_controller;
 
         /// <summary>
-        /// 
+        /// Mesh variable of the art gallery.
         /// </summary>
-        public ArtGalleryIsland m_visionAreaMesh { get; set; }
+        public ArtGalleryIsland VisionAreaMesh { get; set; }
 
         /// <summary>
         /// Stores lighthouse position. Updates vision after a change in position.
@@ -51,16 +51,16 @@
 
             // initialize the vision polygon
             GameObject go = Instantiate(m_visionAreaPrefab, new Vector3(0, 0, -1.5f), Quaternion.identity) as GameObject;
-            m_visionAreaMesh = go.GetComponent<ArtGalleryIsland>();
+            VisionAreaMesh = go.GetComponent<ArtGalleryIsland>();
 
             m_controller.UpdateVision(this);
         }
 
         void OnDestroy()
         {
-            if (m_visionAreaMesh != null)
+            if (VisionAreaMesh != null)
             {
-                Destroy(m_visionAreaMesh.gameObject);
+                Destroy(VisionAreaMesh.gameObject);
             }
         }
 

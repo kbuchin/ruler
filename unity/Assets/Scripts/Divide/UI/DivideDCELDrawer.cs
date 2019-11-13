@@ -1,4 +1,4 @@
-﻿namespace Drawing
+﻿namespace Divide
 {
     using System.Collections.Generic;
     using UnityEngine;
@@ -11,7 +11,7 @@
     /// Draws the faces in the middle of the line yellow.
     /// Used in the Divide game for visualization.
     /// </summary>
-    public class DCELDrawer : MonoBehaviour
+    public class DivideDCELDrawer : MonoBehaviour
     {
         /// <summary>
         /// The DCEl to be drawn.
@@ -83,8 +83,10 @@
             // Unity has a built-in shader that is useful for drawing
             // simple colored things.
             Shader shader = Shader.Find("Hidden/Internal-Colored");
-            m_LineMaterial = new Material(shader);
-            m_LineMaterial.hideFlags = HideFlags.HideAndDontSave;
+            m_LineMaterial = new Material(shader)
+            {
+                hideFlags = HideFlags.HideAndDontSave
+            };
 
             // Turn on alpha blending
             m_LineMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);

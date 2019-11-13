@@ -1,4 +1,4 @@
-﻿namespace General.Drawing
+﻿namespace General.UI
 {
     using System.Collections.Generic;
     using UnityEngine;
@@ -20,8 +20,10 @@
             // Unity has a built-in shader that is useful for drawing
             // simple colored things.
             Shader shader = Shader.Find("Hidden/Internal-Colored");
-            m_LineMaterial = new Material(shader);
-            m_LineMaterial.hideFlags = HideFlags.HideAndDontSave;
+            m_LineMaterial = new Material(shader)
+            {
+                hideFlags = HideFlags.HideAndDontSave
+            };
             // Turn on alpha blending
             m_LineMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
             m_LineMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);

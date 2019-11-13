@@ -1,7 +1,7 @@
 ﻿using ArtGallery;
-using Divide.Model;
+using Divide;
+using KingsTaxes;
 using General.Model;
-using KingsTaxes.Model;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,6 +10,7 @@ using UnityEditor;
 using UnityEditor.Experimental.AssetImporters;
 using UnityEngine;
 using Util.Math;
+using Util.Geometry;
 
 [ScriptedImporter(1, "ipe")]
 public class LoadLevelEditor : ScriptedImporter

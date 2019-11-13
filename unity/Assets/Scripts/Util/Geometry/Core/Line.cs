@@ -286,5 +286,17 @@
         {
             return "Line: (" + Point1 + "," + Point2 + ")";
         }
+
+        /// <summary>
+        /// Checks if three points lie on a single line
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="c"></param>
+        /// <returns>whether the three points are colinear</returns>
+        public static bool Colinear(Vector2 a, Vector2 b, Vector2 c)
+        {
+            return new Line(a, b).IsOnLine(c);
+        }
     }
 }

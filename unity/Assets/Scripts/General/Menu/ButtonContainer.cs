@@ -1,4 +1,4 @@
-﻿namespace General.Model
+﻿namespace General.Menu
 {
     using System;
     using UnityEngine;

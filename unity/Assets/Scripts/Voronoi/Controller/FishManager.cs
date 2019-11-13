@@ -1,4 +1,4 @@
-﻿namespace Voronoi.Controller
+﻿namespace Voronoi
 {
     using System.Collections.Generic;
     using System.Linq;

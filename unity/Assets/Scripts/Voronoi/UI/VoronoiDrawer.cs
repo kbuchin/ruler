@@ -1,4 +1,4 @@
-﻿namespace Voronoi.UI
+﻿namespace Voronoi
 {
     using UnityEngine;
     using Util.Geometry.Triangulation;

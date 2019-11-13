@@ -1,6 +1,5 @@
-﻿namespace Divide.UI
+﻿namespace Divide
 {
-    using Divide.Controller;
     using UnityEngine;
     using Util.Geometry;
 

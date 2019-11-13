@@ -1,7 +1,7 @@
 ﻿namespace ArtGallery
 {
     using General.Controller;
-    using General.Model;
+    using General.Menu;
     using System;
     using System.Collections.Generic;
     using UnityEngine;
@@ -179,13 +179,13 @@
 
                 // update lighthouse visibility
                 m_lighthouse.VisionPoly = vision;
-                m_lighthouse.m_visionAreaMesh.Polygon = vision;
+                m_lighthouse.VisionAreaMesh.Polygon = vision;
             }
             else
             {
                 // remove visibility polygon from lighthouse
                 m_lighthouse.VisionPoly = null;
-                m_lighthouse.m_visionAreaMesh.Polygon = null;
+                m_lighthouse.VisionAreaMesh.Polygon = null;
             }
         }
 

@@ -4,7 +4,6 @@
     using System.Linq;
     using UnityEngine;
     using Util.Geometry.Polygon;
-    using Util.Math;
 
     /// <summary>
     /// Face of a DCEL structure, where edges define a polygon stored in clockwise order.

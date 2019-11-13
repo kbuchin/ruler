@@ -207,18 +207,5 @@
             var vertices = (System.Collections.ICollection)poly.Vertices;
             Assert.Contains(pos, vertices);
         }
-
-        [Test]
-        public void IntersectConvexTest()
-        {
-            var squarePoly = new Polygon2D(new List<Vector2>()
-            {
-                new Vector2(0, 0), new Vector2(0, 2), new Vector2(2, 2), new Vector2(2, 0)
-            });
-            var intersect = Polygon2D.IntersectConvex(m_diamond, squarePoly);
-            Assert.AreEqual(0.5f, intersect.Area);
-
-            Assert.Throws<GeomException>(() => Polygon2D.IntersectConvex(m_diamond, m_arrow));
-        }
     }
 }

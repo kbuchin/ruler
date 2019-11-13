@@ -1,9 +1,9 @@
-﻿namespace Util.Math.Test
+﻿namespace Util.Geometry.Test
 {
     using NUnit.Framework;
     using System.Collections.Generic;
     using UnityEngine;
-    using Util.Geometry;
+    using Util.Math;
 
     [TestFixture]
     public class BoundingBoxComputerTest

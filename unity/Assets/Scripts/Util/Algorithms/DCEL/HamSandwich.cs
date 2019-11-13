@@ -149,7 +149,7 @@
             while (list1index < region1.Count && list2index < region2.Count)
             {
                 //progress trough y coordinates
-                var intersection = Polygon2D.IntersectConvex(region1[list1index], region2[list2index]);
+                var intersection = Intersector.IntersectConvex(region1[list1index], region2[list2index]);
                 if (intersection != null)
                 {
                     intermediateList.Add(intersection);
@@ -173,7 +173,7 @@
             while (intermediateIndex < intermediateList.Count && list3index < region3.Count)
             {
                 //progress trough y coordinates
-                var intersection = Polygon2D.IntersectConvex(intermediateList[intermediateIndex], region3[list3index]);
+                var intersection = Intersector.IntersectConvex(intermediateList[intermediateIndex], region3[list3index]);
                 if (intersection != null)
                 {
                     result.Add(intersection);

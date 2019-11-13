@@ -1,6 +1,6 @@
-﻿namespace Divide.UI
+﻿namespace Divide
 {
-    using General.Drawing;
+    using General.UI;
     using UnityEngine;
 
     class DivideLineDrawer : LineDrawer

@@ -1,4 +1,4 @@
-﻿namespace KingsTaxes.Model
+﻿namespace KingsTaxes
 {
     using System.Collections.Generic;
     using UnityEngine;

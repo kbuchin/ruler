@@ -1,4 +1,4 @@
-﻿namespace KingsTaxes
+﻿namespace General.Model
 {
     using UnityEngine;
 
@@ -7,7 +7,6 @@
     /// </summary>
     public class ReshapingMesh : MonoBehaviour
     {
-
         // shape modifiers
         public float repeatDistance = 5f;
         public float widthmodifier = .3f;

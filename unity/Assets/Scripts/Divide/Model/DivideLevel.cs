@@ -1,4 +1,4 @@
-﻿namespace Divide.Model
+﻿namespace Divide
 {
     using System.Collections.Generic;
     using UnityEngine;

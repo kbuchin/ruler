@@ -46,7 +46,7 @@
             get
             {
                 // check degenerate cases
-                if (MathUtil.Colinear(P0, P1, P2)) return 0f;
+                if (Line.Colinear(P0, P1, P2)) return 0f;
                 if (Degenerate) return float.NaN;
 
                 // herons formula
@@ -70,7 +70,7 @@
                 return !MathUtil.IsFinite(P0) ||
                     !MathUtil.IsFinite(P1) ||
                     !MathUtil.IsFinite(P2) ||
-                    MathUtil.Colinear(P0, P1, P2);
+                    Line.Colinear(P0, P1, P2);
             }
         }
 

@@ -2,7 +2,6 @@
 {
     using System;
     using UnityEngine;
-    using Util.Geometry;
     using MNMatrix = MathNet.Numerics.LinearAlgebra.Matrix<double>;
 
     /// <summary>
@@ -134,7 +133,7 @@
 
             if (SignedAngle < -Math.PI - EPS || SignedAngle > Math.PI + EPS)
             {
-                throw new GeomException("Invalid angle");
+                throw new Exception("Invalid angle");
             }
 
             if ((float)SignedAngle >= 0) return (float)SignedAngle;
@@ -257,22 +256,10 @@
 
             if (!IsFinite((float)Ox) || !IsFinite((float)Oy))
             {
-                throw new GeomException("Result of CalculateCircumcenterStable was invalid!");
+                throw new Exception("Result of CalculateCircumcenterStable was invalid!");
             }
 
             return new Vector2((float)Ox, (float)Oy);
-        }
-
-        /// <summary>
-        /// Checks if three points lie on a single line
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <param name="c"></param>
-        /// <returns>whether the three points are colinear</returns>
-        public static bool Colinear(Vector2 a, Vector2 b, Vector2 c)
-        {
-            return new Line(a, b).IsOnLine(c);
         }
     }
 }
