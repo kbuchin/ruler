@@ -37,19 +37,41 @@
             // list v, satisfies assumptions made in paper (section 2, paragraph 1
             // and 2).
             float initAngle;
+
             var vs = Preprocess(polygon, z, out initAngle);
 
-            var v0 = vs.Get(0);
-
+            
             var s = new Stack<VertDispl>();
+            var i = 0;
+            VertDispl w = null;
+            var ccw = true;
+
+            var v0 = vs.Get(0);
             s.Push(v0);
 
             Debug.Assert(vs.n > 1);
 
+            NextCall m_nextCall;
             if (MathUtil.GEQEps(vs.Get(1).alpha, v0.alpha))
-                s = Advance(vs, s, 0);
+                m_nextCall = Advance(ref vs, ref s, ref i, ref w, ref ccw);
             else
-                s = Scan(vs, s, 0, null, true);  // CounterClockWise
+                m_nextCall = Scan(ref vs, ref s, ref i, ref w, ref ccw);  // CounterClockWise
+
+            while (m_nextCall != NextCall.STOP)
+            {
+                switch (m_nextCall)
+                {
+                    case NextCall.ADVANCE:
+                        m_nextCall = Advance(ref vs, ref s, ref i, ref w, ref ccw);
+                        break;
+                    case NextCall.RETARD:
+                        m_nextCall = Retard(ref vs, ref s, ref i, ref w, ref ccw); 
+                        break;    
+                    case NextCall.SCAN: 
+                        m_nextCall = Scan(ref vs, ref s, ref i, ref w, ref ccw);
+                        break;    
+                }
+            }
 
             var sList = s.ToList();
 
@@ -144,40 +166,42 @@
         /// </summary>
         /// <param name="v"></param>
         /// <param name="s"></param>
-        /// <param name="iprev"></param>
+        /// <param name="i"></param>
         /// <returns></returns>
-        public static Stack<VertDispl> Advance(VsRep v, Stack<VertDispl> s, int iprev)
+        public static NextCall Advance(ref VsRep v, ref Stack<VertDispl> s, ref int i, ref VertDispl w, ref bool ccw)
         {
             var n = v.n - 1;
 
-            Debug.Assert(iprev + 1 <= n);
+            Debug.Assert(i + 1 <= n);
 
-            if (MathUtil.LEQEps(v.Get(iprev + 1).alpha, MathUtil.PI2))
+            if (MathUtil.LEQEps(v.Get(i + 1).alpha, MathUtil.PI2))
             {
-                int i = iprev + 1;
+                i++;
                 s.Push(v.Get(i));
 
                 // TODO check order of returned list
                 if (i == n)
                 {
-                    return s;
+                    return NextCall.STOP;
                 }
 
                 if (MathUtil.LessEps(v.Get(i + 1).alpha, v.Get(i).alpha)
                    && MathUtil.Orient2D(v.Get(i - 1).p.Cartesian, v.Get(i).p.Cartesian,
                          v.Get(i + 1).p.Cartesian) < 0)
                 { // -1 is RightTurn
-                    return Scan(v, s, i, null, true); // CounterClockwise
+                    w = null;
+                    ccw = true;
+                    return NextCall.SCAN;
                 }
                 else if (MathUtil.LessEps(v.Get(i + 1).alpha, v.Get(i).alpha)
                       && MathUtil.Orient2D(v.Get(i - 1).p.Cartesian, v.Get(i).p.Cartesian,
                               v.Get(i + 1).p.Cartesian) > 0)
                 { // 1 is LeftTurn
-                    return Retard(v, s, i);
+                    return NextCall.RETARD;
                 }
                 else
                 {
-                    return Advance(v, s, i);
+                    return NextCall.ADVANCE;
                 }
             }
             else
@@ -186,15 +210,17 @@
 
                 if (MathUtil.LEQEps(s.Peek().alpha, MathUtil.PI2))
                 {
-                    var isect = (new LineSegment(v.Get(iprev).p.Cartesian, v.Get(iprev + 1).p.Cartesian)).Intersect(v0.p.Ray);
+                    var isect = (new LineSegment(v.Get(i).p.Cartesian, v.Get(i + 1).p.Cartesian)).Intersect(v0.p.Ray);
 
                     Debug.Assert(isect != null);
 
-                    var st = DisplacementInBetween(new PolarPoint2D(isect.Value), v.Get(iprev), v.Get(iprev + 1));
+                    var st = DisplacementInBetween(new PolarPoint2D(isect.Value), v.Get(i), v.Get(i + 1));
                     s.Push(st);
                 }
 
-                return Scan(v, s, iprev, v0, false); // ClockWise
+                w = v0;
+                ccw = false;
+                return NextCall.SCAN;
             }
         }
 
@@ -207,28 +233,30 @@
         /// <param name="sOld"></param>
         /// <param name="iprev"></param>
         /// <returns></returns>
-        public static Stack<VertDispl> Retard(VsRep v, Stack<VertDispl> s, int iprev)
+        public static NextCall Retard(ref VsRep v, ref Stack<VertDispl> s, ref int i, ref VertDispl w, ref bool ccw)
         {
             // LocateSj will pop vertices from the stack
             // until appropriated s_j is found
             // see paper
-            var sjNext = LocateSj(v.Get(iprev), v.Get(iprev + 1), s);
+            var sjNext = LocateSj(v.Get(i), v.Get(i + 1), s);
 
             if (s.Count == 0)
             {
-                return s;
+                return NextCall.STOP;
             }
 
             var sj = s.Peek();
 
-            if (sj.alpha < v.Get(iprev + 1).alpha)
+            if (sj.alpha < v.Get(i + 1).alpha)
             {
-                int i = iprev + 1;
+                i++;
 
                 var vi = v.Get(i);
                 var p = (new LineSegment(sj.p.Cartesian, sjNext.p.Cartesian)).Intersect(vi.p.Ray);
 
-                Debug.Assert(p != null);
+                if (p == null) return NextCall.STOP;
+
+                //Debug.Assert(p != null, new LineSegment(sj.p.Cartesian, sjNext.p.Cartesian) + "\n" + vi.p.Ray);
 
                 var st1 = DisplacementInBetween(new PolarPoint2D(p.Value), sj, sjNext);
 
@@ -241,41 +269,43 @@
                 if (i == v.n - 1)
                 {
                     // TODO order of returned list correct? (check stack to list conversion)
-                    return s;
+                    return NextCall.STOP;
                 }
                 else if (MathUtil.GEQEps(v.Get(i + 1).alpha, vi.alpha) &&
                     MathUtil.Orient2D(v.Get(i - 1).p.Cartesian, vi.p.Cartesian, v.Get(i + 1).p.Cartesian) <= 0)
                 { // -1 is RighTurn
-                    return Advance(v, s, i);
+                    return NextCall.ADVANCE;
                 }
                 else if (MathUtil.GreaterEps(v.Get(i + 1).alpha, vi.alpha) &&
                     MathUtil.Orient2D(v.Get(i - 1).p.Cartesian, vi.p.Cartesian, v.Get(i + 1).p.Cartesian) > 0)
                 {  // 1 is LeftTurn
                     s.Pop();
-                    return Scan(v, s, i, vi, false);  //ClockWise
+                    w = vi;
+                    ccw = false;
+                    return NextCall.SCAN;
                 }
                 else
                 {
                     s.Pop();
-                    return Retard(v, s, i);
+                    return NextCall.RETARD;
                 }
             }
             else
             {
-                if (MathUtil.EqualsEps(v.Get(iprev + 1).alpha, sj.alpha) &&
-                    MathUtil.GreaterEps(v.Get(iprev + 2).alpha, v.Get(iprev + 1).alpha) &&
-                    MathUtil.Orient2D(v.Get(iprev).p.Cartesian, v.Get(iprev + 1).p.Cartesian, v.Get(iprev + 2).p.Cartesian) < 0)
+                if (MathUtil.EqualsEps(v.Get(i + 1).alpha, sj.alpha) &&
+                    MathUtil.GreaterEps(v.Get(i + 2).alpha, v.Get(i + 1).alpha) &&
+                    MathUtil.Orient2D(v.Get(i).p.Cartesian, v.Get(i + 1).p.Cartesian, v.Get(i + 2).p.Cartesian) <= 0)
                 {  // -1 is RightTurn
-                    s.Push(v.Get(iprev + 1));
-                    return Advance(v, s, iprev + 1);
+                    s.Push(v.Get(i + 1));
+                    return NextCall.ADVANCE;
                 }
                 else
                 {
-                    var w = IntersectWithWindow(v.Get(iprev), v.Get(iprev + 1), sj, sjNext);
-
-                    //Debug.Assert(w != null, iprev + " " + v.Get(iprev) + " " + v.Get(iprev + 1) + " " + sj + " " + sjNext);
-                    if (w == null) return s;
-                    else return Scan(v, s, iprev, w, true); // CounterClockWise
+                    w = IntersectWithWindow(v.Get(i), v.Get(i + 1), sj, sjNext);
+                    ccw = true;
+                    
+                    if (w == null) return NextCall.STOP;
+                    else return NextCall.SCAN;
                 }
             }
         }
@@ -289,11 +319,13 @@
         /// <param name="iprev"></param>
         /// <param name="windowEnd"></param>
         /// <param name="ccw"></param>
-        /// <returns> The final list of </returns>
-        public static Stack<VertDispl> Scan(VsRep v, Stack<VertDispl> s, int iprev, VertDispl windowEnd, bool ccw)
+        /// <returns> </returns>
+        public static NextCall Scan(ref VsRep v, ref Stack<VertDispl> s, ref int i, ref VertDispl windowEnd, ref bool ccw)
         {
-            for (int i = iprev + 1; i < v.n; i++)
+            while (i < v.n)
             {
+                i++;
+
                 if (ccw &&        // CounterClockWise
                     MathUtil.GreaterEps(v.Get(i + 1).alpha, s.Peek().alpha) &&
                     MathUtil.GEQEps(s.Peek().alpha, v.Get(i).alpha))
@@ -303,7 +335,7 @@
                     if (intersec != null && !(windowEnd != null && MathUtil.EqualsEps(intersec.p.Cartesian, windowEnd.p.Cartesian)))
                     {
                         s.Push(intersec);
-                        return Advance(v, s, i);
+                        return NextCall.ADVANCE;
                     }
                 }
                 else if (!ccw &&        // ClockWise
@@ -312,12 +344,12 @@
                 {
                     if (IntersectWithWindow(v.Get(i), v.Get(i + 1), s.Peek(), windowEnd) != null)
                     {
-                        return Retard(v, s, i);
+                        return NextCall.RETARD;
                     }
                 }
             }
 
-            return s;
+            return NextCall.STOP;
         }
 
         /// <summary>
@@ -336,6 +368,7 @@
 
             var s1 = new LineSegment(a.p, b.p);
 
+            // extra checks related to robustness issues
             if (s1.IsOnSegment(orig.p.Cartesian)) return orig;
 
             Vector2? res;
@@ -344,15 +377,13 @@
                 var s2 = new LineSegment(orig.p, endpoint.p);
 
                 // check for parallel slopes
-                if (MathUtil.EqualsEps(s1.Line.Slope, s2.Line.Slope) &&
-                    s1.Line.IsOnLine(orig.p.Cartesian))
+                if (s1.IsParallel(s2))
                 {
                     res = s1.ClosestPoint(orig.p.Cartesian);
 
-                    if (!MathUtil.EqualsEps(res.Value, orig.p.Cartesian) &&
-                        Vector2.Dot((res.Value - orig.p.Cartesian), (endpoint.p.Cartesian - orig.p.Cartesian)) < 0)
+                    if (res.HasValue && !s2.IsOnSegment(res.Value))
                     {
-                        return null;
+                        res = null;
                     }
                 }
                 else
@@ -366,7 +397,10 @@
                 res = s1.Intersect(ray);
             }
 
-            if (res == null) return null;
+            if (!res.HasValue)
+            {
+                return null;
+            }
 
             return DisplacementInBetween(new PolarPoint2D(res.Value), a, b);
         }
@@ -393,7 +427,7 @@
             while (MathUtil.LessEps(temp, bot))
                 temp += MathUtil.PI2;
 
-            // Debug.Assert(MathUtil.LEQEps(bot, temp) && MathUtil.LEQEps(temp, top));
+            //Debug.Assert(MathUtil.LEQEps(bot, temp) && MathUtil.LEQEps(temp, top));
 
             return new VertDispl(s, temp);
         }
@@ -475,7 +509,7 @@
             Debug.Assert(shiftedPol.Count > 0);
 
             // check if first and last vertex are the same
-            if (MathUtil.EqualsEps(shiftedPol.First(), shiftedPol.Last()))
+            if (MathUtil.EqualsEps(shiftedPol.First(), shiftedPol.Last(), MathUtil.EPS * 10))
             {
                 shiftedPol.RemoveAt(shiftedPol.Count - 1);
             }
@@ -577,10 +611,12 @@
             var visiblePolar = visible.Select(x => new PolarPoint2D(x));
 
             // find visible vertex with smallest positive angle
+            // if angles are equal, picks the closest one
             var closestVisibleVertex = visiblePolar.FirstOrDefault();
             foreach (var curr in visiblePolar)
             {
-                if (curr.Theta < closestVisibleVertex.Theta && MathUtil.GEQEps(curr.Theta, 0))
+                if (MathUtil.LessEps(curr.Theta, closestVisibleVertex.Theta) ||
+                    MathUtil.EqualsEps(curr.Theta, closestVisibleVertex.Theta) && curr.R < closestVisibleVertex.R)
                 {
                     closestVisibleVertex = curr;
                 }
@@ -603,7 +639,10 @@
 
             foreach (var curr in pol.Segments)
             {
-                if (curr.IntersectProper(e) != null)
+                var intersect = curr.Intersect(e);
+                if (intersect.HasValue &&
+                    !MathUtil.EqualsEps(intersect.Value, e.Point1, MathUtil.EPS * 10) &&
+                    !MathUtil.EqualsEps(intersect.Value, e.Point2, MathUtil.EPS * 10))
                 {
                     return false;   // edge curr of the polygon properly intersects e, hence v is not visible from origin
                 }
@@ -678,6 +717,14 @@
             {
                 return v[i % n];
             }
+        }
+
+        public enum NextCall
+        {
+            ADVANCE,
+            RETARD,
+            SCAN,
+            STOP
         }
     }
 }

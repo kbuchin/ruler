@@ -68,25 +68,24 @@
                 throw new ArgumentException("Polygon must be simple: " + polygon);
             }
 
-            var vertices = polygon.Vertices.ToList();
-
-            if (vertices.Count < 3)
+            if (polygon.VertexCount < 3)
             {
                 return new Triangulation();
             }
 
-            // make clockwise
-            if (!polygon.IsClockwise())
-            {
-                vertices.Reverse();
-            }
+            return TriangulateRecursive(polygon);
+        }
 
-            if (vertices.Count == 3)
+        private static Triangulation TriangulateRecursive(IPolygon2D polygon)
+        {
+            if (polygon.VertexCount == 3)
             {
-                return new Triangulation(vertices);
+                return new Triangulation(polygon.Vertices);
             }
 
             var triangulation = new Triangulation();
+
+            var vertices = polygon.Vertices.ToList();
 
             //Find leftmost vertex
             var leftVertex = LeftMost(vertices);
@@ -130,7 +129,7 @@
 
                 triangulation.AddTriangle(triangle);
                 vertices.Remove(leftVertex);
-                triangulation.AddTriangulation(Triangulate(new Polygon2D(vertices)));
+                triangulation.AddTriangulation(TriangulateRecursive(new Polygon2D(vertices)));
             }
             else
             {
@@ -140,8 +139,8 @@
                 var poly1List = vertices.Skip(minIndex).Take(maxIndex - minIndex + 1);
                 var poly2List = vertices.Skip(maxIndex).Concat(vertices.Take(minIndex + 1));
 
-                triangulation.AddTriangulation(Triangulate(new Polygon2D(poly1List)));
-                triangulation.AddTriangulation(Triangulate(new Polygon2D(poly2List)));
+                triangulation.AddTriangulation(TriangulateRecursive(new Polygon2D(poly1List)));
+                triangulation.AddTriangulation(TriangulateRecursive(new Polygon2D(poly2List)));
             }
 
             return triangulation;

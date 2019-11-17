@@ -1,6 +1,7 @@
 ﻿namespace ArtGallery
 {
     using General.Model;
+    using System.Collections.Generic;
     using UnityEngine;
     using Util.Geometry.Polygon;
 
@@ -15,16 +16,14 @@
         public int MaxNumberOfLighthouses = 1;
 
         [Header("Polygon")]
-        public Vector2Array Outer = new Vector2Array(new Vector2[]
-        {
+        public List<Vector2> Outer = new List<Vector2>() { 
             // default triangle
             new Vector2(1, 1), new Vector2(2, 0), new Vector2(0, 0)
-        });
-
+        };
 
         public Polygon2D Polygon
         {
-            get { return new Polygon2D(Outer.Points); }
+            get { return new Polygon2D(Outer); }
         }
     }
 }

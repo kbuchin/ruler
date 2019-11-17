@@ -5,6 +5,7 @@
     using System.Linq;
     using UnityEngine;
     using Util.Algorithms.Triangulation;
+    using Util.Geometry.Triangulation;
     using Util.Math;
 
     /// <summary>
@@ -14,6 +15,8 @@
     public class Polygon2D : IPolygon2D
     {
         private LinkedList<Vector2> m_vertices;
+
+        private Triangulation m_triangulation;
 
         public ICollection<Vector2> Vertices { get { return m_vertices; } }
 
@@ -33,7 +36,7 @@
 
                 //Take the origin as arbitrary point P
                 //add up signed areas along the edges of the polygon
-                var areasum = 0f;
+                double areasum = 0.0;
                 foreach (LineSegment seg in Segments)
                 {
                     var v1 = seg.Point1;
@@ -41,10 +44,9 @@
                     areasum += v1.x * v2.y - v2.x * v1.y;
                 }
 
-                return Math.Abs(areasum) / 2;
+                return (float)Math.Abs(areasum) / 2f;
             }
         }
-
 
         public ICollection<LineSegment> Segments
         {
@@ -79,11 +81,13 @@
         public void AddVertex(Vector2 pos)
         {
             m_vertices.AddLast(pos);
+            m_triangulation = null;
         }
 
         public void AddVertexFirst(Vector2 pos)
         {
             m_vertices.AddFirst(pos);
+            m_triangulation = null;
         }
 
         public void AddVertexAfter(Vector2 pos, Vector2 after)
@@ -93,6 +97,7 @@
                 throw new ArgumentException("Polygon does not contain vertex after which to add");
             }
             AddVertexAfter(pos, m_vertices.Find(after));
+            m_triangulation = null;
         }
 
         private void AddVertexAfter(Vector2 pos, LinkedListNode<Vector2> node)
@@ -100,26 +105,31 @@
             if (node == null) throw new GeomException("Adding vertex after null node");
 
             m_vertices.AddAfter(node, pos);
+            m_triangulation = null;
         }
 
         public void RemoveVertex(Vector2 pos)
         {
             m_vertices.Remove(pos);
+            m_triangulation = null;
         }
 
         public void RemoveFirst()
         {
             m_vertices.RemoveFirst();
+            m_triangulation = null;
         }
 
         public void RemoveLast()
         {
             m_vertices.RemoveLast();
+            m_triangulation = null;
         }
 
         public void Clear()
         {
             m_vertices.Clear();
+            m_triangulation = null;
         }
 
         /// <summary>
@@ -128,6 +138,7 @@
         public Polygon2D()
         {
             m_vertices = new LinkedList<Vector2>();
+            m_triangulation = null;
         }
 
         /// <summary>
@@ -198,11 +209,14 @@
                 Debug.Assert(VertexCount > 3);
 
                 // calculate triangulation
-                var poly = RemoveDanglingEdges(this);
-                var triangles = Triangulator.Triangulate(poly).Triangles.ToList();
+                if (m_triangulation == null)
+                {
+                    var poly = RemoveDanglingEdges(this);
+                    m_triangulation = Triangulator.Triangulate(poly);
+                }
 
                 // check for triangle that contains point
-                return triangles.Exists(t => t.Contains(a_pos));
+                return m_triangulation.Triangles.Any(t => t.Contains(a_pos));
             }
         }
 
@@ -218,6 +232,7 @@
         public void ShiftToOrigin(Vector2 a_point)
         {
             m_vertices = new LinkedList<Vector2>(m_vertices.Select(v => v - a_point));
+            m_triangulation = null;
         }
 
         /// <summary>
@@ -243,6 +258,7 @@
         public void Reverse()
         {
             m_vertices = new LinkedList<Vector2>(m_vertices.Reverse());
+            m_triangulation = null;
         }
 
         public override string ToString()
@@ -262,7 +278,10 @@
                 foreach (var seg2 in Segments)
                 {
                     if (seg1 != seg2 && seg1.IntersectProper(seg2) != null)
+                    {
+                        Debug.Log(seg1 + " " + seg2 + " " + seg1.IntersectProper(seg2));
                         return false;
+                    }
                 }
             }
             return true;

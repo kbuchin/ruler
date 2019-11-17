@@ -72,7 +72,8 @@
         {
             if (a_points.Count() == 0)
             {
-                throw new GeomException("Bounding box not defined on empty vector list");
+                Debug.Log("Bounding box not defined on empty vector list");
+                return new Rect();
             }
 
             var result = new Rect(a_points.FirstOrDefault(), Vector2.zero);

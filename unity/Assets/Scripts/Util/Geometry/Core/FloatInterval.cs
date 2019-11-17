@@ -37,7 +37,7 @@
         /// <returns></returns>
         public bool ContainsEpsilon(float a_val)
         {
-            var eps = MathUtil.EPS * 10;
+            var eps = MathUtil.EPS * 100;
             return MathUtil.GEQEps(a_val, Min, eps) && MathUtil.LEQEps(a_val, Max, eps);
         }
 
@@ -49,7 +49,7 @@
         /// <returns> The intersection of the two intervals. Null when there is no intersection</returns>
         public static FloatInterval Intersect(FloatInterval a_1, FloatInterval a_2)
         {
-            if (a_1.Max < a_2.Min || a_2.Max < a_1.Min)
+            if (MathUtil.LessEps(a_1.Max, a_2.Min) || MathUtil.LessEps(a_2.Max, a_1.Min))
             {
                 return null;
             }
@@ -80,6 +80,10 @@
         public bool Equals(FloatInterval other)
         {
             return MathUtil.EqualsEps(Min, other.Min) && MathUtil.EqualsEps(Max, other.Max);
+        }
+        public override int GetHashCode()
+        {
+            return 37 * Min.GetHashCode() + Max.GetHashCode();
         }
     }
 }

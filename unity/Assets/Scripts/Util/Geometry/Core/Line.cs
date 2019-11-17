@@ -22,12 +22,12 @@
         /// <summary>
         /// Whether the given line is vertical (with some tolerance).
         /// </summary>
-        public bool IsVertical { get { return MathUtil.EqualsEps(Point1.x, Point2.x); } }
+        public bool IsVertical { get { return MathUtil.EqualsEps(Point1.x, Point2.x, MathUtil.EPS * 100); } }
 
         /// <summary>
         /// Whether the given line is horizontal (with some tolerance).
         /// </summary>
-        public bool IsHorizontal { get { return MathUtil.EqualsEps(Point1.y, Point2.y); } }
+        public bool IsHorizontal { get { return MathUtil.EqualsEps(Point1.y, Point2.y, MathUtil.EPS * 100); } }
 
         /// <summary>
         /// Gives the angle of the line w.r.t the horizontal x-axis. reports in radians
@@ -68,7 +68,9 @@
         {
             get
             {
-                return IsVertical ? float.PositiveInfinity : (Point1.y - Point2.y) / (Point1.x - Point2.x);
+                var p1 = Point1.x < Point2.x ? Point1 : Point2;
+                var p2 = Point1.x < Point2.x ? Point2 : Point1;
+                return IsVertical ? float.PositiveInfinity : (p1.y - p2.y) / (p1.x - p2.x);
             }
         }
 
@@ -155,12 +157,7 @@
         /// <returns></returns>
         public static Vector2? Intersect(Line a_line1, Line a_line2)
         {
-            if (a_line1.IsVertical && a_line2.IsVertical)
-            {
-                return null;
-            }
-
-            if (MathUtil.EqualsEps(a_line1.Slope, a_line2.Slope))
+            if (a_line1.IsParallel(a_line2))
             {
                 return null;
                 //throw new GeomException("Two parallel lines");
@@ -198,6 +195,13 @@
             return Intersect(this, a_otherline);
         }
 
+        public bool IsParallel(Line a_otherLine)
+        {
+            // check specifically for verticality
+            // tolerance will break if slopes close to infinity
+            return IsVertical && a_otherLine.IsVertical || MathUtil.EqualsEps(Slope, a_otherLine.Slope, MathUtil.EPS * 100);
+        }
+
         /// <summary>
         /// Finds whether the given point lies on the line (with some tolerance).
         /// </summary>
@@ -205,8 +209,8 @@
         /// <returns></returns>
         public bool IsOnLine(Vector2 a_Point)
         {
-            return float.IsInfinity(Slope) ? MathUtil.EqualsEps(Point1.x, a_Point.x)
-                : MathUtil.EqualsEps(Y(a_Point.x), a_Point.y);
+            return IsVertical ? MathUtil.EqualsEps(Point1.x, a_Point.x, MathUtil.EPS * 100)
+                : MathUtil.EqualsEps(Y(a_Point.x), a_Point.y, MathUtil.EPS * 100);
         }
 
         /// <summary>
@@ -280,6 +284,11 @@
         {
             return MathUtil.EqualsEps(Point1, other.Point1) &&
                 MathUtil.EqualsEps(Point2, other.Point2);
+        }
+
+        public override int GetHashCode()
+        {
+            return 71 * Point1.GetHashCode() + Point2.GetHashCode();
         }
 
         public override string ToString()

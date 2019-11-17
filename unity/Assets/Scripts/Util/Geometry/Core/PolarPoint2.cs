@@ -121,9 +121,7 @@
 
         public override int GetHashCode()
         {
-            int hash = 3;
-            hash = 53 * hash + R.GetHashCode() + Theta.GetHashCode();
-            return hash;
+            return 53 * R.GetHashCode() + Theta.GetHashCode();
         }
 
         public override string ToString()

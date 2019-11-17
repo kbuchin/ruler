@@ -45,7 +45,7 @@
         /// Whether the segment is horizontal.
         /// </summary>
         public bool IsHorizontal { get { return Line.IsHorizontal; } }
-
+        
         /// <summary>
         /// Length of the segment.
         /// </summary>
@@ -72,6 +72,16 @@
         {
             Point1 = a_point1.Cartesian;
             Point2 = a_point2.Cartesian;
+        }
+
+        /// <summary>
+        /// Checks whether the two lines are parallel.
+        /// </summary>
+        /// <param name="a_seg"></param>
+        /// <returns></returns>
+        public bool IsParallel(LineSegment a_seg)
+        {
+            return Line.IsParallel(a_seg.Line);
         }
 
         /// <summary>
@@ -137,11 +147,12 @@
             // return quickly if intervals dont overlap
             if (intervalXIntersection == null || intervalYIntersection == null)
             {
+                //Debug.Log("null1");
                 return null;
             }
 
-            // check for parralel lines
-            if (MathUtil.EqualsEps(a_seg1.Line.Slope, a_seg2.Line.Slope))
+            // check for parallel lines
+            if (a_seg1.IsParallel(a_seg2))
             {
                 return null;
             }
@@ -155,6 +166,7 @@
             {
                 return intersect;
             }
+
             return null;
         }
 
@@ -166,9 +178,11 @@
         /// <returns></returns>
         public static Vector2? IntersectProper(LineSegment a_seg1, LineSegment a_seg2)
         {
+            var eps = MathUtil.EPS * 10;
+
             // check for overlapping endpoints
-            if (MathUtil.EqualsEps(a_seg1.Point1, a_seg2.Point1) || MathUtil.EqualsEps(a_seg1.Point1, a_seg2.Point2) ||
-                MathUtil.EqualsEps(a_seg1.Point2, a_seg2.Point1) || MathUtil.EqualsEps(a_seg1.Point2, a_seg2.Point2))
+            if (MathUtil.EqualsEps(a_seg1.Point1, a_seg2.Point1, eps) || MathUtil.EqualsEps(a_seg1.Point1, a_seg2.Point2, eps) ||
+                MathUtil.EqualsEps(a_seg1.Point2, a_seg2.Point1, eps) || MathUtil.EqualsEps(a_seg1.Point2, a_seg2.Point2, eps))
             {
                 return null;
             }
@@ -180,8 +194,8 @@
 
             // check if intersection point equal to one of the endpoints
             var x = intersect.Value;
-            if (MathUtil.EqualsEps(x, a_seg1.Point1) || MathUtil.EqualsEps(x, a_seg1.Point2) ||
-                MathUtil.EqualsEps(x, a_seg2.Point1) || MathUtil.EqualsEps(x, a_seg2.Point2))
+            if (MathUtil.EqualsEps(x, a_seg1.Point1, eps) || MathUtil.EqualsEps(x, a_seg1.Point2, eps) ||
+                MathUtil.EqualsEps(x, a_seg2.Point1, eps) || MathUtil.EqualsEps(x, a_seg2.Point2, eps))
             {
                 return null;
             }
@@ -198,7 +212,7 @@
         public static Vector2? Intersect(LineSegment a_seg, Line a_line)
         {
             // cf Interset(LineSegment, LineSegment)
-            if (MathUtil.EqualsEps(a_seg.Line.Slope, a_line.Slope))
+            if (a_seg.Line.IsParallel(a_line))
             {
                 return null;
             }
@@ -247,7 +261,7 @@
 
             Vector2? ret;
 
-            if (MathUtil.EqualsEps(rayLine.Slope, a_seg.Line.Slope))
+            if (rayLine.IsParallel(a_seg.Line))
             {   // lines are parallel
 
                 // check if ray origin is on line of line segment
@@ -263,7 +277,7 @@
             if (ret == null) return null;
 
             // check if intersection in wrong direction
-            if (!MathUtil.EqualsEps(ret.Value, a_ray.origin) &&
+            if (!MathUtil.EqualsEps(ret.Value, a_ray.origin, MathUtil.EPS * 10) &&
                 Vector2.Dot((ret.Value - a_ray.origin), a_ray.direction) < 0)
             {
                 return null;
@@ -378,7 +392,7 @@
         }
 
         /// <summary>
-        /// Computes the distance between this line and the given point 
+        /// Finds the closest point on the segment to the given point
         /// </summary>
         /// <param name="v"></param>
         /// <returns></returns>
@@ -394,20 +408,6 @@
             {
                 return (Vector2)intersection;
             }
-        }
-
-        /// <summary>
-        /// Compares two points based on distance to start point of line segment
-        /// </summary>
-        /// <param name="a_1"></param>
-        /// <param name="a_2"></param>
-        /// <returns></returns>
-        public int ClosestToPoint1Comparer(Vector2 a_1, Vector2 a_2)
-        {
-            var dist_1 = Vector2.Distance(Point1, a_1);
-            var dist_2 = Vector2.Distance(Point1, a_2);
-
-            return dist_1.CompareTo(dist_2);
         }
 
         /// <summary>
@@ -467,6 +467,11 @@
         {
             return MathUtil.EqualsEps(Point1, other.Point1) &&
                 MathUtil.EqualsEps(Point2, other.Point2);
+        }
+
+        public override int GetHashCode()
+        {
+            return 47 * Point1.GetHashCode() + Point2.GetHashCode();
         }
 
         public override string ToString()

@@ -719,7 +719,7 @@ Prefab:
     - target: {fileID: 114624802737080694, guid: df3d444a912111e4dada71b6deec06cc,
         type: 2}
       propertyPath: m_levels.Array.size
-      value: 6
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 4525038442495064, guid: df3d444a912111e4dada71b6deec06cc, type: 2}
       propertyPath: m_LocalPosition.x
@@ -803,6 +803,18 @@ Prefab:
       propertyPath: m_Name
       value: ArtGalleryController
       objectReference: {fileID: 0}
+    - target: {fileID: 114624802737080694, guid: df3d444a912111e4dada71b6deec06cc,
+        type: 2}
+      propertyPath: m_levels.Array.data[6]
+      value: 
+      objectReference: {fileID: 11400000, guid: ca15d0ccd09a26946835f2995a8a519f,
+        type: 3}
+    - target: {fileID: 114624802737080694, guid: df3d444a912111e4dada71b6deec06cc,
+        type: 2}
+      propertyPath: m_levels.Array.data[7]
+      value: 
+      objectReference: {fileID: 11400000, guid: ab9022a718e7d4a4ba30fe67f655eea2,
+        type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: df3d444a912111e4dada71b6deec06cc, type: 2}
   m_IsPrefabAsset: 0

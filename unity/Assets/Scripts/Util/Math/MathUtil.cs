@@ -13,7 +13,7 @@
         /// <summary>
         /// Small value used for floating point comparison
         /// </summary>
-        public const float EPS = 1e-5f;
+        public const float EPS = 1e-4f;
 
         /// <summary>
         /// Some constants (based on Mathf)
