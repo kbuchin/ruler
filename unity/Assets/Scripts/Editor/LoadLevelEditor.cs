@@ -11,6 +11,7 @@ using UnityEditor.Experimental.AssetImporters;
 using UnityEngine;
 using Util.Math;
 using Util.Geometry;
+using ConvexHull;
 
 [ScriptedImporter(1, "ipe")]
 public class LoadLevelEditor : ScriptedImporter
@@ -44,6 +45,10 @@ public class LoadLevelEditor : ScriptedImporter
         else if (name.StartsWith("divLevel"))
         {
             obj = LoadDivideLevel(fileSelected, name);
+        } 
+        else if (name.StartsWith("hullLevel"))
+        {
+            obj = LoadHullLevel(fileSelected, name);
         }
         else
         {
@@ -98,13 +103,13 @@ public class LoadLevelEditor : ScriptedImporter
         var rect = BoundingBoxComputer.FromPoints(points);
         Normalize(rect, agSIZE, ref points);
 
-        // create relevant Vector2Array
-        asset.Outer = new Vector2Array(points.ToArray());
+        asset.Outer = points;
 
+        // reverse if not clockwise
         if (!asset.Polygon.IsClockwise())
         {
             points.Reverse();
-            asset.Outer = new Vector2Array(points.ToArray());
+            asset.Outer = points;
         }
 
         // get level arguments
@@ -232,6 +237,35 @@ public class LoadLevelEditor : ScriptedImporter
 
         return asset;
     }
+    /// <summary>
+    /// Loads a convex hull level.
+    /// </summary>
+    /// <param name="fileSelected"></param>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    private Object LoadHullLevel(XElement fileSelected, string name)
+    {
+        // create the output scriptable object
+        var asset = ScriptableObject.CreateInstance<HullLevel>();
+
+        // retrieve page data from .ipe file
+        var items = fileSelected.Descendants("page").First().Descendants("use");
+
+        // get marker data into respective vector list
+        asset.Points.AddRange(GetMarkers(items, "disk"));
+
+        // normalize coordinates
+        var rect = BoundingBoxComputer.FromPoints(asset.Points);
+        Normalize(rect, ktSIZE, ref asset.Points);
+
+        // give warning if no relevant data found
+        if (asset.Points.Count == 0)
+        {
+            EditorUtility.DisplayDialog("Warning", "File does not contain any villages/castles (disks and/or squares).", "OK");
+        }
+
+        return asset;
+    }
 
     /// <summary>
     /// Retrieve a vector list for all markers elements with given name
@@ -278,7 +312,7 @@ public class LoadLevelEditor : ScriptedImporter
     private void Normalize(Rect rect, float SIZE, ref List<Vector2> coords)
     {
         var scale = SIZE / Mathf.Max(rect.width, rect.height);
-        var rnd = 0.0001f; // for general positions
+        var rnd = Mathf.Min(rect.width, rect.height) * 0.001f; // for general positions
 
         coords = coords
             .Select(p => new Vector2(

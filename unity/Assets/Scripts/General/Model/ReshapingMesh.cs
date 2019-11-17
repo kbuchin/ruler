@@ -26,6 +26,11 @@
 
         public void CreateNewMesh(Vector3 a_start, Vector3 a_end)
         {
+            if (a_start == a_end)
+            {
+                return;
+            }
+
             var oldMesh = m_meshFilter.mesh;
 
             // initialize new mesh

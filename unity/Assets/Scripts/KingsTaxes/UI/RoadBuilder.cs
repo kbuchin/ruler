@@ -115,6 +115,6 @@
 
             // disable line drawer
             m_line.enabled = false;
-        }
+        }   
     }
 }
