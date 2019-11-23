@@ -146,7 +146,14 @@
                 throw new GeomException("Cannot flip edge if neighbouring triangles don't exist");
             }
 
+            Debug.Log(a_Triangle + " " + a_Twin);
+
             // retrieve other adjacent edges to edge vertices
+            // e3  .  e1
+            //   / | \
+            //  .  |  .
+            //   \ | /
+            // e2  .  e0
             var e0 = a_Triangle.OtherEdge(a_Edge, a_Edge.Point1);
             var e1 = a_Triangle.OtherEdge(a_Edge, a_Edge.Point2);
             var e2 = a_Twin.OtherEdge(a_Edge.Twin, a_Edge.Point1);

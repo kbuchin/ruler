@@ -22,12 +22,12 @@
         /// <summary>
         /// Whether the given line is vertical (with some tolerance).
         /// </summary>
-        public bool IsVertical { get { return MathUtil.EqualsEps(Point1.x, Point2.x, MathUtil.EPS * 100); } }
+        public bool IsVertical { get; private set; }
 
         /// <summary>
         /// Whether the given line is horizontal (with some tolerance).
         /// </summary>
-        public bool IsHorizontal { get { return MathUtil.EqualsEps(Point1.y, Point2.y, MathUtil.EPS * 100); } }
+        public bool IsHorizontal { get; private set; }
 
         /// <summary>
         /// Gives the angle of the line w.r.t the horizontal x-axis. reports in radians
@@ -35,7 +35,7 @@
         public float Angle { get { return (float)Math.Atan(Slope); } }
 
         /// <summary>
-        /// Gives a 2D normal vector to this line
+        /// Gives a 2D normal vector to this line.
         /// </summary>
         public Vector2 Normal
         {
@@ -45,34 +45,17 @@
         /// <summary>
         /// Height at the intersection with y axis, or NaN when line is vertical.
         /// </summary>
-        public float HeightAtYAxis
-        {
-            get
-            {
-                return IsVertical ? float.NaN : Point1.y - Slope * Point1.x;
-            }
-        }
+        public float HeightAtYAxis { get; private set; }
 
         /// <summary>
         /// Height at the intersection with x axis, or NaN when line is horizontal.
         /// </summary>
-        public float WidthAtXAxis
-        {
-            get { return X(0); }
-        }
+        public float WidthAtXAxis { get; private set; }
 
         /// <summary>
         /// Slope of the line (y / x), or infinity when line vertical.
         /// </summary>
-        public float Slope
-        {
-            get
-            {
-                var p1 = Point1.x < Point2.x ? Point1 : Point2;
-                var p2 = Point1.x < Point2.x ? Point2 : Point1;
-                return IsVertical ? float.PositiveInfinity : (p1.y - p2.y) / (p1.x - p2.x);
-            }
-        }
+        public float Slope { get; private set; }
 
         /// <summary>
         /// Creates a line through the given points
@@ -85,6 +68,15 @@
             Point1 = new Vector2(a_point1.x, a_point1.y);
             Point2 = new Vector2(a_point2.x, a_point2.y);
             m_oriented = true;
+
+            // explicitly calculate variables that are most used, for speedup
+            IsVertical = MathUtil.EqualsEps(Point1.x, Point2.x, MathUtil.EPS * 100);
+            IsHorizontal = MathUtil.EqualsEps(Point1.y, Point2.y, MathUtil.EPS * 100);
+            var p1 = a_point1.x < a_point2.x ? a_point1 : a_point2;
+            var p2 = a_point1.x < a_point2.x ? a_point2 : a_point1;
+            Slope =  IsVertical ? float.PositiveInfinity : (p1.y - p2.y) / (p1.x - p2.x);
+            HeightAtYAxis = IsVertical ? float.NaN : Point1.y - Slope * Point1.x;
+            WidthAtXAxis = X(0);
         }
 
         /// <summary>
@@ -94,19 +86,9 @@
         /// <param name="a_slope"></param>
         /// <param name="a_heigthatyaxis"></param>
         public Line(float a_slope, float a_heigthatyaxis)
+            : this(new Vector2(0, a_heigthatyaxis), MathUtil.IsFinite(a_slope) ? 
+                  new Vector2(1, a_heigthatyaxis + a_slope) : new Vector2(0, a_heigthatyaxis + 1))
         {
-            Point1 = new Vector2(0, a_heigthatyaxis);
-            //Point2 = new Vector2(10, a_heigthatyaxis + 10 * a_slope);
-            if (MathUtil.IsFinite(a_slope))
-            {
-                Point2 = new Vector2(1, a_heigthatyaxis + a_slope);
-            }
-            else
-            {
-                // line vertical
-                Point2 = new Vector2(0, HeightAtYAxis + 1);
-            }
-
             m_oriented = false;
         }
 
@@ -116,9 +98,9 @@
         /// <param name="a_point"></param>
         /// <param name="a_angle"></param>
         public Line(Vector2 a_point, float a_angle)
+            : this(a_point, a_point + new Vector2(Mathf.Cos(a_angle), Mathf.Sin(a_angle)))
         {
-            Point1 = new Vector2(a_point.x, a_point.y);
-            Point2 = Point1 + new Vector2(Mathf.Cos(a_angle), Mathf.Sin(a_angle));
+            m_oriented = false;
         }
 
         /// <summary>
@@ -159,8 +141,8 @@
         {
             if (a_line1.IsParallel(a_line2))
             {
+                Debug.Log("Two parallel lines: " + a_line1 + " " + a_line2);
                 return null;
-                //throw new GeomException("Two parallel lines");
             }
 
             if (!a_line1.IsVertical && !a_line2.IsVertical)
@@ -199,7 +181,7 @@
         {
             // check specifically for verticality
             // tolerance will break if slopes close to infinity
-            return IsVertical && a_otherLine.IsVertical || MathUtil.EqualsEps(Slope, a_otherLine.Slope, MathUtil.EPS * 100);
+            return IsVertical && a_otherLine.IsVertical || MathUtil.EqualsEps(Slope, a_otherLine.Slope);
         }
 
         /// <summary>
@@ -254,7 +236,7 @@
                 throw new GeomException("Can't test rightness on unoriented line");
             }
 
-            if (float.IsInfinity(Slope))
+            if (IsVertical)
             {
                 return Point2.y < Point1.y ? a_point.x < Point1.x : a_point.x > Point1.x;
             }

@@ -77,24 +77,26 @@
             foreach (Triangle triangle in m_Delaunay.Triangles)
             {
                 // dont draw circles for triangles to outer vertices
-                if (m_Delaunay.ContainsInitialPoint(triangle))
+                if (m_Delaunay.ContainsInitialPoint(triangle) || triangle.Degenerate)
                 {
                     continue;
                 }
 
+                var center = triangle.Circumcenter.Value;
+
                 // find circle radius
-                var radius = Vector2.Distance(triangle.Circumcenter, triangle.P0);
+                var radius = Vector2.Distance(center, triangle.P0);
 
                 var prevA = 0f;
                 for (var a = 0f; a <= 2 * Mathf.PI; a += 0.05f)
                 {
                     //the circle.
-                    GL.Vertex3(Mathf.Cos(prevA) * radius + triangle.Circumcenter.x, 0, Mathf.Sin(prevA) * radius + triangle.Circumcenter.y);
-                    GL.Vertex3(Mathf.Cos(a) * radius + triangle.Circumcenter.x, 0, Mathf.Sin(a) * radius + triangle.Circumcenter.y);
+                    GL.Vertex3(Mathf.Cos(prevA) * radius + center.x, 0, Mathf.Sin(prevA) * radius + center.y);
+                    GL.Vertex3(Mathf.Cos(a) * radius + center.x, 0, Mathf.Sin(a) * radius + center.y);
 
                     //midpoint of the circle.
-                    GL.Vertex3(Mathf.Cos(prevA) * 0.1f + triangle.Circumcenter.x, 0, Mathf.Sin(prevA) * 0.1f + triangle.Circumcenter.y);
-                    GL.Vertex3(Mathf.Cos(a) * 0.1f + triangle.Circumcenter.x, 0, Mathf.Sin(a) * 0.1f + triangle.Circumcenter.y);
+                    GL.Vertex3(Mathf.Cos(prevA) * 0.1f + center.x, 0, Mathf.Sin(prevA) * 0.1f + center.y);
+                    GL.Vertex3(Mathf.Cos(a) * 0.1f + center.x, 0, Mathf.Sin(a) * 0.1f + center.y);
 
                     prevA = a;
                 }
@@ -124,11 +126,12 @@
                 Triangle t1 = halfEdge.T;
                 Triangle t2 = halfEdge.Twin.T;
 
-                if (t1 != null && t2 != null)
+                if (t1 != null && !t1.Degenerate &&
+                    t2 != null && !t2.Degenerate)
                 {
                     // draw edge between circumcenters
-                    var v1 = t1.Circumcenter;
-                    var v2 = t2.Circumcenter;
+                    var v1 = t1.Circumcenter.Value;
+                    var v2 = t2.Circumcenter.Value;
                     GL.Vertex3(v1.x, 0, v1.y);
                     GL.Vertex3(v2.x, 0, v2.y);
                 }

@@ -58,13 +58,6 @@
         // Update is called once per frame
         void Update()
         {
-            if (Input.GetKeyDown("s"))
-            {
-                var ratio = m_solution.Area / LevelPolygon.Area;
-                Debug.Log(string.Format("{0}", ratio));
-                Debug.Log(m_solution);
-            }
-
             // return if no lighthouse was selected since last update
             if (m_selectedLighthouse == null) return;
 
@@ -117,10 +110,10 @@
             // calculate ratio of area visible
             var ratio = m_solution.Area / LevelPolygon.Area;
 
-            //Debug.Log(ratio + " part is visible");
+            Debug.Log(ratio + " part is visible");
 
             // see if entire polygon is covered
-            if (MathUtil.EqualsEps(ratio, 1f, 0.001f))
+            if (MathUtil.GEQEps(ratio, 1f, 0.001f))
             {
                 m_advanceButton.Enable();
             }

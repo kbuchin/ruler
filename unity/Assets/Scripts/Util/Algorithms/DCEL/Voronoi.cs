@@ -46,7 +46,10 @@
             Dictionary<Triangle, DCELVertex> vertexMap = new Dictionary<Triangle, DCELVertex>();
             foreach (var triangle in m_Delaunay.Triangles)
             {
-                var vertex = new DCELVertex(triangle.Circumcenter);
+                // degenerate triangle, just ignore
+                if (!triangle.Circumcenter.HasValue) continue;
+
+                var vertex = new DCELVertex(triangle.Circumcenter.Value);
                 dcel.AddVertex(vertex);
                 vertexMap.Add(triangle, vertex);
             }

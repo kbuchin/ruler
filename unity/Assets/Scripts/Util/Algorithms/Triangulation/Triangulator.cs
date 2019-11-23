@@ -18,24 +18,33 @@
         /// <summary>
         /// Triangulates this dcel by triangulating each inner face.
         /// </summary>
+        /// <param name="m_dcel"></param>
+        /// <param name="setTwinPointers"> whether the triangulation should set twin pointers </param>
         /// <returns> A list of clockwise triangles whose disjoint union is this dcel</returns>
-        public static Triangulation Triangulate(DCEL m_dcel)
+        public static Triangulation Triangulate(DCEL m_dcel, bool setTwinPointers = true)
         {
-            return Triangulate(m_dcel.InnerFaces);
+            return Triangulate(m_dcel.InnerFaces, setTwinPointers);
         }
 
         /// <summary>
         /// Triangulate a collection of dcel faces.
         /// </summary>
         /// <param name="faces"></param>
+        /// <param name="setTwinPointers"> whether the triangulation should set twin pointers </param>
         /// <returns></returns>
-        public static Triangulation Triangulate(IEnumerable<Face> faces)
+        public static Triangulation Triangulate(IEnumerable<Face> faces, bool setTwinPointers = true)
         {
             var T = new Triangulation();
             foreach (var face in faces)
             {
-                T.AddTriangulation(Triangulate(face));
+                T.AddTriangulation(Triangulate(face, false));
             }
+
+            if (setTwinPointers)
+            {
+                T.SetTwinPointers();
+            }
+
             return T;
         }
 
@@ -44,48 +53,65 @@
         /// Cannot yet handle faces inside faces.
         /// </summary>
         /// <param name="face"></param>
+        /// <param name="setTwinPointers"> whether the triangulation should set twin pointers </param>
         /// <returns></returns>
-        public static Triangulation Triangulate(Face face)
+        public static Triangulation Triangulate(Face face, bool setTwinPointers = true)
         {
             if (face.InnerComponents.Count > 0)
             {
                 throw new GeomException("Cannot triangulate DCEL with faces inside faces");
             }
-
-            return Triangulate(face.Polygon.Outside);
+            
+            return Triangulate(face.Polygon.Outside, setTwinPointers);
         }
 
         /// <summary>
         /// Triangulates this polygon using the two ears theorem. This is O(n^2).
         /// </summary>
-        /// NB: Also see poygontriangulation.pdf in the docs folder
+        /// <remarks>
+        /// Currently runs in O(n^2) time.
+        /// TODO improve this to O(n log n) or O(n log log n).
+        /// </remarks>
+        /// <param name="polygon"></param>
+        /// <param name="setTwinPointers"> whether the triangulation should set twin pointers </param>
         /// <returns>A list of clockwise triangles whose disjoint union is this polygon</returns>
-        public static Triangulation Triangulate(IPolygon2D polygon)
+        public static Triangulation Triangulate(IPolygon2D polygon, bool setTwinPointers = true)
         {
             // cannot yet triangulate non-simple polygons
+            /* assume it to be, checks takes too long
             if (!polygon.IsSimple())
             {
                 throw new ArgumentException("Polygon must be simple: " + polygon);
             }
+            */
 
             if (polygon.VertexCount < 3)
             {
                 return new Triangulation();
             }
 
-            return TriangulateRecursive(polygon);
+            var T = TriangulateRecursive(polygon.Vertices.ToList());
+            if (setTwinPointers)
+            {
+                T.SetTwinPointers();
+            }
+            return T;
         }
 
-        private static Triangulation TriangulateRecursive(IPolygon2D polygon)
+        /// <summary>
+        /// Triangulates the polygon recursively.
+        /// Finds the leftmost point and creates a triangle with that or splits polygon in two.
+        /// </summary>
+        /// <param name="vertices"></param>
+        /// <returns></returns>
+        private static Triangulation TriangulateRecursive(List<Vector2> vertices)
         {
-            if (polygon.VertexCount == 3)
+            if (vertices.Count == 3)
             {
-                return new Triangulation(polygon.Vertices);
+                return new Triangulation(vertices);
             }
 
             var triangulation = new Triangulation();
-
-            var vertices = polygon.Vertices.ToList();
 
             //Find leftmost vertex
             var leftVertex = LeftMost(vertices);
@@ -129,18 +155,18 @@
 
                 triangulation.AddTriangle(triangle);
                 vertices.Remove(leftVertex);
-                triangulation.AddTriangulation(TriangulateRecursive(new Polygon2D(vertices)));
+                triangulation.AddTriangulation(TriangulateRecursive(vertices));
             }
             else
             {
                 var minIndex = Mathf.Min(index, diagonalIndex);
                 var maxIndex = Mathf.Max(index, diagonalIndex);
 
-                var poly1List = vertices.Skip(minIndex).Take(maxIndex - minIndex + 1);
-                var poly2List = vertices.Skip(maxIndex).Concat(vertices.Take(minIndex + 1));
+                var poly1List = vertices.Skip(minIndex).Take(maxIndex - minIndex + 1).ToList();
+                var poly2List = vertices.Skip(maxIndex).Concat(vertices.Take(minIndex + 1)).ToList();
 
-                triangulation.AddTriangulation(TriangulateRecursive(new Polygon2D(poly1List)));
-                triangulation.AddTriangulation(TriangulateRecursive(new Polygon2D(poly2List)));
+                triangulation.AddTriangulation(TriangulateRecursive(poly1List));
+                triangulation.AddTriangulation(TriangulateRecursive(poly2List));
             }
 
             return triangulation;

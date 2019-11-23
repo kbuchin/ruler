@@ -13,22 +13,22 @@
         /// <summary>
         /// Small value used for floating point comparison
         /// </summary>
-        public const float EPS = 1e-4f;
+        public const double EPS = 1e-4;
 
         /// <summary>
         /// Some constants (based on Mathf)
         /// </summary>
-        public static float PI { get { return Mathf.PI; } }
-        public static float PI2 { get { return 2 * Mathf.PI; } }
+        public static double PI { get { return Math.PI; } }
+        public static double PI2 { get { return 2 * Math.PI; } }
 
         /// <summary>
         /// Checks whether a float is finite and not NaN
         /// </summary>
         /// <param name="a_float"></param>
         /// <returns> True when <paramref name="a_val1"/> is not infinite or NaN</returns>
-        public static bool IsFinite(this float a_float)
+        public static bool IsFinite(this double a_float)
         {
-            return !(float.IsInfinity(a_float) || float.IsNaN(a_float));
+            return !(double.IsInfinity(a_float) || double.IsNaN(a_float));
         }
 
         /// <summary>
@@ -47,9 +47,9 @@
         /// <param name="a_val1"></param>
         /// <param name="a_val2"></param>
         /// <returns> True when the difference between <paramref name="a_val1"/> and <paramref name="a_val2"/> is less then a small Epsilon</returns>
-        public static bool EqualsEps(float a_val1, float a_val2, float eps = EPS)
+        public static bool EqualsEps(double a_val1, double a_val2, double eps = EPS)
         {
-            return Mathf.Abs(a_val1 - a_val2) < eps;
+            return Math.Abs(a_val1 - a_val2) < eps;
         }
 
         /// <summary>
@@ -58,7 +58,7 @@
         /// <param name="a_val1"></param>
         /// <param name="a_val2"></param>
         /// <returns></returns>
-        public static bool EqualsEps(Vector2 a_val1, Vector2 a_val2, float eps = EPS)
+        public static bool EqualsEps(Vector2 a_val1, Vector2 a_val2, double eps = EPS)
         {
             return (a_val1 - a_val2).sqrMagnitude < eps;
         }
@@ -69,7 +69,7 @@
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static bool GEQEps(float a, float b, float eps = EPS)
+        public static bool GEQEps(double a, double b, double eps = EPS)
         {
             return EqualsEps(a, b, eps) || (a > b);
         }
@@ -80,7 +80,7 @@
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static bool LEQEps(float a, float b, float eps = EPS)
+        public static bool LEQEps(double a, double b, double eps = EPS)
         {
             return EqualsEps(a, b, eps) || (a < b);
         }
@@ -91,7 +91,7 @@
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static bool GreaterEps(float a, float b, float eps = EPS)
+        public static bool GreaterEps(double a, double b, double eps = EPS)
         {
             return a > b && !EqualsEps(a, b, eps);
         }
@@ -102,9 +102,20 @@
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static bool LessEps(float a, float b, float eps = EPS)
+        public static bool LessEps(double a, double b, double eps = EPS)
         {
             return a < b && !EqualsEps(a, b, eps);
+        }
+
+        /// <summary>
+        /// A positive modulo operation. (i.e. mod(-3, 4) == 1)
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="m"></param>
+        /// <returns></returns>
+        public static double PositiveMod(double a, double m)
+        {
+            return (a % m + m) % m;
         }
 
         /// <summary>
@@ -125,19 +136,19 @@
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns> angle axb in [0, 2*pi) </returns>
-        public static float Angle(Vector2 x, Vector2 a, Vector2 b)
+        public static double Angle(Vector2 x, Vector2 a, Vector2 b)
         {
             var va = a - x;
             var vb = b - x;
             var SignedAngle = Math.Atan2(vb.y, vb.x) - Math.Atan2(va.y, va.x);
 
-            if (SignedAngle < -Math.PI - EPS || SignedAngle > Math.PI + EPS)
+            if (SignedAngle < -PI- EPS || SignedAngle > PI + EPS)
             {
                 throw new Exception("Invalid angle");
             }
 
-            if ((float)SignedAngle >= 0) return (float)SignedAngle;
-            else return (float)(2.0 * Math.PI + SignedAngle);
+            if (SignedAngle >= 0) return SignedAngle;
+            else return PI2 + SignedAngle;
         }
 
         /// <summary>
@@ -146,20 +157,20 @@
         /// <param name="a_Point"></param>
         /// <param name="angleRadians"></param>
         /// <returns></returns>
-        public static Vector2 Rotate(Vector2 a_Point, float angleRadians)
+        public static Vector2 Rotate(Vector2 a_Point, double angleRadians)
         {
-            var s = Mathf.Sin(angleRadians);
-            var c = Mathf.Cos(angleRadians);
+            var s = Math.Sin(angleRadians);
+            var c = Math.Cos(angleRadians);
 
             return new Vector2(
-                a_Point.x * c - a_Point.y * s,
-                a_Point.y * c + a_Point.x * s
+                (float)(a_Point.x * c - a_Point.y * s),
+                (float)(a_Point.y * c + a_Point.x * s)
             );
         }
 
         /// <summary>
-        /// Returns a positive value if the points a, b, and c are arranged in
-        /// counterclockwise order, a negative value if the points are in clockwise order,
+        /// Returns +1 if points abc correspond to a left turn,
+        /// -1 if they correspond to a right turn
         /// and zero if the points are collinear.
         /// </summary>
         /// <param name="a"></param>
@@ -168,98 +179,9 @@
         /// <returns></returns>
         public static int Orient2D(Vector2 a, Vector2 b, Vector2 c)
         {
-            // get cross product
-            var orientArray = new double[,]
-                {
-                    { a.x - c.x, a.y - c.y },
-                    { b.x - c.x, b.y - c.y }
-                };
-
-            MNMatrix orientMatrix = MNMatrix.Build.DenseOfArray(orientArray);
-            return Math.Sign(orientMatrix.Determinant());
-        }
-
-        /// <summary>
-        /// Checks whether point X is inside a circle defined by points a, b, c.
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <param name="c"></param>
-        /// <param name="X"></param>
-        /// <returns>Whether point X is within a circle defined by points a, b, c.</returns>
-        public static bool InsideCircle(Vector2 a, Vector2 b, Vector2 c, Vector2 X)
-        {
-            // calculate turn orientation
-            int orientation = Math.Sign(MathUtil.Orient2D(a, b, c));
-            if (orientation == 0)
-            {
-                // straight line, so degenerate circle
-                return false;
-            }
-
-            double[,] inCircleArray = new double[,]
-            {
-                { a.x - X.x, a.y - X.y, Mathf.Pow(a.x - X.x, 2) + Mathf.Pow(a.y - X.y, 2) },
-                { b.x - X.x, b.y - X.y, Mathf.Pow(b.x - X.x, 2) + Mathf.Pow(b.y - X.y, 2) },
-                { c.x - X.x, c.y - X.y, Mathf.Pow(c.x - X.x, 2) + Mathf.Pow(c.y - X.y, 2) },
-            };
-
-            MNMatrix inCircleMatrix = MNMatrix.Build.DenseOfArray(inCircleArray);
-            int inside = Math.Sign(inCircleMatrix.Determinant());
-
-            if (inside == 0)
-            {
-                return false;
-            }
-            else
-            {
-                return orientation == inside;
-            }
-        }
-
-        /// <summary>
-        /// Calculates the center point of a circle defined by points a, b, c.
-        /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <param name="c"></param>
-        /// <returns>the circumcenter of circle abc.</returns>
-        public static Vector2 CalculateCircumcenter(Vector2 a, Vector2 b, Vector2 c)
-        {
-            double[,] numerator = new double[,]
-            {
-                { Mathf.Pow(a.x - c.x, 2) + Mathf.Pow(a.y - c.y, 2), a.y - c.y },
-                { Mathf.Pow(b.x - c.x, 2) + Mathf.Pow(b.y - c.y, 2), b.y - c.y }
-            };
-            double[,] denomenator = new double[,]
-            {
-                { a.x - c.x, a.y - c.y },
-                { b.x - c.x, b.y - c.y }
-            };
-
-            MNMatrix numeratorMatrix = MNMatrix.Build.DenseOfArray(numerator);
-            MNMatrix denomenatorMatrix = MNMatrix.Build.DenseOfArray(denomenator);
-            double numeratorDeterminant = numeratorMatrix.Determinant();
-            double denomenatorDeterminant = denomenatorMatrix.Determinant();
-            double Ox = c.x + numeratorDeterminant / (2 * denomenatorDeterminant);
-
-            numerator = new double[,]
-            {
-                { a.x - c.x, Mathf.Pow(a.x - c.x, 2) + Mathf.Pow(a.y - c.y, 2) },
-                { b.x - c.x, Mathf.Pow(b.x - c.x, 2) + Mathf.Pow(b.y - c.y, 2) }
-            };
-
-            numeratorMatrix = MNMatrix.Build.DenseOfArray(numerator);
-            numeratorDeterminant = numeratorMatrix.Determinant();
-
-            double Oy = c.y + numeratorDeterminant / (2 * denomenatorDeterminant);
-
-            if (!IsFinite((float)Ox) || !IsFinite((float)Oy))
-            {
-                throw new Exception("Result of CalculateCircumcenterStable was invalid!");
-            }
-
-            return new Vector2((float)Ox, (float)Oy);
+            var w = b - a;
+            var q = c - b;
+            return Math.Sign(w.x * q.y - w.y * q.x);
         }
     }
 }

@@ -41,7 +41,8 @@
 
             if (lines.Count < 2)
             {
-                throw new GeomException("Bounding box not defined for less than 2 lines");
+                Debug.Log("Bounding box not defined for less than 2 lines");
+                return new Rect();
             }
 
             lines.Sort(); //Sorts on slope by implementation of compareTo in line 

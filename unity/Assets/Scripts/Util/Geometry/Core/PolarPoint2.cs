@@ -9,14 +9,14 @@
     /// </summary>
     public class PolarPoint2D : IEquatable<PolarPoint2D>
     {
-        public float R { get; set; } // distance to p
-        public float Theta { get; set; } // angle with respect to p
+        public double R { get; set; } // distance to p
+        public double Theta { get; set; } // angle with respect to p
 
         // polar point from distance and angle (in radians)
-        public PolarPoint2D(float r, float theta)
+        public PolarPoint2D(double r, double theta)
         {
-            this.R = r;
-            this.Theta = theta;
+            R = r;
+            Theta = theta;
         }
 
         /// <summary>
@@ -69,10 +69,10 @@
         /// <returns></returns>
         public static Vector2 PolarToCartesian(PolarPoint2D p)
         {
-            var x = Mathf.Cos(p.Theta) * p.R;
-            var y = Mathf.Sin(p.Theta) * p.R;
+            var x = Math.Cos(p.Theta) * p.R;
+            var y = Math.Sin(p.Theta) * p.R;
 
-            return new Vector2(x, y);
+            return new Vector2((float)x, (float)y);
         }
 
         /// <summary>
@@ -89,23 +89,9 @@
         /// Normalizes the angle to be between [0, 2 * PI]
         /// </summary>
         /// <param name="theta"></param>
-        public void RotateClockWise(float theta)
+        public void RotateClockWise(double theta)
         {
-            this.Theta -= theta;
-            Normalize(2 * Mathf.PI);
-        }
-
-        /// <summary>
-        /// Keeps theta in [0, period].
-        /// </summary>
-        /// <param name="period"></param>
-        public void Normalize(float period)
-        {
-            while (Theta <= 0.0)
-                Theta += period;
-
-            while (Theta >= period)
-                Theta -= period;
+            Theta = MathUtil.PositiveMod(Theta - theta, MathUtil.PI2);
         }
 
         /// <summary>

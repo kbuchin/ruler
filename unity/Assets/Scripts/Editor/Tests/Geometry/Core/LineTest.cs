@@ -109,7 +109,7 @@
             Assert.IsFalse(m_vertLine.IsOnLine(point));
 
             // robustness check
-            point = new Vector2(3, MathUtil.EPS / 10f);
+            point = new Vector2(3, (float)MathUtil.EPS / 10f);
             Assert.IsTrue(m_vertLine.IsOnLine(point));
         }
 

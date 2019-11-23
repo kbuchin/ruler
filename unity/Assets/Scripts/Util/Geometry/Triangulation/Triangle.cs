@@ -22,6 +22,8 @@
         public Vector2 P1 { get { return E1.Point1; } }
         public Vector2 P2 { get { return E2.Point1; } }
 
+        private Vector2? m_circumCenter;
+
         /// <summary>
         /// Collection of the three vertices in the triangle for easy iteration.
         /// </summary>
@@ -50,7 +52,7 @@
                 if (Degenerate) return float.NaN;
 
                 // herons formula
-                float s = (E0.Magnitude + E1.Magnitude + E2.Magnitude) / 2f;
+                var s = (E0.Magnitude + E1.Magnitude + E2.Magnitude) / 2f;
                 return Mathf.Sqrt(s * (s - E0.Magnitude) * (s - E1.Magnitude) * (s - E2.Magnitude));
             }
         }
@@ -58,7 +60,17 @@
         /// <summary>
         /// Center of the circle that goes through all three triangle points.
         /// </summary>
-        public Vector2 Circumcenter { get; private set; }
+        public Vector2? Circumcenter
+        { 
+            get
+            {
+                if (!m_circumCenter.HasValue)
+                {
+                    m_circumCenter = CalculateCircumcenter(P0, P1, P2);
+                }
+                return m_circumCenter;
+            }
+        }
 
         /// <summary>
         /// Whether the given triangle is a degenerate case (area zero or infinite).
@@ -94,7 +106,7 @@
         {
             if (a_edge0.Point2 != a_edge1.Point1 || a_edge1.Point2 != a_edge2.Point1 || a_edge2.Point2 != a_edge0.Point1)
             {
-                throw new GeomException("Invalid triangle edges given.");
+                throw new GeomException("Invalid triangle edges given: " + a_edge0 + " " + a_edge1 + " " + a_edge2);
             }
 
             E0 = a_edge0;
@@ -103,13 +115,6 @@
 
             // set the triangle pointer of the edges
             a_edge0.T = a_edge1.T = a_edge2.T = this;
-
-            // calculate circumcenter if possible
-            if (!Degenerate)
-            {
-                if (IsClockwise()) Circumcenter = MathUtil.CalculateCircumcenter(P0, P1, P2);
-                else Circumcenter = MathUtil.CalculateCircumcenter(P0, P2, P1);
-            }
         }
 
         /// <summary>
@@ -125,9 +130,9 @@
                 return true;
             }
 
-            int firstSide = Math.Sign(MathUtil.Orient2D(P0, P1, a_pos));
-            int secondSide = Math.Sign(MathUtil.Orient2D(P1, P2, a_pos));
-            int thirdSide = Math.Sign(MathUtil.Orient2D(P2, P0, a_pos));
+            int firstSide = MathUtil.Orient2D(P0, P1, a_pos);
+            int secondSide = MathUtil.Orient2D(P1, P2, a_pos);
+            int thirdSide = MathUtil.Orient2D(P2, P0, a_pos);
             return (firstSide != 0 && firstSide == secondSide && secondSide == thirdSide);
         }
 
@@ -157,7 +162,11 @@
         /// <returns></returns>
         public bool InsideCircumcircle(Vector2 a_pos)
         {
-            return MathUtil.InsideCircle(P0, P1, P2, a_pos);
+            // degenerate triangle
+            if (!Circumcenter.HasValue) return false;
+
+            return MathUtil.LessEps(Vector2.Distance(Circumcenter.Value, a_pos), 
+                Vector2.Distance(Circumcenter.Value, P0));
         }
 
         /// <summary>
@@ -237,6 +246,42 @@
         public override int GetHashCode()
         {
             return ToString().GetHashCode();
+        }
+
+        /// <summary>
+        /// Calculates the center point of a circle defined by points a, b, c.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <param name="c"></param>
+        /// <returns>the circumcenter of circle abc.</returns>
+        public static Vector2? CalculateCircumcenter(Vector2 a, Vector2 b, Vector2 c)
+        { 
+            if (Line.Colinear(a, b, c))
+            {
+                return null;
+            }
+
+            var bisector1 = new LineSegment(a, b).Bissector;
+            var bisector2 = new LineSegment(b, c).Bissector;
+            var intersect = bisector1.Intersect(bisector2);
+
+            if (!intersect.HasValue)
+            {
+                // some fallback
+                var bisector3 = new LineSegment(c, a).Bissector;
+                intersect = bisector2.Intersect(bisector3);
+                if (!intersect.HasValue)
+                {
+                    intersect = bisector3.Intersect(bisector1);
+                    if (!intersect.HasValue)
+                    {
+                        throw new GeomException("No intersection found for points: " + a + " " + b + " " + c);
+                    }
+                }
+            }
+
+            return intersect.Value;
         }
     }
 }

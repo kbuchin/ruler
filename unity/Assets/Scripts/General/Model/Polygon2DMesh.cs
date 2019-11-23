@@ -63,7 +63,7 @@
             var oldMesh = m_meshFilter.mesh;
 
             // create triangulation
-            var tri = Triangulator.Triangulate(Polygon2D.RemoveDanglingEdges(m_polygon));
+            var tri = Triangulator.Triangulate(m_polygon.RemoveDanglingEdges(), false);
 
             // create mesh from triangulation
             var mesh = tri.CreateMesh();

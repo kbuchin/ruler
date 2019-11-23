@@ -129,29 +129,37 @@
         /// Call FixEdges() afterwards or set correctly beforehand.
         /// </remarks>
         /// <param name="t"></param>
-        public void AddTriangle(Triangle t)
+        public void AddTriangle(Triangle t, bool setTwinPointers = false)
         {
             m_Triangles.Add(t);
+
+            if (setTwinPointers)
+            {
+                SetTwinPointers();
+            }
         }
 
         /// <summary>
         /// Add all triangles to this triangulation.
         /// </summary>
         /// <param name="triangles"></param>
-        public void AddTriangles(IEnumerable<Triangle> triangles)
+        public void AddTriangles(IEnumerable<Triangle> triangles, bool setTwinPointers = false)
         {
             foreach (var t in triangles) AddTriangle(t);
 
-            FixEdges();
+            if (setTwinPointers)
+            {
+                SetTwinPointers();
+            }
         }
 
         /// <summary>
         /// Add all triangles in given triangulation.
         /// </summary>
         /// <param name="T"></param>
-        public void AddTriangulation(Triangulation T)
+        public void AddTriangulation(Triangulation T, bool setTwinPointers = false)
         {
-            AddTriangles(T.Triangles);
+            AddTriangles(T.Triangles, setTwinPointers);
         }
 
         /// <summary>
@@ -199,9 +207,14 @@
         /// Does not update twin pointers of neighbouring half edges.
         /// </remarks>
         /// <param name="t"></param>
-        public void RemoveTriangle(Triangle t)
+        public void RemoveTriangle(Triangle t, bool setTwinPointers = false)
         {
             m_Triangles.RemoveAll(tr => t.Equals(tr));
+
+            if (setTwinPointers)
+            {
+                SetTwinPointers();
+            }
         }
 
         /// <summary>
@@ -256,9 +269,10 @@
         }
 
         /// <summary>
-        /// Fixes edge twin pointers whenever edges share endpoints
+        /// Fixes edge twin pointers whenever edges share endpoints.
+        /// Runs in O(n^2), so avoid when possible
         /// </summary>
-        public void FixEdges()
+        public void SetTwinPointers()
         {
             foreach (var e1 in Edges)
             {

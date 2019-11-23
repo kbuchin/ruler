@@ -96,11 +96,10 @@
 
         public void AddPolygon(Polygon2D polygon)
         {
-            if (polygon == null)
+            if (polygon != null)
             {
-                throw new GeomException("Cannot add null polygon");
+                m_Polygons.Add(polygon);
             }
-            m_Polygons.Add(polygon);
         }
 
         public void AddVertex(Vector2 pos)

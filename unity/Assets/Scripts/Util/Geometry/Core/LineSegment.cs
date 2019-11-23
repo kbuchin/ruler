@@ -22,7 +22,7 @@
         /// <summary>
         /// Gives the corresponding line through the two points.
         /// </summary>
-        public Line Line { get { return new Line(Point1, Point2); } }
+        public Line Line { get; private set; }
 
         /// <summary>
         /// A perpendicular line that crosses the segment in the midpoint.
@@ -45,34 +45,41 @@
         /// Whether the segment is horizontal.
         /// </summary>
         public bool IsHorizontal { get { return Line.IsHorizontal; } }
-        
+
         /// <summary>
         /// Length of the segment.
         /// </summary>
-        public float Magnitude
-        {
-            get { return Vector2.Distance(Point2, Point1); }
-        }
+        public float Magnitude { get { return (Point2 - Point1).magnitude; } }
 
         /// <summary>
         /// Square of the magnitude (length) of the segment.
         /// </summary>
-        public float SqrMagnitude
-        {
-            get { return (Point2 - Point1).sqrMagnitude; }
-        }
+        public float SqrMagnitude { get { return (Point2 - Point1).sqrMagnitude; } }
+
+        /// <summary>
+        /// Interval in the x-dimension of the segment.
+        /// </summary>
+        public FloatInterval XInterval { get; private set; }
+
+        /// <summary>
+        /// Interval in the y-dimension of the segment.
+        /// </summary>
+        public FloatInterval YInterval { get; private set; }
 
         public LineSegment(Vector2 a_point1, Vector2 a_point2)
         {
             Point1 = new Vector2(a_point1.x, a_point1.y);
             Point2 = new Vector2(a_point2.x, a_point2.y);
+
+            // explicitly calculate variables that are most used
+            XInterval = new FloatInterval(a_point1.x, a_point2.x);
+            YInterval = new FloatInterval(a_point1.y, a_point2.y);
+            Line = new Line(Point1, Point2); 
         }
 
-        public LineSegment(PolarPoint2D a_point1, PolarPoint2D a_point2)
-        {
-            Point1 = a_point1.Cartesian;
-            Point2 = a_point2.Cartesian;
-        }
+        public LineSegment(PolarPoint2D a_point1, PolarPoint2D a_point2) 
+            : this(a_point1.Cartesian, a_point2.Cartesian)
+        { }
 
         /// <summary>
         /// Checks whether the two lines are parallel.
@@ -114,22 +121,6 @@
         public bool IsEndpoint(Vector2 a_Point)
         {
             return MathUtil.EqualsEps(Point1, a_Point) || MathUtil.EqualsEps(Point2, a_Point);
-        }
-
-        /// <summary>
-        /// Interval in the x-dimension of the segment.
-        /// </summary>
-        public FloatInterval XInterval
-        {
-            get { return new FloatInterval(Point1.x, Point2.x); }
-        }
-
-        /// <summary>
-        /// Interval in the y-dimension of the segment.
-        /// </summary>
-        public FloatInterval YInterval
-        {
-            get { return new FloatInterval(Point1.y, Point2.y); }
         }
 
         /// <summary>
@@ -224,6 +215,7 @@
             {
                 return intersect;
             }
+
             return null;
         }
 

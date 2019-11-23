@@ -9,7 +9,7 @@
     public class MathUtilTest
     {
 
-        private static float eps = MathUtil.EPS;
+        private static double eps = MathUtil.EPS;
 
         [Test]
         public void AngleTest()
@@ -19,7 +19,7 @@
             var b = new Vector2(0f, 5f);
             var c = new Vector2(0f, -5f);
             var d = new Vector2(-1f, -1f);
-            var e = new Vector2(2f, -eps);
+            var e = new Vector2(2f, (float)-eps);
 
             Assert.AreEqual(MathUtil.Angle(x, a, a), 0f, eps);
             Assert.AreEqual(MathUtil.Angle(x, a, b), .5f * Math.PI, eps);

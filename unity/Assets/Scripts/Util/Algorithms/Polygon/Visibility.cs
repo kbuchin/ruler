@@ -36,11 +36,10 @@
 
             // list v, satisfies assumptions made in paper (section 2, paragraph 1
             // and 2).
-            float initAngle;
+            double initAngle;
 
             var vs = Preprocess(polygon, z, out initAngle);
 
-            
             var s = new Stack<VertDispl>();
             var i = 0;
             VertDispl w = null;
@@ -67,7 +66,7 @@
                     case NextCall.RETARD:
                         m_nextCall = Retard(ref vs, ref s, ref i, ref w, ref ccw); 
                         break;    
-                    case NextCall.SCAN: 
+                    case NextCall.SCAN:
                         m_nextCall = Scan(ref vs, ref s, ref i, ref w, ref ccw);
                         break;    
                 }
@@ -94,7 +93,7 @@
         /// <param name="z"></param>
         /// <param name="initAngle"></param>
         /// <returns></returns>
-        private static VsRep Preprocess(Polygon2D pol, Vector2 z, out float initAngle)
+        private static VsRep Preprocess(Polygon2D pol, Vector2 z, out double initAngle)
         {
             // make polygon counter clockwise
             if (pol.IsClockwise())
@@ -113,37 +112,38 @@
             var zIsVertex = pol.Vertices.Contains(Vector2.zero);
 
             // determines v0
-            var v0 = GetInitialVertex(pol, zIsVertex);
+            int vIndex;
+            var v0 = GetInitialVertex(pol, zIsVertex, out vIndex);
 
-            Debug.Assert(!v0.Cartesian.Equals(z));
+            Debug.Assert(!v0.Equals(z));
+            
+            // adjusts positions such that v0 at the beginning
+            var vertices = pol.Vertices.Skip(vIndex).Concat(pol.Vertices.Take(vIndex)).ToList();
+
+            if (!MathUtil.EqualsEps(v0, vertices[0]))
+            {
+                vertices.Insert(0, v0);
+            }
 
             // converts cartesian vertices of polygon to polar and stores them in
             // list l
-            var l = pol.Vertices.Select(x => new PolarPoint2D(x)).ToList();
-
-            // adjusts positions such that v0 at the beginning
-            var index = l.IndexOf(v0);
-            l = l.Skip(index).Concat(l.Take(index)).ToList();
-
-            Debug.Assert(l[0].Equals(v0));
-            Debug.Assert(l.Count == pol.Vertices.Count);
+            var l = vertices.Select(x => new PolarPoint2D(x)).ToList();
 
             // if z is a vertex then [v0, v1, ..., vk, z] -> [z, v0, v1, ..., vk]
             if (zIsVertex)
             {
                 // removes z from list (z is origin because we shifted the polygon)
-                var temp = l.Remove(new PolarPoint2D(0, 0));
-                Debug.Assert(temp);
+                l.RemoveAt(l.Count - 1);
 
                 l.Insert(0, new PolarPoint2D(0, 0));
             }
             else
             {
-                l.Add(new PolarPoint2D(v0.R, v0.Theta));
+                l.Add(new PolarPoint2D(v0));
             }
 
             // remember original angle
-            initAngle = v0.Theta;
+            initAngle = l[0].Theta;
 
             // rotate all points of the shifted polygon clockwise such that v0 lies
             // on the x axis
@@ -254,10 +254,15 @@
                 var vi = v.Get(i);
                 var p = (new LineSegment(sj.p.Cartesian, sjNext.p.Cartesian)).Intersect(vi.p.Ray);
 
-                if (p == null) return NextCall.STOP;
-
-                //Debug.Assert(p != null, new LineSegment(sj.p.Cartesian, sjNext.p.Cartesian) + "\n" + vi.p.Ray);
-
+                // fallback method, return point closest to intersection with segment line
+                if (p == null)
+                {
+                    var line = new Line(vi.p.Ray.origin, vi.p.Ray.origin + vi.p.Ray.direction);
+                    p = (new LineSegment(sj.p.Cartesian, sjNext.p.Cartesian)).Line.Intersect(line);
+                    p = Vector2.Distance(p.Value, sj.p.Cartesian) < Vector2.Distance(p.Value, sjNext.p.Cartesian) 
+                        ? sj.p.Cartesian : sjNext.p.Cartesian;
+                }
+                
                 var st1 = DisplacementInBetween(new PolarPoint2D(p.Value), sj, sjNext);
 
                 if (st1 != null)
@@ -303,9 +308,14 @@
                 {
                     w = IntersectWithWindow(v.Get(i), v.Get(i + 1), sj, sjNext);
                     ccw = true;
+
+                    if (w == null) {
+                        var seg = new LineSegment(v.Get(i).p, v.Get(i + 1).p);
+                        var res = seg.ClosestPoint(sj.p.Cartesian);
+                        w = DisplacementInBetween(new PolarPoint2D(res), v.Get(i), v.Get(i + 1));
+                    }
                     
-                    if (w == null) return NextCall.STOP;
-                    else return NextCall.SCAN;
+                    return NextCall.SCAN;
                 }
             }
         }
@@ -415,8 +425,8 @@
         /// <returns> The generated vertex-displacement pair. </returns>
         public static VertDispl DisplacementInBetween(PolarPoint2D s, VertDispl v1, VertDispl v2)
         {
-            var bot = Mathf.Min(v1.alpha, v2.alpha);
-            var top = Mathf.Max(v1.alpha, v2.alpha);
+            var bot = Math.Min(v1.alpha, v2.alpha);
+            var top = Math.Max(v1.alpha, v2.alpha);
             if (MathUtil.EqualsEps(bot, top))
                 return new VertDispl(s, bot);
 
@@ -426,9 +436,7 @@
 
             while (MathUtil.LessEps(temp, bot))
                 temp += MathUtil.PI2;
-
-            //Debug.Assert(MathUtil.LEQEps(bot, temp) && MathUtil.LEQEps(temp, top));
-
+            
             return new VertDispl(s, temp);
         }
 
@@ -462,7 +470,6 @@
                     var y = (new LineSegment(vi.p.Cartesian, vi1.p.Cartesian)).Intersect(new LineSegment(sj.p.Cartesian, sj1.p.Cartesian));
 
                     if (y != null)
-                    // TODO check if order is correct
                     {
                         return sj1;
                     }
@@ -485,7 +492,7 @@
         /// <param name="z"></param>
         /// <param name="initAngle"></param>
         /// <returns> Final visibility polygon. </returns>
-        private static Polygon2D Postprocess(List<VertDispl> pre_s, VsRep vs, Vector2 z, float initAngle)
+        private static Polygon2D Postprocess(List<VertDispl> pre_s, VsRep vs, Vector2 z, double initAngle)
         {
             // reverse order of stack to establish CCW order of final visibility polygon
             pre_s.Reverse();
@@ -509,9 +516,17 @@
             Debug.Assert(shiftedPol.Count > 0);
 
             // check if first and last vertex are the same
-            if (MathUtil.EqualsEps(shiftedPol.First(), shiftedPol.Last(), MathUtil.EPS * 10))
+            if (shiftedPol.Count > 1 && 
+                MathUtil.EqualsEps(shiftedPol.FirstOrDefault(), shiftedPol.LastOrDefault(), MathUtil.EPS * 10))
             {
                 shiftedPol.RemoveAt(shiftedPol.Count - 1);
+            }
+
+            // check if first point is colinear with last and second
+            if (shiftedPol.Count > 2 &&
+                Line.Colinear(shiftedPol.LastOrDefault(), shiftedPol.FirstOrDefault(), shiftedPol.ElementAt(1)))
+            {
+                shiftedPol.RemoveAt(0);
             }
 
             // make polygon clockwise
@@ -539,22 +554,22 @@
             {
                 if (i == 0)
                 {
-                    ret.Add(new VertDispl(v[0], v[0].Theta));
+                    ret.Add(new VertDispl(v[0], 0.0));
                     continue;
                 }
 
                 var vi = v[i];
                 var viprev = v[i - 1];
                 var phi = vi.Theta;
-                var rawAngle = Mathf.Abs(phi - viprev.Theta);
+                var rawAngle = Math.Abs(phi - viprev.Theta);
 
                 Debug.Assert(rawAngle < MathUtil.PI2);
 
-                var angle = Mathf.Min(rawAngle, MathUtil.PI2 - rawAngle);
+                var angle = Math.Min(rawAngle, MathUtil.PI2 - rawAngle);
                 var sigma = MathUtil.Orient2D(Vector2.zero, viprev.Cartesian, vi.Cartesian);
                 var alpha_vi = ret[i - 1].alpha + sigma * angle;
 
-                Debug.Assert(MathUtil.LEQEps(Mathf.Abs(alpha_vi - ret[i - 1].alpha), MathUtil.PI));
+                Debug.Assert(MathUtil.LEQEps(Math.Abs(alpha_vi - ret[i - 1].alpha), MathUtil.PI));
 
                 ret.Add(new VertDispl(vi, alpha_vi));
             }
@@ -569,98 +584,76 @@
         /// <param name="shiftedPol"></param>
         /// <param name="zIsVertex">whether z is a vertex</param>
         /// <returns> The polar point corresponding to the initial vertex. </returns>
-        private static PolarPoint2D GetInitialVertex(Polygon2D shiftedPol, bool zIsVertex)
+        private static Vector2 GetInitialVertex(Polygon2D shiftedPol, bool zIsVertex, out int index)
         {
+            var segments = shiftedPol.Segments.ToList();
+
             // if z is vertex then take vertex adjacent to z
             if (zIsVertex)
             {
                 // find segment whose endpoint a is origin, pick the adjacent
                 // endpoint b
-                foreach (var curr in shiftedPol.Segments)
+                for (var i = 0; i < segments.Count; i++)
                 {
+                    var curr = segments[i];
                     if (MathUtil.EqualsEps(curr.Point1, Vector2.zero))
                     {
-                        return new PolarPoint2D(curr.Point2);
+                        index = (i + 1) % segments.Count;
+                        return curr.Point2;
                     }
                 }
 
+                throw new GeomException("Z vertex not found");
             }
-
-            // if z is on an edge, return the vertex next to it
-            foreach (var curr in shiftedPol.Segments)
+            else
             {
-                if (curr.IsOnSegment(Vector2.zero))
+                // find closest point on positive x axis 
+                Vector2? closestVisibleVertex = null;
+                index = -1;
+                var xRay = new Ray2D(Vector2.zero, new Vector2(1, 0));
+
+                for (var i = 0; i < segments.Count; i++)
                 {
-                    return new PolarPoint2D(curr.Point2);
+                    var curr = segments[i];
+
+                    // if z is on an edge, return the vertex next to it
+                    if (curr.IsOnSegment(Vector2.zero))
+                    {
+                        index = (i + 1) % segments.Count;
+                        return curr.Point2;
+                    }
+
+                    // quick continue, saves some intersection calls
+                    if (Math.Sign(curr.Point1.y) == Math.Sign(curr.Point2.y)) continue;
+
+                    // check if segments intersects with positive x axis
+                    var intersection = curr.Intersect(xRay);
+                    if (intersection.HasValue &&
+                       (!closestVisibleVertex.HasValue || intersection.Value.x < closestVisibleVertex.Value.x))
+                    {
+                        index = (i + 1) % segments.Count;
+                        closestVisibleVertex = intersection;
+                    }
                 }
-            }
 
-            // used to store all visible (from z) vertices of the polygon
-            var visible = new List<Vector2>();
-
-            foreach (var v in shiftedPol.Vertices)
-            {
-                if (VisibleFromOrigin(shiftedPol, v))
+                if (!closestVisibleVertex.HasValue)
                 {
-                    visible.Add(v);
+                    throw new GeomException("No point on x-axis");
                 }
+
+                return closestVisibleVertex.Value;
             }
-
-            Debug.Assert(visible.Count != 0);
-
-            var visiblePolar = visible.Select(x => new PolarPoint2D(x));
-
-            // find visible vertex with smallest positive angle
-            // if angles are equal, picks the closest one
-            var closestVisibleVertex = visiblePolar.FirstOrDefault();
-            foreach (var curr in visiblePolar)
-            {
-                if (MathUtil.LessEps(curr.Theta, closestVisibleVertex.Theta) ||
-                    MathUtil.EqualsEps(curr.Theta, closestVisibleVertex.Theta) && curr.R < closestVisibleVertex.R)
-                {
-                    closestVisibleVertex = curr;
-                }
-            }
-
-            return closestVisibleVertex;
         }
-
-        /// <summary>
-        /// Checks whether any of the polygons edges "block the view" from origin to point v.
-        /// An edge e of the polygon blocks the view from origin to point v if and only if
-	    /// e properly intersects(interiors intersect) the line segment formed by origin and v.
-        /// </summary>
-        /// <param name="pol">Polygon</param>
-        /// <param name="v">Point whose visibility from origin we are checking.</param>
-        /// <returns>true iff polygon does not block the view from origin to v.</returns>        
-        public static bool VisibleFromOrigin(Polygon2D pol, Vector2 v)
-        {
-            var e = new LineSegment(Vector2.zero, v);
-
-            foreach (var curr in pol.Segments)
-            {
-                var intersect = curr.Intersect(e);
-                if (intersect.HasValue &&
-                    !MathUtil.EqualsEps(intersect.Value, e.Point1, MathUtil.EPS * 10) &&
-                    !MathUtil.EqualsEps(intersect.Value, e.Point2, MathUtil.EPS * 10))
-                {
-                    return false;   // edge curr of the polygon properly intersects e, hence v is not visible from origin
-                }
-            }
-
-            // no edge of the polygon "blocks the view" (properly intersects e) from origin to v
-            return true;
-        }
-
+        
         /// <summary>
         /// Stores a vertex as a polar point and an angular displacement.
         /// </summary>
         public class VertDispl
         {
             internal PolarPoint2D p;
-            internal float alpha;   // angular displacement
+            internal double alpha;   // angular displacement
 
-            public VertDispl(PolarPoint2D p, float alpha)
+            public VertDispl(PolarPoint2D p, double alpha)
             {
                 this.p = p;
                 this.alpha = alpha;
@@ -704,7 +697,6 @@
                 else
                 {
                     v = ComputeAngularDisplacements(vs);
-                    //Debug.Assert(MathUtil.GEQEps(vs[vs.Count - 1].Theta, MathUtil.PI2));
                 }
             }
 

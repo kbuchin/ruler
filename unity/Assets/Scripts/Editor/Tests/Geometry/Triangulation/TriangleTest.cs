@@ -38,8 +38,6 @@
         {
             Assert.AreEqual(3, t1.Vertices.Count);
             Assert.AreEqual(3, t1.Edges.Count);
-
-            Assert.Throws<GeomException>(() => new Triangle(v1, v1, v3));
         }
 
         [Test]
@@ -69,7 +67,7 @@
         [Test]
         public void CircumcenterTest()
         {
-            Assert.IsTrue(MathUtil.EqualsEps(new Vector2(1, 0), t1.Circumcenter));
+            Assert.IsTrue(MathUtil.EqualsEps(new Vector2(1, 0), t1.Circumcenter.Value));
         }
 
         [Test]

@@ -51,7 +51,7 @@
             ret = BoundingBoxComputer.FromSegments(m_segments, 1f);
             Assert.IsTrue(CmpRect(expRectMargin, ret));
 
-            Assert.Throws<GeomException>(() => BoundingBoxComputer.FromSegments(new List<LineSegment>()));
+            Assert.AreEqual(BoundingBoxComputer.FromSegments(new List<LineSegment>()), new Rect());
         }
 
         [Test]
@@ -62,7 +62,7 @@
             ret = BoundingBoxComputer.FromLines(m_lines, 1f);
             Assert.IsTrue(CmpRect(expRectMargin, ret));
 
-            Assert.Throws<GeomException>(() => BoundingBoxComputer.FromLines(new List<Line>()));
+            Assert.AreEqual(BoundingBoxComputer.FromLines(new List<Line>()), new Rect());
         }
 
         [Test]
@@ -73,7 +73,7 @@
             ret = BoundingBoxComputer.FromPoints(m_points, 1f);
             Assert.IsTrue(CmpRect(expRectMargin, ret));
 
-            Assert.Throws<GeomException>(() => BoundingBoxComputer.FromPoints(new List<Vector2>()));
+            Assert.AreEqual(BoundingBoxComputer.FromPoints(new List<Vector2>()), new Rect());
         }
 
         private bool CmpRect(Rect a, Rect b)
