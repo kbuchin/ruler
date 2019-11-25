@@ -24,7 +24,7 @@ namespace Assets.Scripts.ArtGallery.Controller
     /// Handles the game update loop, as well as level initialization and
     /// advancement.
     /// </summary>
-    public class ArtGalleryGuarderVertexGuardsController : MonoBehaviour, IController
+    public class ArtGalleryGuardedVertexGuardsController : MonoBehaviour, IController
     {
         /// <inheritdoc />
         public void InitLevel()
