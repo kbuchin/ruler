@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Assets.Scripts.ArtGallery.Controller
 {
-
+    //Will be implemented by Karina and Job
     using General.Controller;
     using General.Menu;
     using System;
@@ -34,6 +34,31 @@ namespace Assets.Scripts.ArtGallery.Controller
 
         /// <inheritdoc />
         public void CheckSolution()
+        {
+            throw new NotImplementedException();
+        }
+        
+        /// <summary>
+        /// Checks if the current placed lighthouses completely illuminate
+        /// the room
+        /// </summary>
+        /// <returns>
+        /// True if the complete room is illuminated, false otherwise
+        /// </returns>
+        public bool CheckVisibility()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Checks if the current placed lighthouses can each see at lease one
+        /// other lighthouse
+        /// </summary>
+        /// <returns>
+        /// True if each lighthouse can see at least one other lighthouse,
+        /// false otherwise
+        /// </returns>
+        public bool CheckGuardedGuards()
         {
             throw new NotImplementedException();
         }

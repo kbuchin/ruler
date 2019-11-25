@@ -6,6 +6,8 @@ using Util.Geometry.Polygon;
 
 namespace Util.Algorithms.Polygon
 {
+    //Will be implemented by Koen and Gijs
+
     /// <summary>
     /// Implements the <see cref="Union"/> method by using a naive approach
     /// </summary>
