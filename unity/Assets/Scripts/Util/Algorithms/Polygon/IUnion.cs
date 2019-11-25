@@ -5,7 +5,7 @@ using System.Text;
 using Util.Geometry;
 using Util.Geometry.Polygon;
 
-namespace Assets.Scripts.Util.Algorithms.Polygon
+namespace Util.Algorithms.Polygon
 {
     /// <summary>
     /// This interface defines methods that can be used to calculate the union
