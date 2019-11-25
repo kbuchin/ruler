@@ -4,3 +4,5 @@
 **/NDependOut/
 unity/Assets/Scripts/obj.meta
 unity/Assets/Scripts/Properties.meta
+
+unity/Packages/manifest.json
