@@ -76,5 +76,34 @@
 
             Assert.AreEqual(LShape.VertexCount - 1, actual.Count);
         }
+
+        [Test]
+        public void VisibleVerticesTest4()
+        {
+            var polygon = new Polygon2D(new List<Vector2>()
+            {
+                new Vector2(0,0), new Vector2(0,4), new Vector2(4,4),
+                new Vector2(6,4), new Vector2(8,4), new Vector2(10,4),
+                new Vector2(10,2), new Vector2(8,2), new Vector2(6,2),
+                new Vector2(4,2), new Vector2(2,2), new Vector2(2,0)
+            });
+
+            int visibleVertexes = 5;
+            var vertex = polygon.Vertices.First();
+            var actual = NaiveLighthouseToLighthouseVisibility.VisibleVertices(
+                polygon,
+                vertex);
+
+            Assert.AreEqual(visibleVertexes, actual.Count);
+
+             visibleVertexes = polygon.Vertices.Count;
+             vertex = polygon.Vertices.ElementAt(1);
+             actual = NaiveLighthouseToLighthouseVisibility.VisibleVertices(
+                polygon,
+                vertex);
+
+            Assert.AreEqual(visibleVertexes, actual.Count);
+
+        }
     }
 }
