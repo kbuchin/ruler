@@ -14,7 +14,6 @@
     [TestFixture]
     public class NaiveLighthouseToLighthouseVisibilityTest
     {
-
         private readonly Polygon2D arrowPoly;
         private readonly Polygon2D diamondPoly;
         private readonly Polygon2D LShape;
@@ -27,21 +26,34 @@
             var m_rightVertex = new Vector2(1, 0);
             var m_farRightVertex = new Vector2(2, 0);
 
-            arrowPoly = new Polygon2D(new List<Vector2>()
-            {
-                m_topVertex, m_farRightVertex, m_botVertex, m_rightVertex
-            });
+            arrowPoly = new Polygon2D(
+                new List<Vector2>()
+                {
+                    m_topVertex,
+                    m_farRightVertex,
+                    m_botVertex,
+                    m_rightVertex
+                });
 
-            diamondPoly = new Polygon2D(new List<Vector2>()
-            {
-                m_topVertex, m_rightVertex, m_botVertex, m_leftVertex
-            });
+            diamondPoly = new Polygon2D(
+                new List<Vector2>()
+                {
+                    m_topVertex,
+                    m_rightVertex,
+                    m_botVertex,
+                    m_leftVertex
+                });
 
-            LShape = new Polygon2D(new List<Vector2>()
-            {
-                new Vector2(0,0), new Vector2(0,4), new Vector2(4,4),
-                new Vector2(4,2), new Vector2(2,2), new Vector2(2,0)
-            });
+            LShape = new Polygon2D(
+                new List<Vector2>()
+                {
+                    new Vector2(0, 0),
+                    new Vector2(0, 4),
+                    new Vector2(4, 4),
+                    new Vector2(4, 2),
+                    new Vector2(2, 2),
+                    new Vector2(2, 0)
+                });
         }
 
         [Test]
@@ -49,9 +61,10 @@
         {
             foreach (var vertex in diamondPoly.Vertices)
             {
-                var actual = NaiveLighthouseToLighthouseVisibility.VisibleVertices(
-                    diamondPoly,
-                    vertex);
+                var actual =
+                    NaiveLighthouseToLighthouseVisibility.VisibleVertices(
+                        diamondPoly,
+                        vertex);
 
                 Assert.AreEqual(diamondPoly.VertexCount, actual.Count);
             }
@@ -61,6 +74,7 @@
         public void VisibleVerticesTest2()
         {
             var vertex = arrowPoly.Vertices.ElementAt(0);
+
             var actual = NaiveLighthouseToLighthouseVisibility.VisibleVertices(
                 arrowPoly,
                 vertex);
@@ -72,6 +86,7 @@
         public void VisibleVerticesTest3()
         {
             var vertex = LShape.Vertices.First();
+
             var actual = NaiveLighthouseToLighthouseVisibility.VisibleVertices(
                 LShape,
                 vertex);
@@ -82,44 +97,60 @@
         [Test]
         public void VisibleVerticesTest4()
         {
-            var polygon = new Polygon2D(new List<Vector2>()
-            {
-                new Vector2(0,0), new Vector2(0,4), new Vector2(4,4),
-                new Vector2(6,4), new Vector2(8,4), new Vector2(10,4),
-                new Vector2(10,2), new Vector2(8,2), new Vector2(6,2),
-                new Vector2(4,2), new Vector2(2,2), new Vector2(2,0)
-            });
+            var polygon = new Polygon2D(
+                new List<Vector2>()
+                {
+                    new Vector2(0, 0),
+                    new Vector2(0, 4),
+                    new Vector2(4, 4),
+                    new Vector2(6, 4),
+                    new Vector2(8, 4),
+                    new Vector2(10, 4),
+                    new Vector2(10, 2),
+                    new Vector2(8, 2),
+                    new Vector2(6, 2),
+                    new Vector2(4, 2),
+                    new Vector2(2, 2),
+                    new Vector2(2, 0)
+                });
 
             int visibleVertexes = 5;
             var vertex = polygon.Vertices.First();
+
             var actual = NaiveLighthouseToLighthouseVisibility.VisibleVertices(
                 polygon,
                 vertex);
 
             Assert.AreEqual(visibleVertexes, actual.Count);
 
-             visibleVertexes = polygon.Vertices.Count;
-             vertex = polygon.Vertices.ElementAt(1);
-             actual = NaiveLighthouseToLighthouseVisibility.VisibleVertices(
+            visibleVertexes = polygon.Vertices.Count;
+            vertex = polygon.Vertices.ElementAt(1);
+
+            actual = NaiveLighthouseToLighthouseVisibility.VisibleVertices(
                 polygon,
                 vertex);
 
             Assert.AreEqual(visibleVertexes, actual.Count);
-
         }
 
 
         [Test]
         public void VisibleVerticesTest5()
         {
-            var polygon = new Polygon2D(new List<Vector2>()
-            {
-                new Vector2(0,0), new Vector2(0,4), new Vector2(10,4),
-                new Vector2(10,2), new Vector2(2,2), new Vector2(2,0)
-            });
+            var polygon = new Polygon2D(
+                new List<Vector2>()
+                {
+                    new Vector2(0, 0),
+                    new Vector2(0, 4),
+                    new Vector2(10, 4),
+                    new Vector2(10, 2),
+                    new Vector2(2, 2),
+                    new Vector2(2, 0)
+                });
 
             int visibleVertexes = 4;
             var vertex = polygon.Vertices.First();
+
             var actual = NaiveLighthouseToLighthouseVisibility.VisibleVertices(
                 polygon,
                 vertex);

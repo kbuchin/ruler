@@ -11,12 +11,12 @@ namespace ArtGallery
 {
     public static class NaiveLighthouseToLighthouseVisibility
     {
-
         public static List<Vector2> VisibleVertices(
             Polygon2D polygon,
             Vector2 vertex)
         {
             List<Vector2> result = new List<Vector2>();
+
             // calculate new visibility polygon
             var vision = Visibility.Vision(polygon, vertex);
             var area = vision.Area;
@@ -38,11 +38,10 @@ namespace ArtGallery
             {
                 var pVertex = polygon.Vertices.ElementAt(i);
 
-                    if (vision.ContainsInside(pVertex))
-                    {
-                        result.Add(pVertex);
-
-                    }
+                if (vision.ContainsInside(pVertex))
+                {
+                    result.Add(pVertex);
+                }
             }
 
             return result;
@@ -56,7 +55,7 @@ namespace ArtGallery
 
             foreach (Vector2 vertex in vertices)
             {
-                result.Add(VisibleVertices(polygon, vertex));    
+                result.Add(VisibleVertices(polygon, vertex));
             }
 
             return result;
