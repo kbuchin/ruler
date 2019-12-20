@@ -226,7 +226,9 @@
                 {
                     var nextNode = node.Next ?? m_vertices.First;
                     var segment = new LineSegment(node.Value, nextNode.Value);
-                    if (inv != segment.IsRightOf(a_pos))
+                    var correctSideOfLine = inv == segment.IsRightOf(a_pos);
+                    var isOnLine = segment.IsOnSegment(a_pos);
+                    if (!correctSideOfLine && !isOnLine)
                     {
                         return false;
                     }

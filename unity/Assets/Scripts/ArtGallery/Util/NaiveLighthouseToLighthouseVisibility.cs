@@ -44,6 +44,8 @@ namespace ArtGallery
                     if (areEqual)
                     {
                         result.Add(pVertex);
+
+                        break;
                     }
                 }
             }

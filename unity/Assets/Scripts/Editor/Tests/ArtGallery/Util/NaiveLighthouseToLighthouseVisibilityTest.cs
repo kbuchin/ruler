@@ -47,12 +47,14 @@
         [Test]
         public void VisibleVerticesTest1()
         {
-            var vertex = diamondPoly.Vertices.First();
-            var actual = NaiveLighthouseToLighthouseVisibility.VisibleVertices(
-                diamondPoly, 
-                vertex);
+            foreach (var vertex in diamondPoly.Vertices)
+            {
+                var actual = NaiveLighthouseToLighthouseVisibility.VisibleVertices(
+                    diamondPoly,
+                    vertex);
 
-            Assert.AreEqual(diamondPoly.VertexCount, actual.Count);
+                Assert.AreEqual(diamondPoly.VertexCount, actual.Count);
+            }
         }
 
         [Test]
@@ -63,7 +65,7 @@
                 arrowPoly,
                 vertex);
 
-            Assert.AreEqual(arrowPoly.VertexCount, actual.Count);
+            Assert.AreEqual(arrowPoly.VertexCount - 1, actual.Count);
         }
 
         [Test]
