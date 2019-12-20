@@ -5,7 +5,7 @@ using System.Text;
 using General.Controller;
 using UnityEngine;
 
-namespace Assets.Scripts.ArtGallery.Controller
+namespace ArtGallery
 {
     //Will be implemented by Karina and Job
     using General.Controller;
@@ -62,6 +62,8 @@ namespace Assets.Scripts.ArtGallery.Controller
         {
             throw new NotImplementedException();
         }
+
+
 
         /// <inheritdoc />
         public void AdvanceLevel()

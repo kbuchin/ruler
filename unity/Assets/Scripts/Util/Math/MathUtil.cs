@@ -58,7 +58,7 @@
         /// <param name="a_val1"></param>
         /// <param name="a_val2"></param>
         /// <returns></returns>
-        public static bool EqualsEps(Vector2 a_val1, Vector2 a_val2, double eps = EPS)
+        public static bool EqualsEps(this Vector2 a_val1, Vector2 a_val2, double eps = EPS)
         {
             return (a_val1 - a_val2).sqrMagnitude < eps;
         }

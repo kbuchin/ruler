@@ -692,7 +692,7 @@
 
                 if (zIsVertex)
                 {
-                    v = ComputeAngularDisplacements(vs.GetRange(1, vs.Count));
+                    v = ComputeAngularDisplacements(vs.GetRange(1, n));
                 }
                 else
                 {
