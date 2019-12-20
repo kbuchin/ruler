@@ -21,7 +21,7 @@
 
         public NaiveLighthouseToLighthouseVisibilityTest()
         {
-            var m_topVertex = new Vector2(0, 1);
+            var m_topVertex = new Vector2(1, 1);
             var m_botVertex = new Vector2(0, -1);
             var m_leftVertex = new Vector2(-1, 0);
             var m_rightVertex = new Vector2(1, 0);
@@ -60,7 +60,7 @@
         [Test]
         public void VisibleVerticesTest2()
         {
-            var vertex = arrowPoly.Vertices.First();
+            var vertex = arrowPoly.Vertices.ElementAt(0);
             var actual = NaiveLighthouseToLighthouseVisibility.VisibleVertices(
                 arrowPoly,
                 vertex);
@@ -106,6 +106,25 @@
 
             Assert.AreEqual(visibleVertexes, actual.Count);
 
+        }
+
+
+        [Test]
+        public void VisibleVerticesTest5()
+        {
+            var polygon = new Polygon2D(new List<Vector2>()
+            {
+                new Vector2(0,0), new Vector2(0,4), new Vector2(10,4),
+                new Vector2(10,2), new Vector2(2,2), new Vector2(2,0)
+            });
+
+            int visibleVertexes = 4;
+            var vertex = polygon.Vertices.First();
+            var actual = NaiveLighthouseToLighthouseVisibility.VisibleVertices(
+                polygon,
+                vertex);
+
+            Assert.AreEqual(visibleVertexes, actual.Count);
         }
     }
 }

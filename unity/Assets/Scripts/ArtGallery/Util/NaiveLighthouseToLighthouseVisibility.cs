@@ -19,6 +19,7 @@ namespace ArtGallery
             List<Vector2> result = new List<Vector2>();
             // calculate new visibility polygon
             var vision = Visibility.Vision(polygon, vertex);
+            var area = vision.Area;
 
             if (vision == null)
             {
@@ -35,22 +36,14 @@ namespace ArtGallery
 
             for (int i = 0; i < polygon.VertexCount; i++)
             {
-                for (int j = 0; j < vision.VertexCount; j++)
-                {
-                    var pVertex = polygon.Vertices.ElementAt(i);
-                    var vVertex = vision.Vertices.ElementAt(j);
-                    bool areEqual = pVertex.EqualsEps(vVertex);
+                var pVertex = polygon.Vertices.ElementAt(i);
 
-                    if (areEqual)
+                    if (vision.ContainsInside(pVertex))
                     {
                         result.Add(pVertex);
 
-                        break;
                     }
-                }
             }
-            
-           
 
             return result;
         }
