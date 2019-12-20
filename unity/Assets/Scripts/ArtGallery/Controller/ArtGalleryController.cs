@@ -142,7 +142,6 @@
         /// </summary>
         public void HandleIslandClick()
         {
-        	// TODO KARINA
             // return if lighthouse was already selected or player can place no more lighthouses
             if (m_selectedLighthouse != null || m_solution.Count >= m_maxNumberOfLighthouses)
                 return;
@@ -150,8 +149,7 @@
             // obtain mouse position
             var worldlocation = Camera.main.ScreenPointToRay(Input.mousePosition).origin;
             worldlocation.z = -2f;
-
-            //find closest vertex. CHeck if it is occupied. If not, place the guard there. 
+                
             // create a new lighthouse from prefab
             var go = Instantiate(m_lighthousePrefab, worldlocation, Quaternion.identity) as GameObject;
 

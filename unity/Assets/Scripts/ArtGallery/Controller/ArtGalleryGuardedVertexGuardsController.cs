@@ -37,6 +37,49 @@ namespace Assets.Scripts.ArtGallery.Controller
         {
             throw new NotImplementedException();
         }
+
+
+
+        /// <summary>
+        /// Handle a click on the island mesh.
+        /// </summary>
+        public void HandleIslandClick()
+        {
+        	// TODO KARINA
+            // return if lighthouse was already selected or player can place no more lighthouses
+            if (m_selectedLighthouse != null || m_solution.Count >= m_maxNumberOfLighthouses)
+                return;
+
+            // obtain mouse position
+            var worldlocation = Camera.main.ScreenPointToRay(Input.mousePosition).origin;
+            worldlocation.z = -2f;
+            Vector2 worldlocation2D = worldlocation;
+
+
+            //find closest vertex. CHeck if it is occupied. If not, place the guard there.
+            var closestVertex2D = LevelPolygon.vertices[0];
+            var minMagnitude = (worldlocation2D-closestVertex2D).magnitude;
+            foreach (vtx2D in LevelPolygon.vertices) 
+            {
+                var currentMagnitude = (worldlocation2D-vtx2D).magnitude;
+                if (currentMagnitude < minMagnitude)
+                {
+                    minMagnitude = currentMagnitude;
+                    closestVertex2D = vtx2D;
+                }
+            }
+            //TODO: check if closestVertex already holds a lighthouse. If yes, return. 
+            //LevelPolygon.
+            
+            // create a new lighthouse from prefab
+            var go = Instantiate(m_lighthousePrefab, worldlocation, Quaternion.identity) as GameObject;
+
+            // add lighthouse to art gallery solution
+            m_solution.AddLighthouse(go);
+            UpdateLighthouseText();
+
+            CheckSolution();
+        }
         
         /// <summary>
         /// Checks if the current placed lighthouses completely illuminate
