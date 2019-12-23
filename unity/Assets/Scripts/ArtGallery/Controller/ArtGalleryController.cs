@@ -149,7 +149,7 @@
             // obtain mouse position
             var worldlocation = Camera.main.ScreenPointToRay(Input.mousePosition).origin;
             worldlocation.z = -2f;
-
+                
             // create a new lighthouse from prefab
             var go = Instantiate(m_lighthousePrefab, worldlocation, Quaternion.identity) as GameObject;
 
