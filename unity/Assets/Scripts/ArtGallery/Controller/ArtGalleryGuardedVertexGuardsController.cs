@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ArtGallery;
 using General.Controller;
 using UnityEngine;
 
@@ -26,6 +27,36 @@ namespace ArtGallery
     /// </summary>
     public class ArtGalleryGuardedVertexGuardsController : MonoBehaviour, IController
     {
+
+        [SerializeField]
+        private List<ArtGalleryLevel> m_levels;
+
+        [SerializeField]
+        private string m_victoryScreen = "agVictory";
+
+        [SerializeField]
+        private GameObject m_lighthousePrefab;
+
+        [SerializeField]
+        private ButtonContainer m_advanceButton;
+
+        [SerializeField]
+        private Text m_lighthouseText;
+
+        // stores the current level index
+        private int m_levelCounter = -1;
+
+        // specified max number of lighthouses in level
+        private int m_maxNumberOfLighthouses;
+
+        // store relevant art gallery objects
+        private ArtGallerySolution m_solution;
+        private ArtGalleryIsland m_levelMesh;
+        private ArtGalleryLightHouse m_selectedLighthouse;
+
+        public Polygon2D LevelPolygon { get; private set; }
+
+
         /// <inheritdoc />
         public void InitLevel()
         {
@@ -57,9 +88,9 @@ namespace ArtGallery
 
 
             //find closest vertex. CHeck if it is occupied. If not, place the guard there.
-            var closestVertex2D = LevelPolygon.vertices[0];
+            var closestVertex2D = LevelPolygon.Vertices.ElementAt(0);
             var minMagnitude = (worldlocation2D-closestVertex2D).magnitude;
-            foreach (vtx2D in LevelPolygon.vertices) 
+            foreach (var vtx2D in LevelPolygon.Vertices) 
             {
                 var currentMagnitude = (worldlocation2D-vtx2D).magnitude;
                 if (currentMagnitude < minMagnitude)
@@ -112,6 +143,13 @@ namespace ArtGallery
         public void AdvanceLevel()
         {
             throw new NotImplementedException();
+        }
+        /// <summary>
+        /// Update the text field with max number of lighthouses which can still be placed
+        /// </summary>
+        private void UpdateLighthouseText()
+        {
+            m_lighthouseText.text = "Torches left: " + (m_maxNumberOfLighthouses - m_solution.Count);
         }
     }
 }
