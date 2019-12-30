@@ -246,6 +246,129 @@ namespace Util.Algorithms.Polygon.Tests
         }
 
         [Test]
+        public void AreaTest7()
+        {
+            var shape = LShape;
+
+            var vision1 = Visibility.Vision(shape, shape.Vertices.ElementAt(1));
+            Assert.AreEqual(shape.Vertices.Count, vision1.Vertices.Count);
+        }
+        
+        [Test]
+        public void AreaTest8()
+        {
+            var polygon = new Polygon2D(
+                new List<Vector2>()
+                {
+                    new Vector2(0, 0), // O
+                    new Vector2(0, 4), // O
+                    new Vector2(4, 4), // O
+                    new Vector2(6, 4), // O
+                    new Vector2(8, 4), // O
+                    new Vector2(10, 4), // O
+                    new Vector2(10, 2), // O
+                    new Vector2(8, 2), // O
+                    new Vector2(6, 2), // O
+                    new Vector2(4, 2), // O
+                    new Vector2(2, 2), // O
+                    new Vector2(2, 0) // O
+                });
+
+            int visibleVertexes = 12;
+            var vertex = polygon.Vertices.ElementAt(1);
+            var vision1 = Visibility.Vision(polygon, vertex);
+            Assert.AreEqual(polygon.Vertices.Count,vision1.Vertices.Count);
+        }
+
+        [Test]
+        public void AreaTest9()
+        {
+            var polygon = new Polygon2D(
+                new List<Vector2>()
+                {
+                    new Vector2(0, 0), // O
+                    new Vector2(0, 4), // O
+                    new Vector2(4, 4), // O
+                    new Vector2(4, 6),
+                    new Vector2(5,4),
+                    new Vector2(6, 6),
+                    new Vector2(6, 4), // O
+                    new Vector2(8, 4), // O
+                    new Vector2(10, 4), // O
+                    new Vector2(10, 2), // O
+                    new Vector2(8, 2), // O
+                    new Vector2(6, 2), // O
+                    new Vector2(4, 2), // O
+                    new Vector2(2, 2), // O
+                    new Vector2(2, 0) // O
+                });
+
+
+            var vertex = polygon.Vertices.ElementAt(1);
+
+            var vision1 = Visibility.Vision(polygon, vertex);
+            float expectedArea1 = 24f;
+            float actualArea1 = vision1.Area;
+
+            Assert.IsTrue(MathUtil.EqualsEps(expectedArea1, actualArea1));
+    
+        }
+
+        [Test]
+        public void AreaTest10()
+        {
+            var polygon = new Polygon2D(
+                new List<Vector2>()
+                {
+                    new Vector2(0, 0), // O
+                    new Vector2(0, 4), // O
+                    new Vector2(2, 8),
+                    new Vector2(4, 4), // O
+                    new Vector2(6, 4), // O
+                    new Vector2(8, 4), // O
+                    new Vector2(10, 4), // O
+                    new Vector2(10, 2), // O
+                    new Vector2(8, 2), // O
+                    new Vector2(6, 2), // O
+                    new Vector2(4, 2), // O
+                    new Vector2(2, 2), // O
+                    new Vector2(2, 0) // O
+                });
+
+            var vertex = polygon.Vertices.ElementAt(1);
+            var vision1 = Visibility.Vision(polygon, vertex);
+            Assert.AreEqual(polygon.Vertices.Count, vision1.Vertices.Count);
+        }
+
+        [Test]
+        public void AreaTest11()
+        {
+            var polygon = new Polygon2D(
+                new List<Vector2>()
+                {
+                    new Vector2(0, 0), // O
+                    new Vector2(0, 4), // O
+                    new Vector2(2, 8),
+                    new Vector2(4, 4), // O
+                    new Vector2(4, 6),
+                    new Vector2(6, 4), // O
+                    new Vector2(8, 4), // O
+                    new Vector2(10, 4), // O
+                    new Vector2(10, 2), // O
+                    new Vector2(8, 2), // O
+                    new Vector2(6, 2), // O
+                    new Vector2(4, 2), // O
+                    new Vector2(2, 2), // O
+                    new Vector2(2, 0) // O
+                });
+
+            int visibleVertexes = 13;
+            var vertex = polygon.Vertices.ElementAt(1);
+            var vision1 = Visibility.Vision(polygon, vertex);
+            Assert.AreEqual(visibleVertexes, vision1.Vertices.Count);
+        }
+
+        [Test]
         public void ContainsTest()
         {
             // check if exception is thrown when given point outside polygon

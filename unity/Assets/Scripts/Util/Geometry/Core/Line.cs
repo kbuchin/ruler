@@ -215,6 +215,25 @@
         }
 
         /// <summary>
+        /// Checks whether the given points lies above the line.
+        /// </summary>
+        /// <param name="a_point"></param>
+        /// <returns></returns>
+        public bool PointBelow(Vector2 a_point)
+        {
+            //Returns true when point is below line (or right in the vertical case)
+            if (IsVertical)
+            {
+                return a_point.x > Point1.x;
+            }
+            else
+            {
+                var lineY = Y(a_point.x);
+                return a_point.y < lineY;
+            }
+        }
+
+        /// <summary>
         /// Counts the number of points above the line.
         /// </summary>
         /// <param name="a_points"></param>
@@ -242,7 +261,7 @@
             }
 
             //consider orientation
-            return Point1.x < Point2.x ? !PointAbove(a_point) : PointAbove(a_point);
+            return Point1.x < Point2.x ? PointBelow(a_point) : PointAbove(a_point);
         }
 
         /// <summary>

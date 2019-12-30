@@ -133,6 +133,25 @@
         }
 
         [Test]
+        public void PointBelowTest()
+        {
+            var point = new Vector2(0, 3);
+            Assert.IsFalse(m_line1.PointBelow(point));
+            Assert.IsTrue(m_line2.PointBelow(point));
+            Assert.IsFalse(m_line3.PointBelow(point));
+            Assert.IsFalse(m_horLine.PointBelow(point));
+
+            // check point on line
+            point = new Vector2(0, 0);
+            Assert.IsFalse(m_line3.PointBelow(point));
+
+            // check left is above for vertical
+            Assert.IsFalse(m_vertLine.PointBelow(point));
+            point = new Vector2(5, 0);
+            Assert.IsTrue(m_vertLine.PointBelow(point));
+        }
+
+        [Test]
         public void NumberOfPointsAboveTest()
         {
             var points = new List<Vector2>()
