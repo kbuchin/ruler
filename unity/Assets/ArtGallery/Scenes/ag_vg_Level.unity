@@ -271,7 +271,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1698274569}
+      - m_Target: {fileID: 0}
         m_MethodName: AdvanceLevel
         m_Mode: 1
         m_Arguments:
@@ -637,12 +637,6 @@ CanvasRenderer:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 632680760}
   m_CullTransparentMesh: 0
---- !u!114 &1698274569 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 114624802737080694, guid: df3d444a912111e4dada71b6deec06cc,
-    type: 2}
-  m_PrefabInternal: {fileID: 2002079870}
-  m_Script: {fileID: 11500000, guid: f154930771b1dff4ab7d450f5961f6c9, type: 3}
 --- !u!1 &1809658443
 GameObject:
   m_ObjectHideFlags: 0
@@ -815,9 +809,43 @@ Prefab:
       value: 
       objectReference: {fileID: 11400000, guid: ab9022a718e7d4a4ba30fe67f655eea2,
         type: 3}
-    m_RemovedComponents: []
+    - target: {fileID: 114624802737080694, guid: df3d444a912111e4dada71b6deec06cc,
+        type: 2}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 114624802737080694, guid: df3d444a912111e4dada71b6deec06cc, type: 2}
   m_SourcePrefab: {fileID: 100100000, guid: df3d444a912111e4dada71b6deec06cc, type: 2}
   m_IsPrefabAsset: 0
+--- !u!1 &2002079871 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1356252125741086, guid: df3d444a912111e4dada71b6deec06cc,
+    type: 2}
+  m_PrefabInternal: {fileID: 2002079870}
+--- !u!114 &2002079872
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2002079871}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac5cd2d11b98a414ea5c9ce2a7f544e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_levels:
+  - {fileID: 11400000, guid: 47fd0780edcb44acb9431dec55c28c10, type: 3}
+  - {fileID: 11400000, guid: 47fd0780edcb44acb9431dec55c28c10, type: 3}
+  - {fileID: 11400000, guid: c6d502ec56721411d9fb02322f754e1b, type: 3}
+  - {fileID: 11400000, guid: 5a4b98182771d4a368f34b6cd4aba813, type: 3}
+  - {fileID: 11400000, guid: 90b400244311a477d89453a4086e6e24, type: 3}
+  - {fileID: 11400000, guid: f945461e934c04f858292a72109dcba0, type: 3}
+  - {fileID: 11400000, guid: 6132afc7f5e4843ea8ad856fbf81b72b, type: 3}
+  m_victoryScreen: agVictory
+  m_lighthousePrefab: {fileID: 189480, guid: 52e5a999253ee854c99f4ecc1a19d437, type: 2}
+  m_advanceButton: {fileID: 2135131466}
+  m_lighthouseText: {fileID: 148341695}
 --- !u!1 &2028647603
 GameObject:
   m_ObjectHideFlags: 0

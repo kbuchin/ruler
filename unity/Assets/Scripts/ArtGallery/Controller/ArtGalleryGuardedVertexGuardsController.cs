@@ -25,85 +25,135 @@ namespace ArtGallery
     /// Handles the game update loop, as well as level initialization and
     /// advancement.
     /// </summary>
-    public class ArtGalleryGuardedVertexGuardsController : MonoBehaviour, IController
+    public class ArtGalleryGuardedVertexGuardsController : AbstractArtGalleryController
     {
-
-        [SerializeField]
-        private List<ArtGalleryLevel> m_levels;
-
-        [SerializeField]
-        private string m_victoryScreen = "agVictory";
-
-        [SerializeField]
-        private GameObject m_lighthousePrefab;
-
-        [SerializeField]
-        private ButtonContainer m_advanceButton;
-
-        [SerializeField]
-        private Text m_lighthouseText;
-
-        // stores the current level index
-        private int m_levelCounter = -1;
-
-        // specified max number of lighthouses in level
-        private int m_maxNumberOfLighthouses;
-
-        // store relevant art gallery objects
-        private ArtGallerySolution m_solution;
-        private ArtGalleryIsland m_levelMesh;
-        private ArtGalleryLightHouse m_selectedLighthouse;
-
-        public Polygon2D LevelPolygon { get; private set; }
-
-
         /// <inheritdoc />
-        public void InitLevel()
+        public override void CheckSolution()
         {
-            throw new NotImplementedException();
+            bool everythingVisible = CheckVisibility();
+            bool allGuardsVisible = CheckGuardedGuards();
+
+            if (everythingVisible && allGuardsVisible)
+            {
+                m_advanceButton.Enable();
+            }
         }
-
-        /// <inheritdoc />
-        public void CheckSolution()
+        protected override void Update()
         {
-            throw new NotImplementedException();
-        }
+            // return if no lighthouse was selected since last update
+            if (m_selectedLighthouse == null) return;
 
-
-
-        /// <summary>
-        /// Handle a click on the island mesh.
-        /// </summary>
-        public void HandleIslandClick()
-        {
-        	// TODO KARINA
-            // return if lighthouse was already selected or player can place no more lighthouses
-            if (m_selectedLighthouse != null || m_solution.Count >= m_maxNumberOfLighthouses)
-                return;
-
-            // obtain mouse position
+            // get current mouseposition
             var worldlocation = Camera.main.ScreenPointToRay(Input.mousePosition).origin;
             worldlocation.z = -2f;
-            Vector2 worldlocation2D = worldlocation;
 
+            // move lighthouse to mouse position
+            // will update visibility polygon
+            Vector3 location = ClosestVertex(worldlocation, true);
+            location.z = -2f;
+            m_selectedLighthouse.Pos = location;
 
-            //find closest vertex. CHeck if it is occupied. If not, place the guard there.
-            var closestVertex2D = LevelPolygon.Vertices.ElementAt(0);
-            var minMagnitude = (worldlocation2D-closestVertex2D).magnitude;
-            foreach (var vtx2D in LevelPolygon.Vertices) 
+            // see if lighthouse was released 
+            if (Input.GetMouseButtonUp(0))
             {
-                var currentMagnitude = (worldlocation2D-vtx2D).magnitude;
+                //check whether lighthouse is over the island
+                if (!LevelPolygon.ContainsInside(m_selectedLighthouse.Pos))
+                {
+                    // destroy the lighthouse
+                    m_solution.RemoveLighthouse(m_selectedLighthouse);
+                    Destroy(m_selectedLighthouse.gameObject);
+                    UpdateLighthouseText();
+                }
+
+                // lighthouse no longer selected
+                m_selectedLighthouse = null;
+
+                CheckSolution();
+            }
+        }
+
+        private Vector2 ClosestVertex(Vector2 location)
+        {
+            return ClosestVertex(location, false);
+        }
+
+        private Vector2 ClosestVertex(Vector2 location, bool withoutLighthouse)
+        {
+            //find closest vertex. Check if it is occupied. If not, place the guard there.
+            var closestVertex2D = LevelPolygon.Vertices.ElementAt(0);
+            var minMagnitude = (location - closestVertex2D).magnitude;
+
+            foreach (var vtx2D in LevelPolygon.Vertices)
+            {
+                var currentMagnitude = (location - vtx2D).magnitude;
+
                 if (currentMagnitude < minMagnitude)
                 {
+                    if (withoutLighthouse)
+                    {
+                        // Check if any of the lighthouses have the same x and y values as
+                        // the closest vertex. If so, return.
+                        if (m_solution.LightHouses.Any(
+                            l => MathUtil.EqualsEps(
+                                     l.Pos.x,
+                                     closestVertex2D.x) &&
+                                 MathUtil.EqualsEps(
+                                     l.Pos.y,
+                                     closestVertex2D.y)))
+                        {
+                            continue;
+                        }
+                    }
+                    
                     minMagnitude = currentMagnitude;
                     closestVertex2D = vtx2D;
                 }
             }
-            //TODO: check if closestVertex already holds a lighthouse. If yes, return. 
-            //LevelPolygon.
-            
+
+            return closestVertex2D;
+        }
+        /// <summary>Handle a click on the island mesh.</summary>
+        public override void HandleIslandClick()
+        {
+            // TODO KARINA
+            // return if lighthouse was already selected or player can place no more lighthouses
+            if (m_selectedLighthouse != null ||
+                m_solution.Count >= m_maxNumberOfLighthouses)
+            {
+                return;
+            }
+
+            // obtain mouse position
+            var worldlocation =
+                Camera.main.ScreenPointToRay(Input.mousePosition).origin;
+
+            worldlocation.z = -2f;
+            Vector2 worldlocation2D = worldlocation;
+
+            var closestVertex2D = ClosestVertex(worldlocation2D);
+
+            // Check if any of the lighthouses have the same x and y values as
+            // the closest vertex. If so, return.
+            if (m_solution.LightHouses.Any(
+                l => MathUtil.EqualsEps(
+                         l.Pos.x,
+                         closestVertex2D.x) &&
+                     MathUtil.EqualsEps(
+                         l.Pos.y,
+                         closestVertex2D.y)))
+            {
+                return;
+            }
+
+            Vector3 closestVertex = closestVertex2D;
+            closestVertex.z = -2f;
             // create a new lighthouse from prefab
-            var go = Instantiate(m_lighthousePrefab, worldlocation, Quaternion.identity) as GameObject;
+            var go = Instantiate(
+                m_lighthousePrefab,
+                closestVertex,
+                Quaternion.identity) as GameObject;
+
+           
 
             // add lighthouse to art gallery solution
             m_solution.AddLighthouse(go);
@@ -121,7 +171,13 @@ namespace ArtGallery
         /// </returns>
         public bool CheckVisibility()
         {
-            throw new NotImplementedException();
+            var ratio = m_solution.Area / LevelPolygon.Area;
+
+            Debug.Log(ratio + " part is visible");
+
+            // see if entire polygon is covered
+            return MathUtil.GEQEps(ratio, 1f, 0.001f);
+
         }
 
         /// <summary>
@@ -134,22 +190,17 @@ namespace ArtGallery
         /// </returns>
         public bool CheckGuardedGuards()
         {
-            throw new NotImplementedException();
-        }
+            var lightHouses = m_solution
+                              .LightHouses.Select(
+                                  l => new Vector2(l.Pos.x, l.Pos.y))
+                              .ToList();
 
-
-
-        /// <inheritdoc />
-        public void AdvanceLevel()
-        {
-            throw new NotImplementedException();
-        }
-        /// <summary>
-        /// Update the text field with max number of lighthouses which can still be placed
-        /// </summary>
-        private void UpdateLighthouseText()
-        {
-            m_lighthouseText.text = "Torches left: " + (m_maxNumberOfLighthouses - m_solution.Count);
+            bool allLighthousesAreSeen =
+                NaiveLighthouseToLighthouseVisibility.VisibleToOtherVertex(
+                    lightHouses,
+                    LevelPolygon);
+            Debug.Log("all guards are seen" + allLighthousesAreSeen);
+            return allLighthousesAreSeen;
         }
     }
 }

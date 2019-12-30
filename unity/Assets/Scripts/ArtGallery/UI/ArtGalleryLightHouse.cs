@@ -14,7 +14,7 @@
         [SerializeField]
         private GameObject m_visionAreaPrefab;
 
-        private ArtGalleryController m_controller;
+        private AbstractArtGalleryController m_controller;
 
         /// <summary>
         /// Mesh variable of the art gallery.
@@ -47,7 +47,7 @@
         // Use this for initialization
         void Awake()
         {
-            m_controller = FindObjectOfType<ArtGalleryController>();
+            m_controller = FindObjectOfType<AbstractArtGalleryController>();
 
             // initialize the vision polygon
             GameObject go = Instantiate(m_visionAreaPrefab, new Vector3(0, 0, -1.5f), Quaternion.identity) as GameObject;

@@ -60,6 +60,9 @@ EditorBuildSettings:
     path: Assets/ArtGallery/Scenes/agLevel.unity
     guid: 64ca2ce407867c84981fd4ff7153c312
   - enabled: 1
+    path: Assets/ArtGallery/Scenes/ag_vg_Level.unity
+    guid: bf09b47c314704ba3bbb269a8992ae28
+  - enabled: 1
     path: Assets/ArtGallery/Scenes/agVictory.unity
     guid: b014879cfd1bd3b45bd4a7deecee5de9
   - enabled: 1

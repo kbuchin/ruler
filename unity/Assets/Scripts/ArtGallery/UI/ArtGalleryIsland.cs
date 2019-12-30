@@ -1,4 +1,7 @@
-﻿namespace ArtGallery
+﻿using System;
+using UnityEngine;
+
+namespace ArtGallery
 {
     using General.Model;
 
@@ -8,7 +11,7 @@
     /// </summary>
     public class ArtGalleryIsland : Polygon2DMesh
     {
-        private ArtGalleryController m_controller;
+        private AbstractArtGalleryController m_controller;
 
         public ArtGalleryIsland()
         {
@@ -19,7 +22,7 @@
         public new void Awake()
         {
             base.Awake();
-            m_controller = FindObjectOfType<ArtGalleryController>();
+            m_controller = FindObjectOfType<AbstractArtGalleryController>();
         }
 
         void OnMouseUpAsButton()
