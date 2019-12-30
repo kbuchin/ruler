@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using UnityEngine;
 using Util.Algorithms.Polygon;
 using Util.Geometry;
@@ -128,18 +127,60 @@ namespace ArtGallery
             List<Vector2> otherVerteces,
             Polygon2D polygon)
         {
+            // Calculate all the visible vertexes
+            int numberOfVisibleVertexes =
+                VisibleToOtherVertexes(vertex, otherVerteces, polygon)
+                    .Count;
+
+            // Check if there is at least 1 vertex visible
+            return numberOfVisibleVertexes > 0;
+        }
+
+        /// <summary>
+        ///     Checks if the vertex
+        ///     <paramref name="vertex" />
+        ///     can be seen by any of the vertexes in
+        ///     <paramref name="otherVerteces" />
+        ///     in the context of
+        ///     <paramref name="polygon" />
+        ///     and creates a collection of vertexes that can see
+        ///     <paramref name="vertex" />
+        /// </summary>
+        /// <param name="vertex">
+        ///     The vertex that needs to be seen by any of the vertexes in
+        ///     <paramref name="otherVerteces" />
+        /// </param>
+        /// <param name="otherVerteces">
+        ///     The vertexes that need to see
+        ///     <paramref name="vertex" />
+        /// </param>
+        /// <param name="polygon">The polygon in which the vertexes exist.</param>
+        /// <returns>
+        ///     A collection of all vertexes in
+        ///     <paramref name="otherVerteces" />
+        ///     that can see the vertex
+        ///     <paramref name="vertex" />
+        /// </returns>
+        public static ICollection<Vector2> VisibleToOtherVertexes(
+            Vector2 vertex,
+            List<Vector2> otherVerteces,
+            Polygon2D polygon)
+        {
+            List<Vector2> result = new List<Vector2>();
+
             // check if the vertex can be seen by any of the other vertexes
             foreach (Vector2 vertex2 in otherVerteces)
             {
-                // If the vertex can be seen by one other vertex return 
+                // If the vertex can be seen by one other vertex add it to the 
+                // list
                 if (VisibleToOtherVertex(vertex, vertex2, polygon))
                 {
-                    return true;
+                    result.Add(vertex2);
                 }
             }
 
-            // if non of the other vertexes can see the vertex return false
-            return false;
+            // Return the list with all vertexes that can see the vertex
+            return result;
         }
 
         /// <summary>
@@ -180,6 +221,59 @@ namespace ArtGallery
 
             // if every vertex can be seen by one other vertex return true
             return true;
+        }
+
+        /// <summary>
+        ///     Creates a dictionary containing an entry for each vertex in
+        ///     <paramref name="vertexes" />
+        ///     and a corresponding value with all the vertexes in
+        ///     <paramref name="vertexes" />
+        ///     each vertex can see
+        /// </summary>
+        /// <param name="vertexes">
+        ///     The collection of vertexes for which visibility needs to be
+        ///     calculated
+        /// </param>
+        /// <param name="polygon">The polygon in which the vertexes exist.</param>
+        /// <returns>
+        ///     A dictionary containing for each vertex the other visible
+        ///     vertexes
+        /// </returns>
+        public static IDictionary<Vector2, ICollection<Vector2>>
+            VisibleToOtherVertexes(
+                List<Vector2> vertexes,
+                Polygon2D polygon)
+        {
+            // Create dictionary to store the result
+            IDictionary<Vector2, ICollection<Vector2>> result =
+                new Dictionary<Vector2, ICollection<Vector2>>();
+
+            // Iterate over all the vertexes and calculate for each vertex the
+            // other vertexes it can see.
+            foreach (Vector2 vertex1 in vertexes)
+            {
+                // Select all vertexes except the current vertex 
+                var otherVertexes = vertexes.Where(i => i != vertex1).ToList();
+
+                // Calculate the visible vertexes 
+                var visibleVertices = VisibleToOtherVertexes(
+                    vertex1,
+                    otherVertexes,
+                    polygon);
+
+                // Create a dictionary item. The key is the current vertex and
+                // the value is the vertexes it can see.
+                var dicItem =
+                    new KeyValuePair<Vector2, ICollection<Vector2>>(
+                        vertex1,
+                        visibleVertices);
+
+                // Add the dictionary item to the dictionary
+                result.Add(dicItem);
+            }
+
+            // Return the dictionary containing the vertex to vertex visibility
+            return result;
         }
     }
 }
