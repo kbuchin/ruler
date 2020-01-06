@@ -53,7 +53,7 @@
             };
             m_verticalRectVertices = new List<Vector2>()
             {
-                new Vector2(-1,2), new Vector2(1, 2), new Vector2(1, 0), new Vector2(-1,0)
+                new Vector2(1, 2), new Vector2(-1,2), new Vector2(-1,0), new Vector2(1, 0)
             };
 
             m_horizontalRect = new Polygon2D(m_horizontalRectVertices);
@@ -96,14 +96,14 @@
         public void OverlappingClipTest()
         {
             var clipResult = Clipper.CutOut(subjectPoly, clipPoly);
-            Assert.AreEqual(resultPoly, clipResult);
+            Assert.AreEqual(resultPoly.Area, clipResult.Area, MathUtil.EPS);
         }
 
         [Test]
         public void NonOverlappingClipTest()
         {
             var clipResult = Clipper.CutOut(resultPoly, clipPoly);
-            Assert.AreEqual(resultPoly, clipResult);
+            Assert.AreEqual(resultPoly.Area, clipResult.Area, MathUtil.EPS);
         }
 
         [Test]

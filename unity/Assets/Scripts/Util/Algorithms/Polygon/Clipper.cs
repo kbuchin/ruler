@@ -48,7 +48,6 @@
             else 
                 a_clip = new Polygon2D(a_clip.Vertices.Reverse());
 
-
             var WA = new WeilerAtherton(a_subject, a_clip);
 
             //return new MultiPolygon2D();
@@ -69,7 +68,7 @@
             // check if polygons have intersections
             if (WA.EntryIntersections.Count == 0)
             {
-                if (!WA.Subject.Vertices.ToList().Exists(p => WA.Clip.ContainsInside(p)))
+                if (!WA.Subject.Vertices.ToList().Exists(p => WA.Clip.ContainsInside(p) || WA.Clip.OnBoundary(p)))
                     multiPoly.AddPolygon(new Polygon2D(WA.Subject.Vertices));
             }
 
@@ -157,6 +156,7 @@
                     multiPoly.AddPolygon(new Polygon2D(vertices));
             }
 
+            //Debug.Log(multiPoly);
             return multiPoly;
         }
 
@@ -249,8 +249,8 @@
                     var prev = node.Previous ?? SubjectList.Last;
                     var vertex = node.Value;
 
-                    var inside1 = Clip.ContainsInside(prev.Value.Pos);
-                    var inside2 = Clip.ContainsInside(vertex.Pos);
+                    var inside1 = Clip.ContainsInside(prev.Value.Pos) || Clip.OnBoundary(prev.Value.Pos);
+                    var inside2 = Clip.ContainsInside(vertex.Pos) || Clip.OnBoundary(vertex.Pos);
 
                     if (!inside1 && inside2)
                         vertex.Type = WAList.Entry;

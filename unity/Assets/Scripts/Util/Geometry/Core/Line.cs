@@ -141,7 +141,6 @@
         {
             if (a_line1.IsParallel(a_line2))
             {
-                Debug.Log("Two parallel lines: " + a_line1 + " " + a_line2);
                 return null;
             }
 
@@ -177,6 +176,46 @@
             return Intersect(this, a_otherline);
         }
 
+        /// <summary>
+        /// Intersect this line with given other line.
+        /// </summary>
+        /// <param name="a_otherline"></param>
+        /// <returns></returns>
+        public Vector2? Intersect(Ray2D a_ray)
+        {
+            return Intersect(this, a_ray);
+        }
+
+        public Vector2? Intersect(Line a_line, Ray2D a_ray)
+        {
+            var rayTarget = a_ray.origin + a_ray.direction;
+            var rayLine = new Line(a_ray.origin, rayTarget);
+
+            Vector2? ret;
+
+            if (rayLine.IsParallel(a_line))
+            {
+                // check if ray origin is on line of line segment
+                if (a_line.IsOnLine(a_ray.origin)) return a_ray.origin;
+                else return null;
+            }
+            else
+            {
+                ret = Intersect(a_line, rayLine);
+            }
+
+            if (ret == null) return null;
+
+            // check if intersection in wrong direction
+            if (!MathUtil.EqualsEps(ret.Value, a_ray.origin, MathUtil.EPS * 10) &&
+                Vector2.Dot((ret.Value - a_ray.origin), a_ray.direction) < 0)
+            {
+                return null;
+            }
+
+            return ret;
+        }
+
         public bool IsParallel(Line a_otherLine)
         {
             // check specifically for verticality
@@ -191,8 +230,7 @@
         /// <returns></returns>
         public bool IsOnLine(Vector2 a_Point)
         {
-            return IsVertical ? MathUtil.EqualsEps(Point1.x, a_Point.x, MathUtil.EPS * 100)
-                : MathUtil.EqualsEps(Y(a_Point.x), a_Point.y, MathUtil.EPS * 100);
+            return DistanceToPoint(a_Point) < MathUtil.EPS * 100;
         }
 
         /// <summary>
@@ -240,7 +278,7 @@
             {
                 return Point2.y < Point1.y ? a_point.x < Point1.x : a_point.x > Point1.x;
             }
-
+            
             //consider orientation
             return Point1.x < Point2.x ? !PointAbove(a_point) : PointAbove(a_point);
         }

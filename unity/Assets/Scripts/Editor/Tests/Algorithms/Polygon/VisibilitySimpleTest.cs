@@ -9,13 +9,13 @@
     using Util.Math;
 
     [TestFixture]
-    public class VisibilityTest
+    public class VisibilitySimpleTest
     {
         private readonly Polygon2D arrowPoly;
         private readonly Polygon2D diamondPoly;
         private readonly Polygon2D LShape;
 
-        public VisibilityTest()
+        public VisibilitySimpleTest()
         {
             var m_topVertex = new Vector2(0, 1);
             var m_botVertex = new Vector2(0, -1);
@@ -42,10 +42,10 @@
         [Test]
         public void AreaTest()
         {
-            var vision = Visibility.Vision(arrowPoly, new Vector2(1.5f, 0));
+            var vision = VisibilitySimple.Vision(arrowPoly, new Vector2(1.5f, 0));
             Assert.IsTrue(MathUtil.EqualsEps(arrowPoly.Area, vision.Area));
 
-            vision = Visibility.Vision(diamondPoly, Vector2.zero);
+            vision = VisibilitySimple.Vision(diamondPoly, Vector2.zero);
             Assert.IsTrue(MathUtil.EqualsEps(diamondPoly.Area, vision.Area));
         }
 
@@ -53,13 +53,13 @@
         public void ContainsTest()
         {
             // check if exception is thrown when given point outside polygon
-            Assert.Throws<ArgumentException>(() => Visibility.Vision(arrowPoly, new Vector2(-1f, 0)));
+            Assert.Throws<ArgumentException>(() => VisibilitySimple.Vision(arrowPoly, new Vector2(-1f, 0)));
         }
 
         [Test]
         public void LShapeVisionTest()
         {
-            var poly = Visibility.Vision(LShape, new Vector2(3.427403f, 3.464213f));
+            var poly = VisibilitySimple.Vision(LShape, new Vector2(3.427403f, 3.464213f));
 
             // check percentage
             Assert.Greater(0.88f, poly.Area / LShape.Area);

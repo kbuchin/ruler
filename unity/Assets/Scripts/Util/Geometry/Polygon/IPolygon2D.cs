@@ -92,11 +92,19 @@
         void Clear();
 
         /// <summary>
-        /// Checks whether the point is contained inside the polygon.
+        /// Checks whether the point is contained strictly inside the polygon.
+        /// Use OnBoundary if also want to check for points on boundary of polygon.
         /// </summary>
         /// <param name="pos"></param>
         /// <returns></returns>
         bool ContainsInside(Vector2 pos);
+
+        /// <summary>
+        /// Check whether a point lies on the boundary of the polygon.
+        /// </summary>
+        /// <param name="pos"></param>
+        /// <returns></returns>
+        bool OnBoundary(Vector2 pos);
 
         /// <summary>
         /// Checks whether the point is a vertex in the polygon.

@@ -150,6 +150,9 @@
             var worldlocation = Camera.main.ScreenPointToRay(Input.mousePosition).origin;
             worldlocation.z = -2f;
 
+            // extra check to see if lighthouse inside polygon
+            if (!(m_levelMesh.Polygon.ContainsInside(worldlocation) || m_levelMesh.Polygon.OnBoundary(worldlocation))) return;
+
             // create a new lighthouse from prefab
             var go = Instantiate(m_lighthousePrefab, worldlocation, Quaternion.identity) as GameObject;
 
@@ -171,7 +174,7 @@
             if (LevelPolygon.ContainsInside(m_lighthouse.Pos))
             {
                 // calculate new visibility polygon
-                var vision = Visibility.Vision(LevelPolygon, m_lighthouse.Pos);
+                var vision = VisibilitySweep.Vision(LevelPolygon, m_lighthouse.Pos);
 
                 if (vision == null)
                 {

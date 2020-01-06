@@ -230,18 +230,27 @@
 
         public bool ContainsInside(Vector2 a_pos)
         {
-            foreach (var hole in m_holes)
-            {
-                if (hole.ContainsInside(a_pos))
-                    return false;
-            }
+            return Outside.ContainsInside(a_pos) && !m_holes.Exists(h => h.ContainsInside(a_pos));
+        }
 
-            return Outside.ContainsInside(a_pos);
+        public bool OnBoundary(Vector2 a_pos)
+        {
+            return Outside.OnBoundary(a_pos) || m_holes.Exists(h => h.OnBoundary(a_pos));
         }
 
         public bool ContainsVertex(Vector2 pos)
         {
             return Outside.ContainsVertex(pos) || m_holes.Exists(p => p.ContainsVertex(pos));
+        }
+
+        /// <summary>
+        /// Shifts all polygon points such that the given point lies at origin.
+        /// </summary>
+        /// <param name="a_point"></param>
+        public void ShiftToOrigin(Vector2 a_point)
+        {
+            Outside.ShiftToOrigin(a_point);
+            foreach (var h in m_holes) h.ShiftToOrigin(a_point);
         }
 
         public bool IsClockwise()

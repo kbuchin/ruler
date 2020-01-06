@@ -11,7 +11,7 @@
     /// <summary>
     /// Collection of algorithms related to visibility polygons.
     /// </summary>
-    public static class Visibility
+    public class VisibilitySimple
     {
         /// <summary>
         /// Computes the visibility polygon from the given point 
@@ -29,7 +29,7 @@
                 return null;
             }
 
-            if (!polygon.ContainsInside(z))
+            if (!(polygon.ContainsInside(z) || polygon.OnBoundary(z)))
             {
                 throw new ArgumentException("Visibility point must be inside polygon");
             }
