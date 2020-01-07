@@ -80,6 +80,7 @@
         /// <inheritdoc />
         public void AdvanceLevel()
         {
+            Debug.Log("advance to next level");
             m_levelCounter++;
 
             if (m_levelCounter < m_levels.Count)
