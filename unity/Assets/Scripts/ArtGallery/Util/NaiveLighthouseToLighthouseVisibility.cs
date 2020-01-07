@@ -161,7 +161,7 @@ namespace ArtGallery
         ///     that can see the vertex
         ///     <paramref name="vertex" />
         /// </returns>
-        public static ICollection<Vector2> VisibleToOtherVertexes(
+        public static ICollection<Vector2> VisibleToOtherVertices(
             Vector2 vertex,
             List<Vector2> otherVerteces,
             Polygon2D polygon)
