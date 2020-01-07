@@ -240,7 +240,7 @@ namespace ArtGallery
         ///     vertexes
         /// </returns>
         public static IDictionary<Vector2, ICollection<Vector2>>
-            VisibleToOtherVertexes(
+            VisibleToOtherVertices(
                 List<Vector2> vertexes,
                 Polygon2D polygon)
         {
