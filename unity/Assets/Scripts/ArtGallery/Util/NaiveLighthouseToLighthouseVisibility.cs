@@ -163,7 +163,7 @@ namespace ArtGallery
         /// </returns>
         public static ICollection<Vector2> VisibleToOtherVertices(
             Vector2 vertex,
-            List<Vector2> otherVerteces,
+            List<Vector2> otherVertices,
             Polygon2D polygon)
         {
             List<Vector2> result = new List<Vector2>();
