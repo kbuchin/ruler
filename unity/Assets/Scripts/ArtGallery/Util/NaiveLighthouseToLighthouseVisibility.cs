@@ -250,7 +250,7 @@ namespace ArtGallery
 
             // Iterate over all the vertexes and calculate for each vertex the
             // other vertexes it can see.
-            foreach (Vector2 vertex1 in vertexes)
+            foreach (Vector2 vertex in vertices)
             {
                 // Select all vertexes except the current vertex 
                 var otherVertexes = vertexes.Where(i => i != vertex1).ToList();
