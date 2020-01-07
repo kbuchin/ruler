@@ -72,12 +72,8 @@ namespace ArtGallery
             }
         }
 
+        /// <summary>Find a closest vertex (of the level polygon) to a given location.</summary>
         private Vector2 ClosestVertex(Vector2 location)
-        {
-            return ClosestVertex(location, false);
-        }
-
-        private Vector2 ClosestVertex(Vector2 location, bool withoutLighthouse)
         {
             //find closest vertex. Check if it is occupied. If not, place the guard there.
             var closestVertex2D = LevelPolygon.Vertices.ElementAt(0);
@@ -88,23 +84,7 @@ namespace ArtGallery
                 var currentMagnitude = (location - vtx2D).magnitude;
 
                 if (currentMagnitude < minMagnitude)
-                {
-                    if (withoutLighthouse)
-                    {
-                        // Check if any of the lighthouses have the same x and y values as
-                        // the closest vertex. If so, return.
-                        if (m_solution.LightHouses.Any(
-                            l => MathUtil.EqualsEps(
-                                     l.Pos.x,
-                                     closestVertex2D.x) &&
-                                 MathUtil.EqualsEps(
-                                     l.Pos.y,
-                                     closestVertex2D.y)))
-                        {
-                            continue;
-                        }
-                    }
-                    
+                {                 
                     minMagnitude = currentMagnitude;
                     closestVertex2D = vtx2D;
                 }
@@ -112,10 +92,25 @@ namespace ArtGallery
 
             return closestVertex2D;
         }
+
+        /// <summary>Check if there is a lighthouse object at the location.</summary>
+        private bool LighthouseExists(Vector2 location)
+        {
+            // Check if any of the lighthouses have the same x and y values as given location.
+            bool lighthousExists = m_solution.LightHouses.Any(
+                l => MathUtil.EqualsEps(
+                         l.Pos.x,
+                         location.x) &&
+                     MathUtil.EqualsEps(
+                         l.Pos.y,
+                         location.y));
+            return lighthousExists;
+        }
+
+
         /// <summary>Handle a click on the island mesh.</summary>
         public override void HandleIslandClick()
         {
-            // TODO KARINA
             // return if lighthouse was already selected or player can place no more lighthouses
             if (m_selectedLighthouse != null ||
                 m_solution.Count >= m_maxNumberOfLighthouses)
@@ -130,30 +125,23 @@ namespace ArtGallery
             worldlocation.z = -2f;
             Vector2 worldlocation2D = worldlocation;
 
+            // obtain coordinated of the closest vertex
             var closestVertex2D = ClosestVertex(worldlocation2D);
 
-            // Check if any of the lighthouses have the same x and y values as
-            // the closest vertex. If so, return.
-            if (m_solution.LightHouses.Any(
-                l => MathUtil.EqualsEps(
-                         l.Pos.x,
-                         closestVertex2D.x) &&
-                     MathUtil.EqualsEps(
-                         l.Pos.y,
-                         closestVertex2D.y)))
-            {
+            // if there is a lighthouse at the closest vertex, return
+            if (LighthouseExists(closestVertex2D)) {
                 return;
             }
+            // There is no lightgouse at the closest vertex
 
             Vector3 closestVertex = closestVertex2D;
             closestVertex.z = -2f;
+            
             // create a new lighthouse from prefab
             var go = Instantiate(
                 m_lighthousePrefab,
                 closestVertex,
                 Quaternion.identity) as GameObject;
-
-           
 
             // add lighthouse to art gallery solution
             m_solution.AddLighthouse(go);
@@ -161,7 +149,8 @@ namespace ArtGallery
 
             CheckSolution();
         }
-        
+
+
         /// <summary>
         /// Checks if the current placed lighthouses completely illuminate
         /// the room
