@@ -208,7 +208,7 @@ namespace ArtGallery
         {
             // For each of the vertexes check if they are visible to at least
             // one other vertex
-            foreach (Vector2 vertex1 in vertexes)
+            foreach (Vector2 vertex in vertexes)
             {
                 var otherVertexes = vertexes.Where(i => i != vertex1).ToList();
 
