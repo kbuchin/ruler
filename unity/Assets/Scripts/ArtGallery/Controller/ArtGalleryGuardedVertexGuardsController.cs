@@ -29,6 +29,7 @@ namespace ArtGallery
         {
             bool everythingVisible = CheckVisibility();
             bool allGuardsVisible = CheckGuardedGuards();
+            Debug.Log("everything is visible: " + everythingVisible + ", all guards are visible" + allGuardsVisible);
 
             if (everythingVisible && allGuardsVisible)
             {
