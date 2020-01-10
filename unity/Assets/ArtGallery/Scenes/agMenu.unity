@@ -145,7 +145,7 @@ GameObject:
   - component: {fileID: 64389610}
   - component: {fileID: 64389609}
   m_Layer: 5
-  m_Name: Go_easy
+  m_Name: Go_point
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -261,7 +261,7 @@ GameObject:
   - component: {fileID: 322896909}
   - component: {fileID: 322896908}
   m_Layer: 5
-  m_Name: Go_hard
+  m_Name: Go_guarded_vertex
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -694,7 +694,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Start Hard Game
+  m_Text: Guarded Vertex Game
 --- !u!222 &945914755
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1173,7 +1173,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Start Easy Game
+  m_Text: Point Game
 --- !u!222 &2072942753
 CanvasRenderer:
   m_ObjectHideFlags: 0
