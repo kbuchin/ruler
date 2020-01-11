@@ -10,56 +10,7 @@ namespace ArtGallery
 {
     public static class NaiveLighthouseToLighthouseVisibility
     {
-        public static List<Vector2> VisibleVertices(
-            Polygon2D polygon,
-            Vector2 vertex)
-        {
-            List<Vector2> result = new List<Vector2>();
-
-            // calculate new visibility polygon
-            var vision = Visibility.Vision(polygon, vertex);
-
-            if (vision == null)
-            {
-                throw new Exception("Vision polygon cannot be null");
-            }
-
-            //check if the level polygon and the visibility polygon are given 
-            // in the same direction. If not, reverse the vision polygon to
-            // match the direction of the level polygon
-            if (polygon.IsClockwise() != vision.IsClockwise())
-            {
-                vision.Reverse();
-            }
-
-            for (int i = 0; i < polygon.VertexCount; i++)
-            {
-                var pVertex = polygon.Vertices.ElementAt(i);
-
-                if (vision.ContainsInside(pVertex))
-                {
-                    result.Add(pVertex);
-                }
-            }
-
-            return result;
-        }
-
-        public static List<List<Vector2>> VisibleVertices(
-            Polygon2D polygon,
-            List<Vector2> vertices)
-        {
-            List<List<Vector2>> result = new List<List<Vector2>>();
-
-            foreach (Vector2 vertex in vertices)
-            {
-                result.Add(VisibleVertices(polygon, vertex));
-            }
-
-            return result;
-        }
-
-        /// <summary>Checks if tho vertices are visible to each other</summary>
+       /// <summary>Checks if tho vertices are visible to each other</summary>
         /// <param name="vertex1"> The first vertex </param>
         /// <param name="vertex2"> The second vertex </param>
         /// <param name="polygon"> The polygon containing the vertices</param>
@@ -129,7 +80,7 @@ namespace ArtGallery
         {
             // Calculate all the visible vertexes
             int numberOfVisibleVertexes =
-                VisibleToOtherVertexes(vertex, otherVerteces, polygon)
+                VisibleToOtherVertices(vertex, otherVerteces, polygon)
                     .Count;
 
             // Check if there is at least 1 vertex visible
@@ -161,15 +112,15 @@ namespace ArtGallery
         ///     that can see the vertex
         ///     <paramref name="vertex" />
         /// </returns>
-        public static ICollection<Vector2> VisibleToOtherVertexes(
+        public static ICollection<Vector2> VisibleToOtherVertices(
             Vector2 vertex,
-            List<Vector2> otherVerteces,
+            List<Vector2> otherVertices,
             Polygon2D polygon)
         {
             List<Vector2> result = new List<Vector2>();
 
             // check if the vertex can be seen by any of the other vertexes
-            foreach (Vector2 vertex2 in otherVerteces)
+            foreach (Vector2 vertex2 in otherVertices)
             {
                 // If the vertex can be seen by one other vertex add it to the 
                 // list
@@ -208,12 +159,12 @@ namespace ArtGallery
         {
             // For each of the vertexes check if they are visible to at least
             // one other vertex
-            foreach (Vector2 vertex1 in vertexes)
+            foreach (Vector2 vertex in vertexes)
             {
-                var otherVertexes = vertexes.Where(i => i != vertex1).ToList();
+                var otherVertexes = vertexes.Where(i => i != vertex).ToList();
 
                 // If the vertex cannot be seen by one other vertex return 
-                if (!VisibleToOtherVertex(vertex1, otherVertexes, polygon))
+                if (!VisibleToOtherVertex(vertex, otherVertexes, polygon))
                 {
                     return false;
                 }
@@ -240,8 +191,8 @@ namespace ArtGallery
         ///     vertexes
         /// </returns>
         public static IDictionary<Vector2, ICollection<Vector2>>
-            VisibleToOtherVertexes(
-                List<Vector2> vertexes,
+            VisibleToOtherVertices(
+                List<Vector2> vertices,
                 Polygon2D polygon)
         {
             // Create dictionary to store the result
@@ -250,26 +201,20 @@ namespace ArtGallery
 
             // Iterate over all the vertexes and calculate for each vertex the
             // other vertexes it can see.
-            foreach (Vector2 vertex1 in vertexes)
+            foreach (Vector2 vertex in vertices)
             {
                 // Select all vertexes except the current vertex 
-                var otherVertexes = vertexes.Where(i => i != vertex1).ToList();
+                var otherVertexes = vertices.Where(i => i != vertex).ToList();
 
                 // Calculate the visible vertexes 
-                var visibleVertices = VisibleToOtherVertexes(
-                    vertex1,
+                var visibleVertices = VisibleToOtherVertices(
+                    vertex,
                     otherVertexes,
                     polygon);
 
-                // Create a dictionary item. The key is the current vertex and
+                // Add a dictionary item. The key is the current vertex and
                 // the value is the vertexes it can see.
-                var dicItem =
-                    new KeyValuePair<Vector2, ICollection<Vector2>>(
-                        vertex1,
-                        visibleVertices);
-
-                // Add the dictionary item to the dictionary
-                result.Add(dicItem);
+                result.Add(vertex, visibleVertices);
             }
 
             // Return the dictionary containing the vertex to vertex visibility
