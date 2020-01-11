@@ -51,8 +51,8 @@ namespace ArtGallery
 
             // adjusts positions such that start at the beginning
             var result = collectionList.Skip(vIndex)
-                                   .Concat(collectionList.Take(vIndex))
-                                   ;
+                                       .Concat(collectionList.Take(vIndex))
+                ;
 
             return result;
         }

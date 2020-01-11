@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Assets.Scripts.ArtGallery.Util;
 
 namespace ArtGallery
 {
@@ -24,6 +25,9 @@ namespace ArtGallery
     /// </summary>
     public class ArtGalleryGuardedVertexGuardsController : AbstractArtGalleryController
     {
+        // specified max number of lighthouses in level
+        private ILighthouseToLightHouseVisibility m_LighthouseToLighthouse = new NaiveLighthouseToLighthouseVisibility();
+
         /// <inheritdoc />
         public override void CheckSolution()
         {
@@ -180,7 +184,7 @@ namespace ArtGallery
                               .ToList();
 
             bool allLighthousesAreSeen =
-                NaiveLighthouseToLighthouseVisibility.VisibleToOtherVertex(
+                m_LighthouseToLighthouse.VisibleToOtherVertex(
                     lightHouses,
                     LevelPolygon);
             Debug.Log("all guards are seen" + allLighthousesAreSeen);

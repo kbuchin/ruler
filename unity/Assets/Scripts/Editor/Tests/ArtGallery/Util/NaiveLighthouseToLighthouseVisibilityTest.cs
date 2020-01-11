@@ -1,4 +1,6 @@
-﻿namespace ArtGallery.Tests
+﻿using Assets.Scripts.ArtGallery.Util;
+
+namespace ArtGallery.Tests
 {
     using System;
     using System.Collections.Generic;
@@ -17,6 +19,7 @@
         private readonly Polygon2D arrowPoly;
         private readonly Polygon2D diamondPoly;
         private readonly Polygon2D LShape;
+        private ILighthouseToLightHouseVisibility lighthouseToLightHouseVisibility = new NaiveLighthouseToLighthouseVisibility();
 
         public NaiveLighthouseToLighthouseVisibilityTest()
         {
@@ -65,7 +68,7 @@
             var vertex2 = polygon.Vertices.ElementAt(2);
 
             bool canSeeEachOther =
-                NaiveLighthouseToLighthouseVisibility.VisibleToOtherVertex(
+                lighthouseToLightHouseVisibility.VisibleToOtherVertex(
                     vertex1,
                     vertex2,
                     polygon);
@@ -97,7 +100,7 @@
             var vertex2 = polygon.Vertices.ElementAt(1);
 
             bool canSeeEachOther =
-                NaiveLighthouseToLighthouseVisibility.VisibleToOtherVertex(
+                lighthouseToLightHouseVisibility.VisibleToOtherVertex(
                     vertex1,
                     vertex2,
                     polygon);
@@ -130,7 +133,7 @@
             var vertex2 = new Vector2(10, 4);
 
             bool canSeeEachOther =
-                NaiveLighthouseToLighthouseVisibility.VisibleToOtherVertex(
+                lighthouseToLightHouseVisibility.VisibleToOtherVertex(
                     vertex1,
                     vertex2,
                     polygon);
@@ -162,7 +165,7 @@
             var vertex2 = new Vector2(10, 2);
 
             bool canSeeEachOther =
-                NaiveLighthouseToLighthouseVisibility.VisibleToOtherVertex(
+                lighthouseToLightHouseVisibility.VisibleToOtherVertex(
                     vertex1,
                     vertex2,
                     polygon);
@@ -199,7 +202,7 @@
             };
 
             bool canSeeEachOther =
-                NaiveLighthouseToLighthouseVisibility.VisibleToOtherVertex(
+                lighthouseToLightHouseVisibility.VisibleToOtherVertex(
                     vertex1,
                     otherVertexes,
                     polygon);
@@ -236,7 +239,7 @@
             };
 
             bool canSeeEachOther =
-                NaiveLighthouseToLighthouseVisibility.VisibleToOtherVertex(
+                lighthouseToLightHouseVisibility.VisibleToOtherVertex(
                     vertex1,
                     otherVertexes,
                     polygon);
@@ -273,7 +276,7 @@
             };
 
             bool canSeeEachOther =
-                NaiveLighthouseToLighthouseVisibility.VisibleToOtherVertex(
+                lighthouseToLightHouseVisibility.VisibleToOtherVertex(
                     vertexes,
                     polygon);
 
@@ -310,7 +313,7 @@
             };
 
             bool canSeeEachOther =
-                NaiveLighthouseToLighthouseVisibility.VisibleToOtherVertex(
+                lighthouseToLightHouseVisibility.VisibleToOtherVertex(
                     vertexes,
                     polygon);
 
@@ -344,7 +347,7 @@
             var vertex = m_topVertex;
 
             var actual =
-                NaiveLighthouseToLighthouseVisibility.VisibleToOtherVertices(
+                lighthouseToLightHouseVisibility.VisibleToOtherVertices(
                     vertex,
                     vertexes,
                     polygon);
@@ -386,7 +389,7 @@
             var vertex = m_topVertex;
 
             var actual =
-                NaiveLighthouseToLighthouseVisibility.VisibleToOtherVertices(
+                lighthouseToLightHouseVisibility.VisibleToOtherVertices(
                     vertex,
                     vertexes,
                     polygon);
@@ -419,7 +422,7 @@
             };
 
             var actual =
-                NaiveLighthouseToLighthouseVisibility.VisibleToOtherVertices(
+                lighthouseToLightHouseVisibility.VisibleToOtherVertices(
                     vertexes,
                     polygon);
 
@@ -456,7 +459,7 @@
             };
 
             var actual =
-                NaiveLighthouseToLighthouseVisibility.VisibleToOtherVertices(
+                lighthouseToLightHouseVisibility.VisibleToOtherVertices(
                     vertexes,
                     polygon);
 

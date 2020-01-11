@@ -1,4 +1,6 @@
-﻿namespace ArtGallery.Tests
+﻿using Assets.Scripts.ArtGallery.Util;
+
+namespace ArtGallery.Tests
 {
     using System;
     using System.Collections.Generic;
@@ -17,6 +19,7 @@
         private readonly Polygon2D arrowPoly;
         private readonly Polygon2D diamondPoly;
         private readonly Polygon2D LShape;
+        private ILighthouseToLightHouseVisibility lighthouseToLightHouseVisibility = new RotateLineLighthouseToLighthouseVisibility();
 
         public RotateLineLighthouseToLighthouseVisibilityTest()
         {
@@ -65,7 +68,7 @@
             var vertex2 = polygon.Vertices.ElementAt(2);
 
             bool canSeeEachOther =
-                RotateLineLighthouseToLighthouseVisibility.VisibleToOtherVertex(
+                lighthouseToLightHouseVisibility.VisibleToOtherVertex(
                     vertex1,
                     vertex2,
                     polygon);
@@ -97,7 +100,7 @@
             var vertex2 = polygon.Vertices.ElementAt(1);
 
             bool canSeeEachOther =
-                RotateLineLighthouseToLighthouseVisibility.VisibleToOtherVertex(
+                lighthouseToLightHouseVisibility.VisibleToOtherVertex(
                     vertex1,
                     vertex2,
                     polygon);
@@ -130,7 +133,7 @@
             var vertex2 = new Vector2(10, 4);
 
             bool canSeeEachOther =
-                RotateLineLighthouseToLighthouseVisibility.VisibleToOtherVertex(
+                lighthouseToLightHouseVisibility.VisibleToOtherVertex(
                     vertex1,
                     vertex2,
                     polygon);
@@ -162,7 +165,7 @@
             var vertex2 = new Vector2(10, 2);
 
             bool canSeeEachOther =
-                RotateLineLighthouseToLighthouseVisibility.VisibleToOtherVertex(
+                lighthouseToLightHouseVisibility.VisibleToOtherVertex(
                     vertex1,
                     vertex2,
                     polygon);
@@ -199,7 +202,7 @@
             };
 
             bool canSeeEachOther =
-                RotateLineLighthouseToLighthouseVisibility.VisibleToOtherVertex(
+                lighthouseToLightHouseVisibility.VisibleToOtherVertex(
                     vertex1,
                     otherVertexes,
                     polygon);
@@ -236,7 +239,7 @@
             };
 
             bool canSeeEachOther =
-                RotateLineLighthouseToLighthouseVisibility.VisibleToOtherVertex(
+                lighthouseToLightHouseVisibility.VisibleToOtherVertex(
                     vertex1,
                     otherVertexes,
                     polygon);
@@ -273,7 +276,7 @@
             };
 
             bool canSeeEachOther =
-                RotateLineLighthouseToLighthouseVisibility.VisibleToOtherVertex(
+                lighthouseToLightHouseVisibility.VisibleToOtherVertex(
                     vertexes,
                     polygon);
 
@@ -310,7 +313,7 @@
             };
 
             bool canSeeEachOther =
-                RotateLineLighthouseToLighthouseVisibility.VisibleToOtherVertex(
+                lighthouseToLightHouseVisibility.VisibleToOtherVertex(
                     vertexes,
                     polygon);
 
@@ -344,7 +347,7 @@
             var vertex = m_topVertex;
 
             var actual =
-                RotateLineLighthouseToLighthouseVisibility.VisibleToOtherVertexes(
+                lighthouseToLightHouseVisibility.VisibleToOtherVertices(
                     vertex,
                     vertexes,
                     polygon);
@@ -386,7 +389,7 @@
             var vertex = m_topVertex;
 
             var actual =
-                RotateLineLighthouseToLighthouseVisibility.VisibleToOtherVertexes(
+                lighthouseToLightHouseVisibility.VisibleToOtherVertices(
                     vertex,
                     vertexes,
                     polygon);
@@ -419,7 +422,7 @@
             };
 
             var actual =
-                RotateLineLighthouseToLighthouseVisibility.VisibleToOtherVertexes(
+                lighthouseToLightHouseVisibility.VisibleToOtherVertices(
                     vertexes,
                     polygon);
 
@@ -456,7 +459,7 @@
             };
 
             var actual =
-                RotateLineLighthouseToLighthouseVisibility.VisibleToOtherVertexes(
+                lighthouseToLightHouseVisibility.VisibleToOtherVertices(
                     vertexes,
                     polygon);
 
@@ -471,7 +474,7 @@
             foreach (var vertex in diamondPoly.Vertices)
             {
                 var actual =
-                    RotateLineLighthouseToLighthouseVisibility.VisibleVertices(
+                    new RotateLineLighthouseToLighthouseVisibility().VisibleVertices(
                         diamondPoly,
                         vertex);
 
@@ -484,7 +487,7 @@
         {
             var vertex = arrowPoly.Vertices.ElementAt(0);
 
-            var actual = RotateLineLighthouseToLighthouseVisibility.VisibleVertices(
+            var actual = new RotateLineLighthouseToLighthouseVisibility().VisibleVertices(
                 arrowPoly,
                 vertex);
 
@@ -496,7 +499,7 @@
         {
             var vertex = LShape.Vertices.First();
 
-            var actual = RotateLineLighthouseToLighthouseVisibility.VisibleVertices(
+            var actual = new RotateLineLighthouseToLighthouseVisibility().VisibleVertices(
                 LShape,
                 vertex);
 
@@ -526,7 +529,7 @@
             int visibleVertexes = 5;
             var vertex = polygon.Vertices.First();
 
-            var actual = RotateLineLighthouseToLighthouseVisibility.VisibleVertices(
+            var actual = new RotateLineLighthouseToLighthouseVisibility().VisibleVertices(
                 polygon,
                 vertex);
 
@@ -535,7 +538,7 @@
             visibleVertexes = polygon.Vertices.Count;
             vertex = polygon.Vertices.ElementAt(1);
 
-            actual = RotateLineLighthouseToLighthouseVisibility.VisibleVertices(
+            actual = new RotateLineLighthouseToLighthouseVisibility().VisibleVertices(
                 polygon,
                 vertex);
 
@@ -560,7 +563,7 @@
             int visibleVertexes = 4;
             var vertex = polygon.Vertices.First();
 
-            var actual = RotateLineLighthouseToLighthouseVisibility.VisibleVertices(
+            var actual = new RotateLineLighthouseToLighthouseVisibility().VisibleVertices(
                 polygon,
                 vertex);
 
@@ -594,7 +597,7 @@
             int visibleVertexes = 13;
             var vertex = polygon.Vertices.ElementAt(1);
 
-            var actual = RotateLineLighthouseToLighthouseVisibility.VisibleVertices(
+            var actual = new RotateLineLighthouseToLighthouseVisibility().VisibleVertices(
                 polygon,
                 vertex);
 
