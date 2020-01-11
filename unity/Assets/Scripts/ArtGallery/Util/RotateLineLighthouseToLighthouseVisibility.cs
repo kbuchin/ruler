@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting.Metadata.W3cXsd2001;
-using System.Text;
 using Assets.Scripts.ArtGallery.Util;
 using UnityEngine;
 using Util.Algorithms.Polygon;
@@ -86,20 +83,20 @@ namespace ArtGallery
             List<Vector2> vertexes,
             Polygon2D polygon)
         {
-            // For each of the vertexes check if they are visible to at least
-            // one other vertex
-            foreach (Vector2 vertex1 in vertexes)
-            {
-                var otherVertexes = vertexes.Where(i => i != vertex1).ToList();
+            // Create a dictionary for all vertices and their visible vertices.
+            var dic = VisibleToOtherVertices(vertexes, polygon);
 
-                // If the vertex cannot be seen by one other vertex return 
-                if (!VisibleToOtherVertex(vertex1, otherVertexes, polygon))
+            // loop over the list and check if all vertices have at least one
+            // entry meaning they are seen by at least one other vertex.
+            foreach (var key
+                in dic.Keys)
+            {
+                if (dic[key].Count == 0)
                 {
                     return false;
                 }
             }
 
-            // if every vertex can be seen by one other vertex return true
             return true;
         }
 
@@ -141,15 +138,11 @@ namespace ArtGallery
                     otherVertexes,
                     polygon);
 
-                // Create a dictionary item. The key is the current vertex and
+                // Add a dictionary item. The key is the current vertex and
                 // the value is the vertexes it can see.
-                var dicItem =
-                    new KeyValuePair<Vector2, ICollection<Vector2>>(
-                        vertex1,
-                        visibleVertices);
-
-                // Add the dictionary item to the dictionary
-                result.Add(dicItem);
+                result.Add(
+                    vertex1,
+                    visibleVertices);
             }
 
             // Return the dictionary containing the vertex to vertex visibility
@@ -188,12 +181,23 @@ namespace ArtGallery
         {
             List<Vector2> result = new List<Vector2>();
 
+            // Create a O(1) verctor lookup table. 
+            // We can then find all visible vertices 
+            // in O(n) 
+            IDictionary<Vector2, bool> dic = new Dictionary<Vector2, bool>();
+            var vis = VisibleVertices(polygon, vertex);
+
+            foreach (Vector2 vector2 in vis)
+            {
+                dic.Add(vector2, true);
+            }
+
             // check if the vertex can be seen by any of the other vertexes
             foreach (Vector2 vertex2 in otherVerteces)
             {
                 // If the vertex can be seen by one other vertex add it to the 
                 // list
-                if (VisibleToOtherVertex(vertex, vertex2, polygon))
+                if (dic.ContainsKey(vertex2))
                 {
                     result.Add(vertex2);
                 }
@@ -203,7 +207,7 @@ namespace ArtGallery
             return result;
         }
 
-        public List<Vector2> VisibleVertices(
+        public ICollection<Vector2> VisibleVertices(
             Polygon2D polygon,
             Vector2 vertex)
         {
@@ -352,21 +356,6 @@ namespace ArtGallery
                 {
                     done = true;
                 }
-            }
-
-            return result;
-        }
-
-
-        public List<List<Vector2>> VisibleVertices(
-            Polygon2D polygon,
-            List<Vector2> vertices)
-        {
-            List<List<Vector2>> result = new List<List<Vector2>>();
-
-            foreach (Vector2 vertex in vertices)
-            {
-                result.Add(VisibleVertices(polygon, vertex));
             }
 
             return result;
