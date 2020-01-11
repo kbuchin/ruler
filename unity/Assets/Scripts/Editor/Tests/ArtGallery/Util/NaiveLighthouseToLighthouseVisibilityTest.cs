@@ -344,7 +344,7 @@
             var vertex = m_topVertex;
 
             var actual =
-                NaiveLighthouseToLighthouseVisibility.VisibleToOtherVertexes(
+                NaiveLighthouseToLighthouseVisibility.VisibleToOtherVertices(
                     vertex,
                     vertexes,
                     polygon);
@@ -386,7 +386,7 @@
             var vertex = m_topVertex;
 
             var actual =
-                NaiveLighthouseToLighthouseVisibility.VisibleToOtherVertexes(
+                NaiveLighthouseToLighthouseVisibility.VisibleToOtherVertices(
                     vertex,
                     vertexes,
                     polygon);
@@ -419,7 +419,7 @@
             };
 
             var actual =
-                NaiveLighthouseToLighthouseVisibility.VisibleToOtherVertexes(
+                NaiveLighthouseToLighthouseVisibility.VisibleToOtherVertices(
                     vertexes,
                     polygon);
 
@@ -456,115 +456,13 @@
             };
 
             var actual =
-                NaiveLighthouseToLighthouseVisibility.VisibleToOtherVertexes(
+                NaiveLighthouseToLighthouseVisibility.VisibleToOtherVertices(
                     vertexes,
                     polygon);
 
             Assert.AreEqual(0, actual[new Vector2(0, 0)].Count);
             Assert.AreEqual(1, actual[new Vector2(10, 2)].Count);
             Assert.AreEqual(1, actual[new Vector2(8, 2)].Count);
-        }
-
-        [Test]
-        public void VisibleVerticesTest1()
-        {
-            foreach (var vertex in diamondPoly.Vertices)
-            {
-                var actual =
-                    NaiveLighthouseToLighthouseVisibility.VisibleVertices(
-                        diamondPoly,
-                        vertex);
-
-                Assert.AreEqual(diamondPoly.VertexCount, actual.Count);
-            }
-        }
-
-        [Test]
-        public void VisibleVerticesTest2()
-        {
-            var vertex = arrowPoly.Vertices.ElementAt(0);
-
-            var actual = NaiveLighthouseToLighthouseVisibility.VisibleVertices(
-                arrowPoly,
-                vertex);
-
-            Assert.AreEqual(arrowPoly.VertexCount - 1, actual.Count);
-        }
-
-        [Test]
-        public void VisibleVerticesTest3()
-        {
-            var vertex = LShape.Vertices.First();
-
-            var actual = NaiveLighthouseToLighthouseVisibility.VisibleVertices(
-                LShape,
-                vertex);
-
-            Assert.AreEqual(LShape.VertexCount - 1, actual.Count);
-        }
-
-        [Test]
-        public void VisibleVerticesTest4()
-        {
-            var polygon = new Polygon2D(
-                new List<Vector2>()
-                {
-                    new Vector2(0, 0),
-                    new Vector2(0, 4),
-                    new Vector2(4, 4),
-                    new Vector2(6, 4),
-                    new Vector2(8, 4),
-                    new Vector2(10, 4),
-                    new Vector2(10, 2),
-                    new Vector2(8, 2),
-                    new Vector2(6, 2),
-                    new Vector2(4, 2),
-                    new Vector2(2, 2),
-                    new Vector2(2, 0)
-                });
-
-            int visibleVertexes = 5;
-            var vertex = polygon.Vertices.First();
-
-            var actual = NaiveLighthouseToLighthouseVisibility.VisibleVertices(
-                polygon,
-                vertex);
-
-            Assert.AreEqual(visibleVertexes, actual.Count);
-
-            visibleVertexes = polygon.Vertices.Count;
-            vertex = polygon.Vertices.ElementAt(1);
-
-            actual = NaiveLighthouseToLighthouseVisibility.VisibleVertices(
-                polygon,
-                vertex);
-
-            Assert.AreEqual(visibleVertexes, actual.Count);
-        }
-
-
-        [Test]
-        public void VisibleVerticesTest5()
-        {
-            var polygon = new Polygon2D(
-                new List<Vector2>()
-                {
-                    new Vector2(0, 0),
-                    new Vector2(0, 4),
-                    new Vector2(10, 4),
-                    new Vector2(10, 2),
-                    new Vector2(2, 2),
-                    new Vector2(2, 0)
-                });
-
-            int visibleVertexes = 4;
-            var vertex = polygon.Vertices.First();
-
-            var actual = NaiveLighthouseToLighthouseVisibility.VisibleVertices(
-                polygon,
-                vertex);
-
-            Assert.AreEqual(visibleVertexes, actual.Count);
         }
     }
 }
