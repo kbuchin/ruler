@@ -162,6 +162,11 @@
             return m_Polygons.Exists(p => p.ContainsInside(a_pos));
         }
 
+        public bool OnBoundary(Vector2 a_pos)
+        {
+            return m_Polygons.Exists(p => p.OnBoundary(a_pos));
+        }
+
         public bool ContainsVertex(Vector2 pos)
         {
             return m_Polygons.Exists(p => p.ContainsVertex(pos));

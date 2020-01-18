@@ -239,6 +239,11 @@
             return Outside.ContainsInside(a_pos);
         }
 
+        public bool OnBoundary(Vector2 a_pos)
+        {
+            return Outside.OnBoundary(a_pos) || m_holes.Any(hole => hole.OnBoundary(a_pos));
+        }
+
         public bool ContainsVertex(Vector2 pos)
         {
             return Outside.ContainsVertex(pos) || m_holes.Exists(p => p.ContainsVertex(pos));

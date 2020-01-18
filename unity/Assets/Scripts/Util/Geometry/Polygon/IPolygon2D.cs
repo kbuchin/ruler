@@ -99,6 +99,13 @@
         bool ContainsInside(Vector2 pos);
 
         /// <summary>
+        /// Checks whether the point is located on the boundary of the polygon
+        /// </summary>
+        /// <param name="pos"></param>
+        /// <returns></returns>
+        bool OnBoundary(Vector2 pos);
+
+        /// <summary>
         /// Checks whether the point is a vertex in the polygon.
         /// </summary>
         /// <param name="pos"></param>

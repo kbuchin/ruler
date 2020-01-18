@@ -250,6 +250,12 @@
             }
         }
 
+        public bool OnBoundary(Vector2 a_pos)
+        {
+            return Segments.Any(seg => seg.IsOnSegment(a_pos));
+        }
+
+
         public bool ContainsVertex(Vector2 pos)
         {
             return m_vertices.Find(pos) != null;
