@@ -1,4 +1,4 @@
-﻿namespace DotsAndPolygons
+namespace DotsAndPolygons
 {
     using UnityEngine;
     using Util.Geometry;

@@ -453,16 +453,22 @@
         /// <param name="a_x"></param>
         /// <returns></returns>
         public float Y(float a_x)
-        {
-            if (XInterval.ContainsEpsilon(a_x))
-            {
-                return Line.Y(a_x);
-            }
-            else
-            {
-                throw new GeomException("Y-value requested for x:" + a_x + "not in x-interval" + XInterval.ToString());
-            }
+        { 
+            return Line.Y(a_x);
         }
+        
+        // TODO This change was reverted as it caused a crash in Dots & Polygons
+        // public float Y(float a_x)
+        // {
+        //     if (XInterval.ContainsEpsilon(a_x))
+        //     {
+        //         return Line.Y(a_x);
+        //     }
+        //     else
+        //     {
+        //         throw new GeomException("Y-value requested for x:" + a_x + "not in x-interval" + XInterval.ToString());
+        //     }
+        // }
 
         public bool Equals(LineSegment other)
         {
