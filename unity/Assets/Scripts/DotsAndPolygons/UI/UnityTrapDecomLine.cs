@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using General.Model;
 using UnityEngine;
 using Util.Geometry;
