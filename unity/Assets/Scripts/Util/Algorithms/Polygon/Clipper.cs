@@ -40,14 +40,13 @@
             // copy and maybe reverse
             if (a_subject.IsClockwise())
                 a_subject = new Polygon2D(a_subject.Vertices);
-            else 
+            else
                 a_subject = new Polygon2D(a_subject.Vertices.Reverse());
 
-            if (a_clip.IsClockwise()) 
+            if (a_clip.IsClockwise())
                 a_clip = new Polygon2D(a_clip.Vertices);
-            else 
+            else
                 a_clip = new Polygon2D(a_clip.Vertices.Reverse());
-
 
             var WA = new WeilerAtherton(a_subject, a_clip);
 
@@ -67,26 +66,26 @@
             var multiPoly = new MultiPolygon2D();
 
             // check if polygons have intersections
-            if (WA.Entry.Count == 0)
+            if (WA.EntryIntersections.Count == 0)
             {
-                if (WA.Subject.Vertices.ToList().Exists(p => !(WA.Clip.ContainsInside(p) || WA.Clip.OnBoundary(p))))
+                if (!WA.Subject.Vertices.ToList().Exists(p => WA.Clip.ContainsInside(p) || WA.Clip.OnBoundary(p)))
                     multiPoly.AddPolygon(new Polygon2D(WA.Subject.Vertices));
             }
 
-            while (WA.Entry.Count > 0)
+            while (WA.EntryIntersections.Count > 0)
             {
                 var vertices = new List<Vector2>();
                 var visited = new HashSet<LinkedListNode<WAPoint>>();
 
                 // remove an entry intersection point
-                var startPoint = WA.Entry.LastOrDefault();
-                WA.Entry.Remove(startPoint);
+                var startPoint = WA.EntryIntersections.LastOrDefault();
+                WA.EntryIntersections.Remove(startPoint);
 
                 LinkedListNode<WAPoint> node;
                 try
                 {
                     node = WA.ClipNode[startPoint];
-                } 
+                }
                 catch (KeyNotFoundException e)
                 {
                     Debug.Log("entry point not found: " + e);
@@ -98,7 +97,7 @@
                 while (!visited.Contains(node))
                 {
                     // remove entry intersection from starting list
-                    WA.Entry.Remove(node.Value);
+                    WA.EntryIntersections.Remove(node.Value);
 
                     // traverse clip polygon in counter-clockwise order until exit vertex found
                     while (node.Value.Type != WAList.Exit && !visited.Contains(node))
@@ -153,9 +152,11 @@
                 }
 
                 // add new polygon from the vertices
-                if (vertices.Count > 2) 
+                if (vertices.Count > 2)
                     multiPoly.AddPolygon(new Polygon2D(vertices));
             }
+
+            //Debug.Log(multiPoly);
             return multiPoly;
         }
 
@@ -168,130 +169,121 @@
             public readonly LinkedList<WAPoint> ClipList;
             public readonly Dictionary<WAPoint, LinkedListNode<WAPoint>> SubjectNode;
             public readonly Dictionary<WAPoint, LinkedListNode<WAPoint>> ClipNode;
-            public readonly HashSet<WAPoint> Entry;
-            public readonly HashSet<WAPoint> Exit;
+            public readonly HashSet<WAPoint> EntryIntersections;
 
             public WeilerAtherton(Polygon2D a_subject, Polygon2D a_clip)
             {
                 // initialize variables
                 Subject = a_subject;
                 Clip = a_clip;
-                SubjectList = new LinkedList<WAPoint>(Subject.Vertices.Select(v => new WAPoint(v, WAList.Vertex)));
-                ClipList = new LinkedList<WAPoint>(Clip.Vertices.Select(v => new WAPoint(v, WAList.Vertex)));
+                SubjectList = new LinkedList<WAPoint>();
+                ClipList = new LinkedList<WAPoint>();
                 SubjectNode = new Dictionary<WAPoint, LinkedListNode<WAPoint>>();
                 ClipNode = new Dictionary<WAPoint, LinkedListNode<WAPoint>>();
-                Entry = new HashSet<WAPoint>();
-                Exit = new HashSet<WAPoint>();
+                EntryIntersections = new HashSet<WAPoint>();
 
-                // find all intersections and create subject and clip list
-                for (var node1 = SubjectList.First; node1 != null; node1 = node1.Next)
+                // store intersections for clipping line segment
+                // saves recomputation of intersections and entry-exit categorization
+                var intersectSegmentsClip = new Dictionary<LineSegment, List<WAPoint>>();
+                foreach (var seg in a_clip.Segments) intersectSegmentsClip.Add(seg, new List<WAPoint>());
+
+                // find all intersections and create subject list
+                foreach (var seg1 in a_subject.Segments)
                 {
-                    // calculate subject segment
-                    var next1 = node1.Next ?? SubjectList.First;
-                    var seg1 = new LineSegment(node1.Value.Pos, next1.Value.Pos);
+                    // retrieve intersection list
+                    var vertices = new List<WAPoint>();
 
-                    // obtain intersection lists
-                    var intersections = new List<Vector2>();
-                    var intersectNodes = new Dictionary<Vector2, LinkedListNode<WAPoint>>();
-                    for (var node2 = ClipList.Last; node2 != null; node2 = node2.Previous)
+                    var point = new WAPoint(seg1.Point1, WAList.Vertex);
+                    var node = SubjectList.AddLast(point);
+                    SubjectNode.Add(point, node);
+
+                    foreach (var seg2 in a_clip.Segments)
                     {
-                        var prev2 = node2.Previous ?? ClipList.Last;
-                        var seg2 = new LineSegment(node2.Value.Pos, prev2.Value.Pos);
-
                         var intersect = seg1.Intersect(seg2);
-                        if (intersect.HasValue && !intersectNodes.ContainsKey(intersect.Value))
+                        if (intersect.HasValue)
                         {
                             // store intersection point
-                            intersectNodes.Add(intersect.Value, node2);
-                            intersections.Add(intersect.Value);
+                            point = new WAPoint(intersect.Value, WAList.Ignore);
+                            vertices.Add(point);
+                            intersectSegmentsClip[seg2].Add(point);
                         }
                     }
 
                     // sort intersections on distance to start vertex
-                    intersections.Sort(new ClosestToPointComparer(seg1.Point1));
+                    vertices.Sort(new ClosestToPointComparer(seg1.Point1));
 
-                    // insert intersections into subject/clip lists
-                    foreach (var vertex in intersections)
+                    foreach (var vertex in vertices)
                     {
-                        var point = new WAPoint(vertex, WAList.Ignore);
-
-                        var newNode1 = SubjectList.AddAfter(node1, point);
-                        SubjectNode.Add(point, newNode1);
-
-                        var newNode2 = ClipList.AddBefore(intersectNodes[vertex], point);
-                        ClipNode.Add(point, newNode2);
-
-                        // increment node1 since we added a vertex
-                        node1 = newNode1;
+                        node = SubjectList.AddLast(vertex);
+                        SubjectNode.Add(vertex, node);
                     }
                 }
 
-                // remove duplicates of subject
-                for (var node = SubjectList.First; node != null;)
+
+                // remove duplicates
+                for (var node = SubjectList.First; node != null; node = node.Next)
                 {
                     var next = node.Next ?? SubjectList.First;
-                    while (MathUtil.EqualsEps(node.Value.Pos, next.Value.Pos, MathUtil.EPS * 10))
+                    while (node != next && MathUtil.EqualsEps(node.Value.Pos, next.Value.Pos))
                     {
-                        if (next.Value.Type != WAList.Vertex)
+                        if (node.Value.Type == WAList.Vertex)
                         {
-                            if (ClipNode.ContainsKey(node.Value)) ClipList.Remove(ClipNode[node.Value]);
+                            node.Value.Type = WAList.Ignore;
                             SubjectList.Remove(node);
+                            EntryIntersections.Remove(node.Value);
                             node = next;
                         }
                         else
                         {
+                            next.Value.Type = WAList.Ignore;
                             SubjectList.Remove(next);
+                            EntryIntersections.Remove(next.Value);
                         }
-                        if (node == null) break;
                         next = node.Next ?? SubjectList.First;
                     }
-                    if (node != null) node = node.Next;
-                }
-
-                // remove duplicates of clip
-                for (var node = ClipList.Last; node != null;)
-                {
-                    var prev = node.Previous ?? ClipList.Last;
-                    while (MathUtil.EqualsEps(node.Value.Pos, prev.Value.Pos, MathUtil.EPS * 10))
-                    {
-                        if (prev.Value.Type != WAList.Vertex)
-                        {
-                            if (SubjectNode.ContainsKey(node.Value)) SubjectList.Remove(SubjectNode[node.Value]);
-                            ClipList.Remove(node);
-                            node = prev;
-                        }
-                        else
-                        {
-                            ClipList.Remove(prev);
-                        }
-                        if (node == null) break;
-                        prev = node.Previous ?? ClipList.Last;
-                    }
-                    if (node != null) node = node.Previous;
                 }
 
                 // set entry/exit types correctly
                 for (var node = SubjectList.First; node != null; node = node.Next)
                 {
-                    if (node.Value.Type == WAList.Vertex) continue; 
-
                     var prev = node.Previous ?? SubjectList.Last;
-                    var next = node.Next ?? SubjectList.First;
+                    var vertex = node.Value;
 
                     var inside1 = Clip.ContainsInside(prev.Value.Pos) || Clip.OnBoundary(prev.Value.Pos);
-                    var inside2 = Clip.ContainsInside(next.Value.Pos) || Clip.OnBoundary(next.Value.Pos);
+                    var inside2 = Clip.ContainsInside(vertex.Pos) || Clip.OnBoundary(vertex.Pos);
 
                     if (!inside1 && inside2)
-                    {
-                        node.Value.Type = WAList.Entry;
-                        Entry.Add(node.Value);
-                    }
+                        vertex.Type = WAList.Entry;
                     else if (inside1 && !inside2)
                     {
-                        node.Value.Type = WAList.Exit;
-                        Exit.Add(node.Value);
+                        prev.Value.Type = WAList.Exit;
+                        EntryIntersections.Remove(vertex);
+                    }
+
+                    if (vertex.Type == WAList.Entry) EntryIntersections.Add(vertex);
+                }
+
+                // create clip list and intersections
+                foreach (var seg in a_clip.Segments)
+                {
+                    var vertices = intersectSegmentsClip[seg];
+
+                    // sort intersections on distance to start vertex
+                    intersectSegmentsClip[seg].Sort(new ClosestToPointComparer(seg.Point1));
+
+                    vertices.Insert(0, new WAPoint(seg.Point1, WAList.Vertex));
+
+                    // loop over intersections
+                    foreach (var vertex in vertices)
+                    {
+                        if (vertex.Type == WAList.Ignore) continue;
+
+                        // add intersection to clipping list
+                        var node = ClipList.AddLast(vertex);
+                        ClipNode.Add(vertex, node);
                     }
                 }
+
             }
         }
 
@@ -299,7 +291,7 @@
         /// Compares points based on distance to another point.
         /// Used for sorting intersection points on distance to start vertex.
         /// </summary>
-        private class ClosestToPointComparer : IComparer<Vector2>
+        private class ClosestToPointComparer : IComparer<WAPoint>
         {
             private Vector2 m_point;
 
@@ -308,10 +300,10 @@
                 m_point = a_point;
             }
 
-            public int Compare(Vector2 x, Vector2 y)
+            public int Compare(WAPoint x, WAPoint y)
             {
-                var dist_1 = Vector2.Distance(m_point, x);
-                var dist_2 = Vector2.Distance(m_point, y);
+                var dist_1 = Vector2.Distance(m_point, x.Pos);
+                var dist_2 = Vector2.Distance(m_point, y.Pos);
 
                 return dist_1.CompareTo(dist_2);
             }
@@ -336,6 +328,6 @@
         /// List the types of Weiler-Atherton vertices.
         /// Either vertex of original polygon, entry intersection, or exit intersection.
         /// </summary>
-        private enum WAList { Vertex, Entry, Exit, Ignore};
+        private enum WAList { Vertex, Entry, Exit, Ignore };
     }
 }

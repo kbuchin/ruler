@@ -1,7 +1,6 @@
 ﻿using ArtGallery;
 using Divide;
 using KingsTaxes;
-using General.Model;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,6 +11,9 @@ using UnityEngine;
 using Util.Math;
 using Util.Geometry;
 using ConvexHull;
+using System;
+using Util.Geometry.Polygon;
+using General.Model;
 
 [ScriptedImporter(1, "ipe")]
 public class LoadLevelEditor : ScriptedImporter
@@ -33,7 +35,7 @@ public class LoadLevelEditor : ScriptedImporter
         var fileSelected = XElement.Load(path);
 
         // switch between which level to generate based on file name
-        Object obj;
+        UnityEngine.Object obj;
         if (name.StartsWith("agLevel"))
         {
             obj = LoadArtGalleryLevel(fileSelected, name);
@@ -63,7 +65,7 @@ public class LoadLevelEditor : ScriptedImporter
         ctx.SetMainObject(obj);
     }
 
-    public Object LoadArtGalleryLevel(XElement fileSelected, string name)
+    public UnityEngine.Object LoadArtGalleryLevel(XElement fileSelected, string name)
     {
         // create the output scriptable object
         var asset = ScriptableObject.CreateInstance<ArtGalleryLevel>();
@@ -77,40 +79,95 @@ public class LoadLevelEditor : ScriptedImporter
             EditorUtility.DisplayDialog("Error", "No paths (lines/polygons) found in ipe file.", "OK");
             return asset;
         }
-        else if (items.Count > 1)
+
+        var outerPoints = new List<Vector2>();
+        var holes = new List<List<Vector2>>();
+        var checkPoints = new List<Vector2>();
+
+        foreach (var poly in items)
         {
-            EditorUtility.DisplayDialog("Error", "File contains too many paths (lines/polygons).", "OK");
-            return asset;
+            List<float> transformation = null;
+            if (poly.Attribute("matrix") != null)
+            {
+                transformation = poly.Attribute("matrix").Value
+                    .Split(' ')
+                    .Select(s => float.Parse(s))
+                    .ToList();
+            }
+
+            // retrieve coordinates from .ipe file
+            var points = new List<Vector2>();
+            foreach (var coordString in poly.Value.Split('\n'))
+            {
+                var coords = coordString.Split(' ').ToList();
+
+                if (coords.Count < 2) continue;
+
+                var x = float.Parse(coords[0]);
+                var y = float.Parse(coords[1]);
+
+                if (!MathUtil.IsFinite(x) || !MathUtil.IsFinite(y)) continue;
+
+                if (transformation != null)
+                {
+                    // apply transformation matrix (could be made into library function)
+                    x = transformation[0] * x + transformation[2] * y + transformation[4];
+                    y = transformation[1] * x + transformation[3] * y + transformation[5];
+                }
+
+                points.Add(new Vector2(x, y));
+            }
+
+            if (outerPoints.Count == 0 || new Polygon2D(outerPoints).Area < new Polygon2D(points).Area)
+            {
+                if (outerPoints.Count > 0) holes.Add(outerPoints);
+                outerPoints = points;
+            }
+            else
+            {
+                holes.Add(points);
+            }
+
+            // Add all defining vertices to checkPoints
         }
 
-        // retrieve coordinates from .ipe file
-        var points = new List<Vector2>();
-        foreach (var item in items[0].Value.Split('\n'))
-        {
-            var coords = item.Split(' ').ToList();
-
-            if (coords.Count < 2) continue;
-
-            var x = float.Parse(coords[0]);
-            var y = float.Parse(coords[1]);
-
-            if (!MathUtil.IsFinite(x) || !MathUtil.IsFinite(y)) continue;
-
-            points.Add(new Vector2(x, y));
-        }
 
         // normalize coordinates
-        var rect = BoundingBoxComputer.FromPoints(points);
-        Normalize(rect, agSIZE, ref points);
+        var rect = BoundingBoxComputer.FromPoints(outerPoints);
+        outerPoints = Normalize(rect, agSIZE, outerPoints);
+        checkPoints.AddRange(outerPoints);
+        for (var i = 0; i < holes.Count; i++)
+        {
+            holes[i] = Normalize(rect, agSIZE, holes[i]);
+            checkPoints.AddRange(holes[i]);
+        }
 
-        asset.Outer = points;
+
 
         // reverse if not clockwise
-        if (!asset.Polygon.IsClockwise())
+        if (!(new Polygon2D(outerPoints).IsClockwise()))
         {
-            points.Reverse();
-            asset.Outer = points;
+            outerPoints.Reverse();
         }
+
+        for (var i = 0; i < holes.Count; i++)
+        {
+            // reverse if not clockwise
+            if (!(new Polygon2D(holes[i]).IsClockwise()))
+            {
+                holes[i].Reverse();
+            }
+        }
+
+        var gridPoints = ComputeGridPoints(rect, outerPoints, holes, 50);
+
+        checkPoints.AddRange(gridPoints);
+
+        asset.Outer = outerPoints;
+        asset.Holes = holes.Select(h => new Vector2Array(h.ToArray())).ToList();
+        asset.CheckPoints = checkPoints;
+
+        Debug.Log(asset.CheckPoints);
 
         // get level arguments
         var args = name.Split('_').ToList();
@@ -127,7 +184,7 @@ public class LoadLevelEditor : ScriptedImporter
         return asset;
     }
 
-    private Object LoadKingsTaxesLevel(XElement fileSelected, string name)
+    private UnityEngine.Object LoadKingsTaxesLevel(XElement fileSelected, string name)
     {
         // create the output scriptable object
         var asset = ScriptableObject.CreateInstance<KingsTaxesLevel>();
@@ -144,8 +201,8 @@ public class LoadLevelEditor : ScriptedImporter
         total.AddRange(asset.Villages);
         total.AddRange(asset.Castles);
         var rect = BoundingBoxComputer.FromPoints(total);
-        Normalize(rect, ktSIZE, ref asset.Villages);
-        Normalize(rect, ktSIZE, ref asset.Castles);
+        asset.Villages = Normalize(rect, ktSIZE, asset.Villages);
+        asset.Castles = Normalize(rect, ktSIZE, asset.Castles);
 
         // give warning if no relevant data found
         if (asset.Villages.Count + asset.Castles.Count == 0)
@@ -173,7 +230,7 @@ public class LoadLevelEditor : ScriptedImporter
         return asset;
     }
 
-    private Object LoadDivideLevel(XElement fileSelected, string name)
+    private UnityEngine.Object LoadDivideLevel(XElement fileSelected, string name)
     {
         // create the output scriptable object
         var asset = ScriptableObject.CreateInstance<DivideLevel>();
@@ -192,9 +249,9 @@ public class LoadLevelEditor : ScriptedImporter
         total.AddRange(asset.Archers);
         total.AddRange(asset.Mages);
         var rect = BoundingBoxComputer.FromPoints(total);
-        Normalize(rect, divSIZE, ref asset.Spearmen);
-        Normalize(rect, divSIZE, ref asset.Archers);
-        Normalize(rect, divSIZE, ref asset.Mages);
+        asset.Spearmen = Normalize(rect, divSIZE, asset.Spearmen);
+        asset.Archers = Normalize(rect, divSIZE, asset.Archers);
+        asset.Mages = Normalize(rect, divSIZE, asset.Mages);
 
         // give warning if no relevant data found
         if (asset.Spearmen.Count + asset.Archers.Count + asset.Mages.Count == 0)
@@ -243,7 +300,7 @@ public class LoadLevelEditor : ScriptedImporter
     /// <param name="fileSelected"></param>
     /// <param name="name"></param>
     /// <returns></returns>
-    private Object LoadHullLevel(XElement fileSelected, string name)
+    private UnityEngine.Object LoadHullLevel(XElement fileSelected, string name)
     {
         // create the output scriptable object
         var asset = ScriptableObject.CreateInstance<HullLevel>();
@@ -256,7 +313,7 @@ public class LoadLevelEditor : ScriptedImporter
 
         // normalize coordinates
         var rect = BoundingBoxComputer.FromPoints(asset.Points);
-        Normalize(rect, ktSIZE, ref asset.Points);
+        asset.Points = Normalize(rect, ktSIZE, asset.Points);
 
         // give warning if no relevant data found
         if (asset.Points.Count == 0)
@@ -304,20 +361,63 @@ public class LoadLevelEditor : ScriptedImporter
     }
 
     /// <summary>
+    /// Computes a list of gridpoints indside the given polygon defined by outerpoints and holes.
+    /// </summary>
+    /// <param name="rect"></param>
+    /// <param name="outerPoints"></param>
+    /// <param name="holes"></param>
+    /// <param name="n"></param>
+    /// <returns></returns>
+    private List<Vector2> ComputeGridPoints(Rect rect, List<Vector2> outerPoints, List<List<Vector2>> holes, int n)
+    {
+        var gridPoints = new List<Vector2>();
+
+        Debug.Log(rect.xMin);
+        Debug.Log(rect.xMax);
+        Debug.Log(rect.yMin);
+        Debug.Log(rect.yMax);
+        Debug.Log(rect.width);
+        Debug.Log(rect.height);
+
+        for (float x = rect.xMin; x < rect.xMax; x += rect.width / (float)n)
+        {
+            for (float y = rect.yMin; y < rect.yMax; y += rect.height / (float)n)
+            {
+                gridPoints.Add(new Vector2(x, y));
+            }
+        }
+
+        gridPoints = Normalize(rect, agSIZE, gridPoints);
+
+        var tempPoly = new Polygon2DWithHoles(new Polygon2D(outerPoints), holes.Select(h => new Polygon2D(h)));
+
+        for (int i = gridPoints.Count - 1; i >= 0; i--)
+        {
+            var point = gridPoints[i];
+            if (!tempPoly.ContainsInside(point))
+            {
+                gridPoints.Remove(point);
+            }
+        }
+
+        return gridPoints;
+    }
+
+    /// <summary>
     /// Normalizes the coordinate vector to fall within bounds specified by rect.
     /// Also adds random perturbations to create general positions.
     /// </summary>
     /// <param name="rect">Bounding box</param>
     /// <param name="coords"></param>
-    private void Normalize(Rect rect, float SIZE, ref List<Vector2> coords)
+    private List<Vector2> Normalize(Rect rect, float SIZE, List<Vector2> coords)
     {
         var scale = SIZE / Mathf.Max(rect.width, rect.height);
         var rnd = Mathf.Min(rect.width, rect.height) * 0.001f; // for general positions
 
-        coords = coords
+        return coords
             .Select(p => new Vector2(
-                (p[0] - (rect.xMin + rect.width / 2f) + Random.Range(-rnd, rnd)) * scale,
-                (p[1] - (rect.yMin + rect.height / 2f) + Random.Range(-rnd, rnd)) * scale))
+                (p[0] - (rect.xMin + rect.width / 2f) + UnityEngine.Random.Range(-rnd, rnd)) * scale,
+                (p[1] - (rect.yMin + rect.height / 2f) + UnityEngine.Random.Range(-rnd, rnd)) * scale))
             .ToList();
     }
 }

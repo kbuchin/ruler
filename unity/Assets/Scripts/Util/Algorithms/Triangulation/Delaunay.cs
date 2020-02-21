@@ -108,7 +108,7 @@
         /// <param name="T"></param>
         /// <param name="a_Vertex"></param>
         /// <param name="a_Edge"></param>
-        private static void LegalizeEdge(Triangulation T, Vector2 a_Vertex, TriangleEdge a_Edge)
+        public static void LegalizeEdge(Triangulation T, Vector2 a_Vertex, TriangleEdge a_Edge)
         {
             // do not legalize outer edge
             if (a_Edge != null && a_Edge.IsOuter) return;
@@ -136,7 +136,7 @@
         /// </summary>
         /// <param name="T"></param>
         /// <param name="a_Edge"></param>
-        private static void Flip(Triangulation T, TriangleEdge a_Edge)
+        public static void Flip(Triangulation T, TriangleEdge a_Edge)
         {
             var a_Triangle = a_Edge.T;
             var a_Twin = a_Edge.Twin.T;

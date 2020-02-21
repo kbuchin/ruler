@@ -11,7 +11,7 @@
     /// <summary>
     /// Collection of algorithms related to visibility polygons.
     /// </summary>
-    public static class Visibility
+    public class VisibilitySimple
     {
         /// <summary>
         /// Computes the visibility polygon from the given point 
@@ -29,7 +29,7 @@
                 return null;
             }
 
-            if (!polygon.ContainsInside(z))
+            if (!(polygon.ContainsInside(z) || polygon.OnBoundary(z)))
             {
                 throw new ArgumentException("Visibility point must be inside polygon");
             }
@@ -109,7 +109,7 @@
             pol.ShiftToOrigin(z);
 
             // check if z is a vertex or not
-            var zIsVertex = pol.Vertices.Any(v => MathUtil.EqualsEps(v, Vector2.zero));
+            var zIsVertex = pol.Vertices.Contains(Vector2.zero);
 
             // determines v0
             int vIndex;
@@ -129,9 +129,6 @@
             // list l
             var l = vertices.Select(x => new PolarPoint2D(x)).ToList();
 
-            // remember original angle
-            initAngle = l[0].Theta;
-
             // if z is a vertex then [v0, v1, ..., vk, z] -> [z, v0, v1, ..., vk]
             if (zIsVertex)
             {
@@ -144,6 +141,9 @@
             {
                 l.Add(new PolarPoint2D(v0));
             }
+
+            // remember original angle
+            initAngle = l[0].Theta;
 
             // rotate all points of the shifted polygon clockwise such that v0 lies
             // on the x axis
@@ -247,7 +247,7 @@
 
             var sj = s.Peek();
 
-            if (MathUtil.LEQEps(sj.alpha, v.Get(i + 1).alpha))
+            if (sj.alpha < v.Get(i + 1).alpha)
             {
                 i++;
 
@@ -344,7 +344,6 @@
 
                     if (intersec != null && !(windowEnd != null && MathUtil.EqualsEps(intersec.p.Cartesian, windowEnd.p.Cartesian)))
                     {
-                        intersec.alpha = s.Peek().alpha;
                         s.Push(intersec);
                         return NextCall.ADVANCE;
                     }
@@ -466,8 +465,7 @@
                 }
 
                 if (MathUtil.LEQEps(vi1.alpha, sj.alpha) &&
-                    sj.alpha == sj1.alpha)
-                    //MathUtil.EqualsEps(sj.alpha, sj1.alpha))
+                    MathUtil.EqualsEps(sj.alpha, sj1.alpha))
                 {
                     var y = (new LineSegment(vi.p.Cartesian, vi1.p.Cartesian)).Intersect(new LineSegment(sj.p.Cartesian, sj1.p.Cartesian));
 
@@ -694,7 +692,7 @@
 
                 if (zIsVertex)
                 {
-                    v = ComputeAngularDisplacements(vs.GetRange(1, vs.Count - 1));
+                    v = ComputeAngularDisplacements(vs.GetRange(1, vs.Count));
                 }
                 else
                 {

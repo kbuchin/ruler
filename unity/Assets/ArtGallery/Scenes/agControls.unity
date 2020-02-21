@@ -253,7 +253,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 22485368, guid: 47375d1ad9de78947b5dddba6bf6a125, type: 2}
       propertyPath: m_AnchoredPosition.y
-      value: -10
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 22485368, guid: 47375d1ad9de78947b5dddba6bf6a125, type: 2}
       propertyPath: m_SizeDelta.x
@@ -261,7 +261,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 22485368, guid: 47375d1ad9de78947b5dddba6bf6a125, type: 2}
       propertyPath: m_SizeDelta.y
-      value: -220
+      value: -260
       objectReference: {fileID: 0}
     - target: {fileID: 22485368, guid: 47375d1ad9de78947b5dddba6bf6a125, type: 2}
       propertyPath: m_AnchorMin.x
@@ -289,15 +289,24 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 11497240, guid: 47375d1ad9de78947b5dddba6bf6a125, type: 2}
       propertyPath: m_Text
-      value: "Welcome eminence,\r\n\r\nPlease illuminate the following dungeons using
-        as few torches as possible.\r\n\r\nGood luck!\r\n\r\nControls:\r\n- Click
-        to place a torch.\r\n- Drag a torch to move it.\r\n- Drag and release a torch
-        outside the dungeon to remove it."
+      value: "Welcome,\r\n\r\nPlease illuminate the following dungeons using the torches
+        provided. Each level will have exactly enough torches to accomplish this.\n\r\nTo
+        perform this task:\n\n- Click to place a torch.\r\n- Drag a torch to move
+        it.\r\n- Drag and release a torch outside the dungeon to remove it.\n\nGood
+        luck!\r"
       objectReference: {fileID: 0}
     - target: {fileID: 11497240, guid: 47375d1ad9de78947b5dddba6bf6a125, type: 2}
       propertyPath: m_FontData.m_Font
       value: 
       objectReference: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
+    - target: {fileID: 11497240, guid: 47375d1ad9de78947b5dddba6bf6a125, type: 2}
+      propertyPath: m_FontData.m_Alignment
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 11497240, guid: 47375d1ad9de78947b5dddba6bf6a125, type: 2}
+      propertyPath: m_FontData.m_FontSize
+      value: 20
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 47375d1ad9de78947b5dddba6bf6a125, type: 2}
   m_IsPrefabAsset: 0
@@ -587,7 +596,7 @@ MonoBehaviour:
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 800, y: 600}
-  m_ScreenMatchMode: 0
+  m_ScreenMatchMode: 1
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96

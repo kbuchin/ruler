@@ -27,10 +27,19 @@
         private GameObject m_lighthousePrefab;
 
         [SerializeField]
+        private GameObject m_debugPrefab;
+
+        [SerializeField]
         private ButtonContainer m_advanceButton;
 
         [SerializeField]
         private Text m_lighthouseText;
+
+        [SerializeField]
+        private GameObject m_timeLabel;
+
+        [SerializeField]
+        private GameObject m_puzzleCounterLabel;
 
         // stores the current level index
         private int m_levelCounter = -1;
@@ -38,12 +47,16 @@
         // specified max number of lighthouses in level
         private int m_maxNumberOfLighthouses;
 
+        // store starting time of level
+        private float puzzleStartTime;
+
         // store relevant art gallery objects
         private ArtGallerySolution m_solution;
         private ArtGalleryIsland m_levelMesh;
         private ArtGalleryLightHouse m_selectedLighthouse;
 
-        public Polygon2D LevelPolygon { get; private set; }
+        private GameObject debugpoint;
+        public Polygon2DWithHoles LevelPolygon { get; private set; }
 
         // Use this for initialization
         void Start()
@@ -58,6 +71,9 @@
         // Update is called once per frame
         void Update()
         {
+            UpdateTimeText();
+
+
             // return if no lighthouse was selected since last update
             if (m_selectedLighthouse == null) return;
 
@@ -105,15 +121,44 @@
             UpdateLighthouseText();
         }
 
+        public bool CheckContainmentPoints()
+        {
+            Destroy(debugpoint);
+            var level = m_levels[m_levelCounter];
+            foreach (var point in level.CheckPoints)
+            {
+                var found = false;
+                foreach (var lighthouse in m_solution.m_lighthouses)
+                {
+                    if (lighthouse.VisionPoly.Contains(point))
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
+                {
+                    var placement = new Vector3(point.x, point.y, -2f);
+                    debugpoint = Instantiate(m_debugPrefab, placement, Quaternion.identity);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         public void CheckSolution()
         {
+            if (m_levels[m_levelCounter].MaxNumberOfLighthouses != m_solution.Count || !CheckContainmentPoints()) return;
+
             // calculate ratio of area visible
             var ratio = m_solution.Area / LevelPolygon.Area;
 
             Debug.Log(ratio + " part is visible");
 
             // see if entire polygon is covered
-            if (MathUtil.GEQEps(ratio, 1f, 0.001f))
+            // only check if no solution yet found
+            if (MathUtil.GEQEps(ratio, 1f, 0.001f * m_levels[m_levelCounter].MaxNumberOfLighthouses))
             {
                 m_advanceButton.Enable();
             }
@@ -128,12 +173,15 @@
 
             if (m_levelCounter < m_levels.Count)
             {
+                UpdatePuzzleCounter();
                 InitLevel();
             }
             else
             {
                 SceneManager.LoadScene(m_victoryScreen);
             }
+
+            puzzleStartTime = Time.time;
         }
 
 
@@ -171,7 +219,7 @@
             if (LevelPolygon.ContainsInside(m_lighthouse.Pos))
             {
                 // calculate new visibility polygon
-                var vision = Visibility.Vision(LevelPolygon, m_lighthouse.Pos);
+                var vision = VisibilitySweep.Vision(LevelPolygon, m_lighthouse.Pos);
 
                 if (vision == null)
                 {
@@ -180,7 +228,7 @@
 
                 // update lighthouse visibility
                 m_lighthouse.VisionPoly = vision;
-                m_lighthouse.VisionAreaMesh.Polygon = vision;
+                m_lighthouse.VisionAreaMesh.Polygon = new Polygon2DWithHoles(vision);
             }
             else
             {
@@ -205,6 +253,22 @@
         private void UpdateLighthouseText()
         {
             m_lighthouseText.text = "Torches left: " + (m_maxNumberOfLighthouses - m_solution.Count);
+        }
+
+        /// <summary>
+        /// Update the text field with max number of lighthouses which can still be placed
+        /// </summary>
+        private void UpdateTimeText()
+        {
+            m_timeLabel.GetComponentInChildren<Text>().text = string.Format("Time: {0:0.}s", Time.time - puzzleStartTime);
+        }
+
+        /// <summary>
+        /// Updates the label with puzzle counter
+        /// </summary>
+        private void UpdatePuzzleCounter()
+        {
+            m_puzzleCounterLabel.GetComponentInChildren<Text>().text = string.Format("Puzzle {0} / {1}", m_levelCounter + 1, m_levels.Count);
         }
     }
 }

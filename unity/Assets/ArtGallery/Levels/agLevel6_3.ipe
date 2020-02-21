@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE ipe SYSTEM "ipe.dtd">
 <ipe version="70212" creator="Ipe 7.2.12">
-<info created="D:20191104134219" modified="D:20191104143010"/>
+<info created="D:20191113185732" modified="D:20191115154216"/>
 <ipestyle name="basic">
 <symbol name="arrow/arc(spx)">
 <path stroke="sym-stroke" fill="sym-stroke" pen="sym-pen">
@@ -220,13 +220,13 @@ h
 <dashstyle name="dash dotted" value="[4 2 1 2] 0"/>
 <dashstyle name="dash dot dotted" value="[4 2 1 2 1 2] 0"/>
 <textsize name="large" value="\large"/>
+<textsize name="small" value="\small"/>
+<textsize name="tiny" value="\tiny"/>
 <textsize name="Large" value="\Large"/>
 <textsize name="LARGE" value="\LARGE"/>
 <textsize name="huge" value="\huge"/>
 <textsize name="Huge" value="\Huge"/>
-<textsize name="small" value="\small"/>
 <textsize name="footnote" value="\footnotesize"/>
-<textsize name="tiny" value="\tiny"/>
 <textstyle name="center" begin="\begin{center}" end="\end{center}"/>
 <textstyle name="itemize" begin="\begin{itemize}" end="\end{itemize}"/>
 <textstyle name="item" begin="\begin{itemize}\item{}" end="\end{itemize}"/>
@@ -254,18 +254,27 @@ h
 <page>
 <layer name="alpha"/>
 <view layers="alpha" active="alpha"/>
-<path layer="alpha" stroke="black">
-32 784 m
-96 816 l
-304 832 l
-256 608 l
-32 576 l
-208 624 l
-224 688 l
-48 624 l
-16 704 l
-208 736 l
-192 784 l
+<path layer="alpha" matrix="1.78726 0 0 1.78726 -238.477 -87.713" stroke="black">
+158.455 499.591 m
+159.966 444.426 l
+209.841 435.736 l
+215.131 398.707 l
+143.719 398.33 l
+150.52 334.852 l
+244.602 328.807 l
+242.085 383.294 l
+361.826 379.999 l
+370.423 350.344 l
+432.767 352.611 l
+432.011 388.884 l
+387.426 389.639 l
+386.293 433.847 l
+459.594 435.358 l
+459.972 503.369 l
+351.531 506.77 l
+353.42 447.071 l
+235.156 445.56 l
+233.956 499.959 l
 h
 </path>
 </page>

@@ -4,7 +4,6 @@
     using System.Linq;
     using UnityEngine;
     using Util.Algorithms.Polygon;
-    using Util.Geometry.Polygon;
 
     /// <summary>
     /// Stores a list of lighthouses and can calculate their combined visibility area.
@@ -26,6 +25,7 @@
             {
                 if (Count <= 0) return 0f;
 
+                /*
                 // create multi polygon of visibility area
                 var visiblePolygon = new MultiPolygon2D(m_lighthouses[0].VisionPoly);
 
@@ -35,6 +35,9 @@
                     visiblePolygon = Clipper.CutOut(visiblePolygon, lighthouse.VisionPoly);
                     visiblePolygon.AddPolygon(lighthouse.VisionPoly);
                 }
+                */
+
+                var visiblePolygon = new UnionSweepLine().Union(m_lighthouses.Select(lh => lh.VisionPoly).ToList());
 
                 // return total area
                 return visiblePolygon.Area;
@@ -42,7 +45,7 @@
         }
 
         // collection of lighthouses
-        private List<ArtGalleryLightHouse> m_lighthouses;
+        public List<ArtGalleryLightHouse> m_lighthouses;
 
         // stores lighthouse objects for easy destroyal
         private List<GameObject> m_objects;

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE ipe SYSTEM "ipe.dtd">
 <ipe version="70212" creator="Ipe 7.2.12">
-<info created="D:20191113185732" modified="D:20191115154216"/>
+<info created="D:20200114213556" modified="D:20200221120038"/>
 <ipestyle name="basic">
 <symbol name="arrow/arc(spx)">
 <path stroke="sym-stroke" fill="sym-stroke" pen="sym-pen">
@@ -220,13 +220,13 @@ h
 <dashstyle name="dash dotted" value="[4 2 1 2] 0"/>
 <dashstyle name="dash dot dotted" value="[4 2 1 2 1 2] 0"/>
 <textsize name="large" value="\large"/>
-<textsize name="small" value="\small"/>
-<textsize name="tiny" value="\tiny"/>
 <textsize name="Large" value="\Large"/>
 <textsize name="LARGE" value="\LARGE"/>
 <textsize name="huge" value="\huge"/>
 <textsize name="Huge" value="\Huge"/>
+<textsize name="small" value="\small"/>
 <textsize name="footnote" value="\footnotesize"/>
+<textsize name="tiny" value="\tiny"/>
 <textstyle name="center" begin="\begin{center}" end="\end{center}"/>
 <textstyle name="itemize" begin="\begin{itemize}" end="\end{itemize}"/>
 <textstyle name="item" begin="\begin{itemize}\item{}" end="\end{itemize}"/>
@@ -254,27 +254,113 @@ h
 <page>
 <layer name="alpha"/>
 <view layers="alpha" active="alpha"/>
-<path layer="alpha" matrix="1.78726 0 0 1.78726 -238.477 -87.713" stroke="black">
-158.455 499.591 m
-159.966 444.426 l
-209.841 435.736 l
-215.131 398.707 l
-143.719 398.33 l
-150.52 334.852 l
-244.602 328.807 l
-242.085 383.294 l
-361.826 379.999 l
-370.423 350.344 l
-432.767 352.611 l
-432.011 388.884 l
-387.426 389.639 l
-386.293 433.847 l
-459.594 435.358 l
-459.972 503.369 l
-351.531 506.77 l
-353.42 447.071 l
-235.156 445.56 l
-233.956 499.959 l
+<path layer="alpha" matrix="1 0 0 1 -32 48" stroke="black">
+128 632 m
+88 592 l
+128 552 l
+168 592 l
+h
+</path>
+<path matrix="1 0 0 1 144 48" stroke="black">
+128 632 m
+88 592 l
+128 552 l
+168 592 l
+h
+</path>
+<path matrix="1 0 0 1 320 48" stroke="black">
+128 632 m
+88 592 l
+128 552 l
+168 592 l
+h
+</path>
+<path matrix="1 0 0 1 320 -144" stroke="black">
+128 632 m
+88 592 l
+128 552 l
+168 592 l
+h
+</path>
+<path stroke="black">
+32 656 m
+84 704 l
+84 744 l
+460 744 l
+460 704 l
+512 652 l
+552 652 l
+552 436 l
+512 436 l
+456 384 l
+456 312 l
+296 312 l
+296 384 l
+212 384 l
+160 384 l
+160 448 l
+84 448 l
+83.0805 575.944 l
+32 624 l
+h
+</path>
+<path stroke="black">
+160 652 m
+108 704 l
+260 704 l
+208 652 l
+208 688 l
+160 688 l
+h
+</path>
+<path stroke="black">
+336 652 m
+284 704 l
+436 704 l
+384 652 l
+h
+</path>
+<path stroke="black">
+160 624 m
+108 576 l
+108 476 l
+160 476 l
+160 568 l
+208 568 l
+208 512 l
+260 512 l
+260 576 l
+208 628 l
+208 576 l
+160 576 l
+h
+</path>
+<path stroke="black">
+284 576 m
+284 488 l
+208 488 l
+208 412 l
+324 412 l
+324 336 l
+440 336 l
+440 384 l
+384 432 l
+384 464 l
+440 512 l
+440 556 l
+336 556 l
+336 628 l
+h
+</path>
+<path stroke="black">
+384 628 m
+384 572 l
+456 572 l
+456 512 l
+512 460 l
+512 628 l
+464 576 l
+432 576 l
 h
 </path>
 </page>

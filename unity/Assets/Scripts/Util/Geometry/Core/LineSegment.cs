@@ -209,11 +209,20 @@
             }
 
             var intersect = Line.Intersect(a_seg.Line, a_line);
-            if (intersect != null &&
-                a_seg.XInterval.ContainsEpsilon(intersect.Value.x) &&
+            if (!intersect.HasValue) return null;
+
+            if (a_seg.XInterval.ContainsEpsilon(intersect.Value.x) &&
                 a_seg.YInterval.ContainsEpsilon(intersect.Value.y)) //Double check to handle single vertical segments
             {
                 return intersect;
+            }
+            else if (MathUtil.EqualsEps(a_seg.Point1, intersect.Value, MathUtil.EPS * 100))
+            {
+                return a_seg.Point1;
+            }
+            else if (MathUtil.EqualsEps(a_seg.Point2, intersect.Value, MathUtil.EPS * 100))
+            {
+                return a_seg.Point2;
             }
 
             return null;

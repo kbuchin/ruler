@@ -1,4 +1,6 @@
-﻿namespace Util.Algorithms
+using System.Runtime.CompilerServices;
+
+namespace Util.Algorithms
 {
     using System;
     using System.Collections.Generic;
@@ -14,14 +16,15 @@
     /// and (optional) the status tree.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class SweepLine<T>
+    public class SweepLine<E, T>
+        where E : ISweepEvent<T>, IComparable<E>, IEquatable<E>
         where T : IComparable<T>, IEquatable<T>
     {
         public static Line Line { get; private set; }
 
         // status tree used when sweeping
         private readonly IBST<T> Status = new AATree<T>();
-        private readonly IBST<ISweepEvent<T>> Events = new AATree<ISweepEvent<T>>();
+        private readonly IBST<E> Events = new AATree<E>();
 
         public SweepLine()
         { }
@@ -37,7 +40,7 @@
         /// <param name="events"></param>
         /// <param name="status"></param>
         /// <param name="ev"></param>
-        public delegate void HandleEvent(IBST<ISweepEvent<T>> events, IBST<T> status, ISweepEvent<T> ev);
+        public delegate void HandleEvent(IBST<E> events, IBST<T> status, E ev);
 
         /// <summary>
         /// Initialize the status tree with the given items.
@@ -61,13 +64,16 @@
         /// </summary>
         /// <param name="items"></param>
         /// <returns></returns>
-        public IBST<ISweepEvent<T>> InitializeEvents(IEnumerable<ISweepEvent<T>> items)
+        public IBST<E> InitializeEvents(IEnumerable<E> items)
         {
             Events.Clear();
 
             foreach (var item in items)
             {
-                Events.Insert(item);
+                if (!Events.Insert(item))
+                {
+                    throw new ArgumentException(string.Format("Failed to insert event {0}", item));
+                }
             }
 
             return Events;
@@ -79,10 +85,14 @@
         /// <param name="eventHandler"></param>
         public void VerticalSweep(HandleEvent eventHandler)
         {
-            ISweepEvent<T> ev;
+            E ev;
             while (Events.FindMin(out ev))
             {
-                Events.DeleteMin();
+                if (!Events.Delete(ev))
+                {
+                    //throw new ArgumentException("Failed to delete event " + RuntimeHelpers.GetHashCode(ev) + " - " + ev);
+                    return;
+                }
 
                 Line = new Line(ev.Pos, ev.Pos + new Vector2(1f, 0f));
 
@@ -97,7 +107,7 @@
         /// <param name="eventHandler"></param>
         public void RadialSweep(Vector2 a_pos, HandleEvent eventHandler)
         {
-            ISweepEvent<T> ev;
+            E ev;
             while (Events.FindMin(out ev))
             {
                 Events.DeleteMin();
@@ -113,8 +123,7 @@
     /// Interface of a sweep event, should be implemented when using the sweep line.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public interface ISweepEvent<T> : IComparable<ISweepEvent<T>>, IEquatable<ISweepEvent<T>>
-        where T : IComparable<T>, IEquatable<T>
+    public interface ISweepEvent<out T> where T : IComparable<T>, IEquatable<T>
     {
         /// <summary>
         /// Position of the event

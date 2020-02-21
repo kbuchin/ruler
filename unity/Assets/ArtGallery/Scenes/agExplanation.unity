@@ -255,19 +255,30 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 11497240, guid: 47375d1ad9de78947b5dddba6bf6a125, type: 2}
       propertyPath: m_Text
-      value: "The problem that you solve in this game is known as the \u2018art gallery
-        problem\u2019, hence the name of the game. It requires the player to place
-        \u201Ctorches\u201D inside a polygon (without holes) in order to light up
-        the entire polygon. This problem is known to be NP-hard.\n\r\nThe lighting
-        area of each torch is calculated via a robust stack-algorithm. We then use
-        the Weiler-Atherron algorithm to remove duplicate parts from the sight areas
-        and finally check if the sum of the sight areas is equal to the area of the
-        dungeon.\r\n"
+      value: "The problem that you solve in this game is known as the \u2018Art Gallery
+        problem\u2019. It requires the player to place \u201Ctorches\u201D inside
+        a polygon (a shape) in order to light it up entirely. This problem is known
+        to be NP-hard.\n\r\nThe levels in the game are a selection of generated levels
+        using two NP-hard reductions, as well as some hand-made art galleries. One
+        reduction is from the problem 3SAT, and the other is from Vertex Cover.\n\nThe
+        visibility area of a \"torch\" is calculated using a sweepline algorithm.
+        The solution is verified using a combination of a naive checker for containment
+        of certain points by some visibility polygon, and an area comparison (with
+        some tolerance) between the original polygon and the union of visibility polygons.
+        The union is calculated using a (different) sweepline algorithm.\n"
       objectReference: {fileID: 0}
     - target: {fileID: 11497240, guid: 47375d1ad9de78947b5dddba6bf6a125, type: 2}
       propertyPath: m_FontData.m_Font
       value: 
       objectReference: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
+    - target: {fileID: 11497240, guid: 47375d1ad9de78947b5dddba6bf6a125, type: 2}
+      propertyPath: m_FontData.m_FontSize
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 11497240, guid: 47375d1ad9de78947b5dddba6bf6a125, type: 2}
+      propertyPath: m_FontData.m_Alignment
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 47375d1ad9de78947b5dddba6bf6a125, type: 2}
   m_IsPrefabAsset: 0
@@ -400,7 +411,7 @@ MonoBehaviour:
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 800, y: 600}
-  m_ScreenMatchMode: 0
+  m_ScreenMatchMode: 1
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96

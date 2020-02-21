@@ -72,6 +72,14 @@
             }
         }
 
+        public Vector2 Centroid
+        {
+            get
+            {
+                return new Vector2((P0.x + P1.x + P2.x) / 3f, (P0.y + P1.y + P2.y) / 3f);
+            }
+        }
+
         /// <summary>
         /// Whether the given triangle is a degenerate case (area zero or infinite).
         /// </summary>
@@ -276,7 +284,7 @@
                     intersect = bisector3.Intersect(bisector1);
                     if (!intersect.HasValue)
                     {
-                        throw new GeomException("No intersection found for points: " + a + " " + b + " " + c);
+                        return null;
                     }
                 }
             }

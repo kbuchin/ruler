@@ -15,6 +15,7 @@
     /// </summary>
     public static class Triangulator
     {
+
         /// <summary>
         /// Triangulates this dcel by triangulating each inner face.
         /// </summary>
@@ -61,7 +62,7 @@
             {
                 throw new GeomException("Cannot triangulate DCEL with faces inside faces");
             }
-            
+
             return Triangulate(face.Polygon.Outside, setTwinPointers);
         }
 
@@ -75,7 +76,7 @@
         /// <param name="polygon"></param>
         /// <param name="setTwinPointers"> whether the triangulation should set twin pointers </param>
         /// <returns>A list of clockwise triangles whose disjoint union is this polygon</returns>
-        public static Triangulation Triangulate(IPolygon2D polygon, bool setTwinPointers = true)
+        public static Triangulation Triangulate(Polygon2D polygon, bool setTwinPointers = true)
         {
             // cannot yet triangulate non-simple polygons
             /* assume it to be, checks takes too long
@@ -95,6 +96,69 @@
             {
                 T.SetTwinPointers();
             }
+            return T;
+        }
+
+        /// <summary>
+        /// Triangulates this polygon using the two ears theorem. This is O(n^2).
+        /// </summary>
+        /// <remarks>
+        /// Currently runs in O(n^2) time.
+        /// TODO improve this to O(n log n) or O(n log log n).
+        /// </remarks>
+        /// <param name="polygon"></param>
+        /// <param name="setTwinPointers"> whether the triangulation should set twin pointers </param>
+        /// <returns>A list of clockwise triangles whose disjoint union is this polygon</returns>
+        public static Triangulation Triangulate(Polygon2DWithHoles polygon, bool setTwinPointers = true)
+        {
+            // cannot yet triangulate non-simple polygons
+            /* assume it to be, checks takes too long
+            if (!polygon.IsSimple())
+            {
+                throw new ArgumentException("Polygon must be simple: " + polygon);
+            }
+            */
+
+            if (polygon.VertexCount < 3)
+            {
+                return new Triangulation();
+            }
+
+            if (polygon.Holes.Count == 0)
+            {
+                return Triangulate(polygon.Outside, setTwinPointers);
+            }
+
+            var T = Delaunay.Create(polygon.Vertices);
+
+            var holeSegments = polygon.Holes.SelectMany(h => h.Segments).ToList();
+            var flipSegments = new List<TriangleEdge>();
+            foreach (var t in T.Triangles)
+            {
+                foreach (var seg in holeSegments)
+                {
+                    if (seg.Intersect(t.E0).HasValue && !(seg.IsEndpoint(t.P0) || seg.IsEndpoint(t.P1)))
+                        flipSegments.Add(t.E0);
+                    if (seg.Intersect(t.E1).HasValue && !(seg.IsEndpoint(t.P1) || seg.IsEndpoint(t.P2)))
+                        flipSegments.Add(t.E1);
+                    if (seg.Intersect(t.E2).HasValue && !(seg.IsEndpoint(t.P2) || seg.IsEndpoint(t.P0)))
+                        flipSegments.Add(t.E2);
+                }
+            }
+
+            for (var i=0; i<flipSegments.Count; i++)
+            {
+                Delaunay.Flip(T, flipSegments[i]);
+            }
+
+            // remove triangles inside holes
+            T = new Triangulation(T.Triangles.Where(tr => polygon.ContainsInside(tr.Centroid)));
+
+            if (setTwinPointers)
+            {
+                T.SetTwinPointers();
+            }
+
             return T;
         }
 

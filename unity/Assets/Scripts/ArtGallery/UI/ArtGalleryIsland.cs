@@ -6,7 +6,7 @@
     /// Represents the level island (2D polygon).
     /// Handles user clicks on the polygon
     /// </summary>
-    public class ArtGalleryIsland : Polygon2DMesh
+    public class ArtGalleryIsland : Polygon2DWithHolesMesh
     {
         private ArtGalleryController m_controller;
 

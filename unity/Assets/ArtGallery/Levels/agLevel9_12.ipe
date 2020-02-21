@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE ipe SYSTEM "ipe.dtd">
 <ipe version="70212" creator="Ipe 7.2.12">
-<info created="D:20191104134219" modified="D:20191104142500"/>
+<info created="D:20200114233417" modified="D:20200119002247"/>
 <ipestyle name="basic">
 <symbol name="arrow/arc(spx)">
 <path stroke="sym-stroke" fill="sym-stroke" pen="sym-pen">
@@ -220,13 +220,13 @@ h
 <dashstyle name="dash dotted" value="[4 2 1 2] 0"/>
 <dashstyle name="dash dot dotted" value="[4 2 1 2 1 2] 0"/>
 <textsize name="large" value="\large"/>
+<textsize name="small" value="\small"/>
+<textsize name="tiny" value="\tiny"/>
 <textsize name="Large" value="\Large"/>
 <textsize name="LARGE" value="\LARGE"/>
 <textsize name="huge" value="\huge"/>
 <textsize name="Huge" value="\Huge"/>
-<textsize name="small" value="\small"/>
 <textsize name="footnote" value="\footnotesize"/>
-<textsize name="tiny" value="\tiny"/>
 <textstyle name="center" begin="\begin{center}" end="\end{center}"/>
 <textstyle name="itemize" begin="\begin{itemize}" end="\end{itemize}"/>
 <textstyle name="item" begin="\begin{itemize}\item{}" end="\end{itemize}"/>
@@ -254,15 +254,98 @@ h
 <page>
 <layer name="alpha"/>
 <view layers="alpha" active="alpha"/>
-<path layer="alpha" stroke="black">
-64 704 m
-128 704 l
-128 768 l
-192 768 l
-192 672 l
-128 672 l
-112 624 l
-64 624 l
+<path layer="alpha" matrix="1 0 0 1 -8 -32" stroke="black">
+128 632 m
+88 592 l
+128 552 l
+168 592 l
+h
+</path>
+<path matrix="1 0 0 1 168 -32" stroke="black">
+128 632 m
+88 592 l
+128 552 l
+168 592 l
+h
+</path>
+<path matrix="1 0 0 1 344 -32" stroke="black">
+128 632 m
+88 592 l
+128 552 l
+168 592 l
+h
+</path>
+<path stroke="black">
+24 544 m
+24 680 l
+144 728 l
+272 728 l
+416 728 l
+480 700 l
+480 624 l
+536 576 l
+568 576 l
+568 456 l
+472 392 l
+304 392 l
+164 392 l
+108 424 l
+108 496 l
+56 544 l
+h
+</path>
+<path stroke="black">
+412 704 m
+460 688 l
+460 624 l
+408 576 l
+408 544 l
+456 496 l
+488 496 l
+536 544 l
+536 472 l
+464 416 l
+324 416 l
+392 480 l
+392 536 l
+392 576 l
+360 576 l
+312 620 l
+356 620 l
+356 704 l
+h
+</path>
+<path stroke="black">
+56 576 m
+56 664 l
+144 704 l
+204 704 l
+332 704 l
+332 644 l
+288 644 l
+288 624 l
+232 576 l
+232 672 l
+184 672 l
+184 576 l
+136 624 l
+104 624 l
+h
+</path>
+<path stroke="black">
+184 544 m
+132 496 l
+132 432 l
+168 416 l
+216 416 l
+288 416 l
+360 480 l
+360 544 l
+312 496 l
+280 496 l
+232 544 l
+232 440 l
+184 440 l
 h
 </path>
 </page>

@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using UnityEngine;
 
     /// <summary>
     /// Implementation of an AA tree, which is a special type of BST.
@@ -71,11 +72,11 @@
 
         public bool Insert(T data)
         {
-            if (!(data is ValueType) /* && EqualityComparer<T>.Default.Equals(data, default(T)) */)
+            /* if (!(data is ValueType) && EqualityComparer<T>.Default.Equals(data, default(T)) )
             {
                 return false;
             }
-            else if (m_Root == m_Bottom)
+            else */ if (m_Root == m_Bottom)
             {
                 // create root node
                 m_Root = CreateNode(data);

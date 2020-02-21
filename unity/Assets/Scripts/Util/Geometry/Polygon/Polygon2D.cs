@@ -216,7 +216,7 @@
         public bool ContainsInside(Vector2 a_pos)
         {
             // cannot contain without area
-            if (Area == 0) return false;
+            if (Area == 0 || OnBoundary(a_pos)) return false;
 
             if (IsConvex())
             {
@@ -250,15 +250,20 @@
             }
         }
 
-        public bool OnBoundary(Vector2 a_pos)
+        public bool OnBoundary(Vector2 pos)
         {
-            return Segments.Any(seg => seg.IsOnSegment(a_pos));
+            return Segments.ToList().Exists(seg => seg.IsOnSegment(pos));
         }
-
 
         public bool ContainsVertex(Vector2 pos)
         {
             return m_vertices.Find(pos) != null;
+        }
+
+        public bool Contains(Vector2 pos)
+        {
+            // ContainsInside(pos) || 
+            return ContainsInside(pos) || ContainsVertex(pos) || OnBoundary(pos);
         }
 
         /// <summary>
@@ -268,7 +273,7 @@
         public void ShiftToOrigin(Vector2 a_point)
         {
             m_vertices = new LinkedList<Vector2>(m_vertices.Select(v => v - a_point));
-            m_triangulation = null;
+            ClearCache();
         }
 
         /// <summary>
@@ -280,7 +285,7 @@
             if (m_clockwise.HasValue) return m_clockwise.Value;
 
             var sum = 0f;
-            foreach (LineSegment seg in Segments)
+            foreach (var seg in Segments)
             {
                 sum += (seg.Point2.x - seg.Point1.x) * (seg.Point2.y + seg.Point1.y);
             }
@@ -298,7 +303,7 @@
         public void Reverse()
         {
             m_vertices = new LinkedList<Vector2>(m_vertices.Reverse());
-            m_triangulation = null;
+            ClearCache();
         }
 
         public override string ToString()
