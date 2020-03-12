@@ -99,6 +99,10 @@
             return T;
         }
 
+        /*
+         * Triangulation algorithm is faulty
+         * 
+
         /// <summary>
         /// Triangulates this polygon using the two ears theorem. This is O(n^2).
         /// </summary>
@@ -111,14 +115,6 @@
         /// <returns>A list of clockwise triangles whose disjoint union is this polygon</returns>
         public static Triangulation Triangulate(Polygon2DWithHoles polygon, bool setTwinPointers = true)
         {
-            // cannot yet triangulate non-simple polygons
-            /* assume it to be, checks takes too long
-            if (!polygon.IsSimple())
-            {
-                throw new ArgumentException("Polygon must be simple: " + polygon);
-            }
-            */
-
             if (polygon.VertexCount < 3)
             {
                 return new Triangulation();
@@ -161,6 +157,7 @@
 
             return T;
         }
+        */
 
         /// <summary>
         /// Triangulates the polygon recursively.

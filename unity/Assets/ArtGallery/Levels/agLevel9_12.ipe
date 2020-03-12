@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE ipe SYSTEM "ipe.dtd">
-<ipe version="70212" creator="Ipe 7.2.12">
-<info created="D:20200114233417" modified="D:20200119002247"/>
+<ipe version="70212" creator="Ipe 7.2.13">
+<info created="D:20200114233417" modified="D:20200312134109"/>
 <ipestyle name="basic">
 <symbol name="arrow/arc(spx)">
 <path stroke="sym-stroke" fill="sym-stroke" pen="sym-pen">
@@ -276,39 +276,39 @@ h
 h
 </path>
 <path stroke="black">
-24 544 m
-24 680 l
-144 728 l
-272 728 l
-416 728 l
-480 700 l
+28.2407 544 m
+28 676 l
+144 724 l
+272 724 l
+407.754 724 l
+480 683.32 l
 480 624 l
 536 576 l
-568 576 l
-568 456 l
-472 392 l
-304 392 l
-164 392 l
-108 424 l
+560 576 l
+560 456 l
+476 400 l
+304 400 l
+168 400 l
+108 433.615 l
 108 496 l
 56 544 l
 h
 </path>
 <path stroke="black">
-412 704 m
-460 688 l
+408.045 704 m
+460 675.897 l
 460 624 l
 408 576 l
 408 544 l
 456 496 l
 488 496 l
 536 544 l
-536 472 l
+536 464 l
 464 416 l
 324 416 l
-392 480 l
-392 536 l
-392 576 l
+388 480 l
+388 536 l
+387.802 576 l
 360 576 l
 312 620 l
 356 620 l
@@ -335,8 +335,8 @@ h
 <path stroke="black">
 184 544 m
 132 496 l
-132 432 l
-168 416 l
+132 439.288 l
+172.465 416 l
 216 416 l
 288 416 l
 360 480 l

@@ -11,14 +11,13 @@ using UnityEngine;
 using Util.Math;
 using Util.Geometry;
 using ConvexHull;
-using System;
 using Util.Geometry.Polygon;
 using General.Model;
 
 [ScriptedImporter(1, "ipe")]
 public class LoadLevelEditor : ScriptedImporter
 {
-    private readonly float agSIZE = 8f;
+    private readonly float agSIZE = 9f;
     private readonly float ktSIZE = 6f;
     private readonly float divSIZE = 5f;
 
@@ -412,12 +411,11 @@ public class LoadLevelEditor : ScriptedImporter
     private List<Vector2> Normalize(Rect rect, float SIZE, List<Vector2> coords)
     {
         var scale = SIZE / Mathf.Max(rect.width, rect.height);
-        var rnd = Mathf.Min(rect.width, rect.height) * 0.001f; // for general positions
 
         return coords
             .Select(p => new Vector2(
-                (p[0] - (rect.xMin + rect.width / 2f) + UnityEngine.Random.Range(-rnd, rnd)) * scale,
-                (p[1] - (rect.yMin + rect.height / 2f) + UnityEngine.Random.Range(-rnd, rnd)) * scale))
+                (p[0] - (rect.xMin + rect.width / 2f)) * scale,
+                (p[1] - (rect.yMin + rect.height / 2f)) * scale))
             .ToList();
     }
 }
