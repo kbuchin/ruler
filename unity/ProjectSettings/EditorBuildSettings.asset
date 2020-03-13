@@ -131,4 +131,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/DotsAndPolygons/Scenes/dotsExplanation.unity
     guid: fd647cab622ac574aa89754d0eaff123
+  - enabled: 1
+    path: Assets/DotsAndPolygons/Scenes/dotsGame3.unity
+    guid: 37746e493a820c949bca5f2439b89c59
   m_configObjects: {}
