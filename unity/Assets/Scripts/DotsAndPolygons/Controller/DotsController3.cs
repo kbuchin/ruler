@@ -17,7 +17,6 @@ namespace DotsAndPolygons
 
     public class DotsController3 : DotsController
     {
-        
         private bool _showTrapDecomLines = false;
 
         public override void Update()
@@ -30,7 +29,7 @@ namespace DotsAndPolygons
                 else
                     RemoveTrapDecomLines();
             }
-            
+
             // User clicked a point and is drawing line from starting point
             if (FirstPoint == null) return;
             // User is holding mouse button
@@ -78,7 +77,7 @@ namespace DotsAndPolygons
                 else
                 {
                     AddVisualEdge(FirstPoint, SecondPoint);
-                    
+
                     bool faceCreated = AddEdge(FirstPoint, SecondPoint, CurrentPlayer, HalfEdges, Vertices,
                         GameMode.GameMode2, this, root);
 
@@ -138,7 +137,7 @@ namespace DotsAndPolygons
                     lines.Add(right);
             }
         }
-        
+
         public bool CheckArea() => Math.Abs((TotalAreaP1 + TotalAreaP2) - HullArea) < .001f;
 
         public override void CheckSolution()
@@ -149,17 +148,23 @@ namespace DotsAndPolygons
             }
         }
 
-        private void AddDotsInConvexPosition()
-        {
-            
-        }
-        
         public override void InitLevel()
         {
             base.InitLevel();
-            
-            // TODO
-            AddDotsInGeneralPosition();
+
+            IEnumerable<IDotsVertex> dots = GetVerticesInConvexPosition(numberOfDots, false, radius: 3f);
+
+            foreach (IDotsVertex dotsVertex in dots)
+            {
+                GameObject dot = Instantiate(
+                    dotPrefab,
+                    new Vector3(dotsVertex.Coordinates.x, dotsVertex.Coordinates.y, 0),
+                    Quaternion.identity
+                );
+                dot.transform.parent = transform;
+                InstantObjects.Add(dot);
+            }
+
 
             faces.Add(frame);
             LineSegment left = new LineSegment(new Vector2(-6, 3), new Vector2(-6, -3));

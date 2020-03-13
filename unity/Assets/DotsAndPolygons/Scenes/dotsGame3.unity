@@ -532,7 +532,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 11418384, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
-      value: dotsGame2
+      value: dotsGame3
       objectReference: {fileID: 0}
     - target: {fileID: 11426352, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
       propertyPath: m_Text
@@ -1467,4 +1467,4 @@ MonoBehaviour:
   p2WonBackgroundPrefab: {fileID: 4920042312877424211, guid: fc8c2c2f81f7c0d49b8b16a56b8d13a9,
     type: 3}
   lines: []
-  numberOfDots: 20
+  numberOfDots: 15

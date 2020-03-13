@@ -1,10 +1,11 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using UnityEngine;
 using Util.Geometry;
 using Object = UnityEngine.Object;
+using Random = UnityEngine.Random;
 
 namespace DotsAndPolygons
 {
@@ -707,6 +708,37 @@ namespace DotsAndPolygons
             }
 
             throw new Exception("Face too large or infinite path");
+        }
+
+        public static IEnumerable<IDotsVertex> GetVerticesInConvexPosition(int amount, bool sameDistance,
+            Vector2? center = null, float radius = 1f)
+        {
+            Vector2 _center = center ?? Vector2.zero;
+            float angleBetweenVertices = 2f * Mathf.PI / amount;
+            var vertices = new List<IDotsVertex>();
+
+            for (var i = 0; i < amount; i++)
+            {
+                float angle = i * angleBetweenVertices;
+                float adjustmentAngle = Random.Range(-angleBetweenVertices / 3f, +angleBetweenVertices / 3f);
+                if (!sameDistance) angle += adjustmentAngle;
+                Vector2 pos = _center + new Vector2(radius * Mathf.Cos(angle), radius * Mathf.Sin(angle));
+                vertices.Add(new DotsVertex(pos));
+            }
+
+            return vertices;
+        }
+
+        public static Tuple<IDotsVertex, IDotsVertex> FindAMiddleLine(
+            IEnumerable<IDotsVertex> vertices)
+        {
+            IDotsVertex vertexA = vertices.First();
+
+            IDotsVertex vertexB = vertices.OrderBy(
+                it => Mathf.Abs(Distance(vertexA.Coordinates, it.Coordinates))
+            ).Last();
+
+            return new Tuple<IDotsVertex, IDotsVertex>(vertexA, vertexB);
         }
     }
 }
