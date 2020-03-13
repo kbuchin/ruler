@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mime;
@@ -62,7 +62,7 @@ namespace DotsAndPolygons
         public UnityDotsVertex FirstPoint { get; set; }
         public UnityDotsVertex SecondPoint { get; set; }
 
-        [SerializeField] private int numberOfDots;
+        [SerializeField] public int numberOfDots;
 
         public HashSet<IDotsVertex> Vertices { get; set; } = new HashSet<IDotsVertex>();
         public HashSet<IDotsHalfEdge> HalfEdges { get; set; } = new HashSet<IDotsHalfEdge>();
@@ -115,11 +115,8 @@ namespace DotsAndPolygons
         // Define mouse clicking behavior etc
         public abstract void Update();
 
-        public virtual void InitLevel()
+        public void AddDotsInGeneralPosition()
         {
-            // start level using randomly positioned dots in general position
-            Clear();
-
             var dots = new HashSet<Vector2>();
             for (var i = 0; i <= numberOfDots; i++)
             {
@@ -142,6 +139,12 @@ namespace DotsAndPolygons
 
                 EndOfFor: ;
             }
+        }
+        
+        public virtual void InitLevel()
+        {
+            // start level using randomly positioned dots in general position
+            Clear();
 
             advanceButton.Disable();
         }
@@ -239,5 +242,28 @@ namespace DotsAndPolygons
                 || hullEdge.Equals(edge.Segment)));
             return Hull.Count == hullEdges.Count();
         }
+        
+        public List<TrapFace> extract_faces(ITrapDecomNode current, List<TrapFace> result, int depth)
+        {
+            if (depth > 1000)
+            {
+                return new List<TrapFace>();
+            }
+
+            print(current.GetType());
+            if (current.GetType() == typeof(TrapFace))
+            {
+                return new List<TrapFace>() {(TrapFace) current};
+            }
+
+            if (current.GetType() == typeof(TrapDecomLine) || current.GetType() == typeof(TrapDecomPoint))
+            {
+                result.AddRange(extract_faces(current.LeftChild, new List<TrapFace>(), depth + 1));
+                result.AddRange(extract_faces(current.RightChild, new List<TrapFace>(), depth + 1));
+            }
+
+            return result;
+        }
+
     }
 }

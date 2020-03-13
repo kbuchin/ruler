@@ -1,23 +1,25 @@
-using JetBrains.Annotations;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using DotsAndPolygons;
+using General.Model;
+using UnityEngine;
 using UnityEngine.UI;
+using Util.Geometry;
+using Random = UnityEngine.Random;
 
 // ReSharper disable ConvertToAutoPropertyWhenPossible
 // ReSharper disable ConvertToAutoProperty
 
 namespace DotsAndPolygons
 {
-    using System.Collections.Generic;
-    using UnityEngine;
-    using System.Linq;
-    using Util.Geometry.Polygon;
-    using Util.Geometry;
     using static HelperFunctions;
 
-    public class DotsController1 : DotsController
+    public class DotsController3 : DotsController
     {
+        
         private bool _showTrapDecomLines = false;
 
-        // Update is called once per frame
         public override void Update()
         {
             if (Input.GetKeyDown(KeyCode.T))
@@ -28,7 +30,7 @@ namespace DotsAndPolygons
                 else
                     RemoveTrapDecomLines();
             }
-
+            
             // User clicked a point and is drawing line from starting point
             if (FirstPoint == null) return;
             // User is holding mouse button
@@ -51,21 +53,13 @@ namespace DotsAndPolygons
                 {
                     print("FirstPoint was same as SecondPoint");
                 }
-                else if (SecondPoint.InFace)
-                {
-                    print("SecondPoint was in face");
-                }
-                // use trap decom to see if middle of line lies in a face
-                else if (root.query(
-                    new DotsVertex(
+                // use isInside method to see of middle of line lies in a face
+                else if (Faces.Where(it => it?.OuterComponentHalfEdges != null).Any(face =>
+                    IsInside(
+                        face.OuterComponentVertices.Select(it => it.Coordinates).ToList(),
                         new LineSegment(FirstPoint.Coordinates, SecondPoint.Coordinates).Midpoint
                     )
-                ).Let(it =>
-                {
-                    var face = it as TrapFace;
-                    return face?.Upper?.DotsEdge?.RightPointingHalfEdge?.IncidentFace != null
-                           || face?.Downer?.DotsEdge?.LeftPointingHalfEdge?.IncidentFace != null;
-                }))
+                ))
                 {
                     print($"Line between {FirstPoint} and {SecondPoint} lies inside face");
                 }
@@ -84,9 +78,9 @@ namespace DotsAndPolygons
                 else
                 {
                     AddVisualEdge(FirstPoint, SecondPoint);
-
+                    
                     bool faceCreated = AddEdge(FirstPoint, SecondPoint, CurrentPlayer, HalfEdges, Vertices,
-                        GameMode.GameMode1, this, root);
+                        GameMode.GameMode2, this, root);
 
                     RemoveTrapDecomLines();
                     ShowTrapDecomLines();
@@ -108,6 +102,7 @@ namespace DotsAndPolygons
                 p2Line.enabled = false;
             }
         }
+
 
         private void RemoveTrapDecomLines()
         {
@@ -143,19 +138,27 @@ namespace DotsAndPolygons
                     lines.Add(right);
             }
         }
+        
+        public bool CheckArea() => Math.Abs((TotalAreaP1 + TotalAreaP2) - HullArea) < .001f;
 
         public override void CheckSolution()
         {
-            if (CheckHull())
+            if (CheckHull() && CheckArea())
             {
                 FinishLevel();
             }
         }
 
+        private void AddDotsInConvexPosition()
+        {
+            
+        }
+        
         public override void InitLevel()
         {
             base.InitLevel();
             
+            // TODO
             AddDotsInGeneralPosition();
 
             faces.Add(frame);
@@ -165,6 +168,5 @@ namespace DotsAndPolygons
             LineSegment lower = new LineSegment(new Vector2(6, -3), new Vector2(-6, -3));
             root = new TrapDecomRoot(frame);
         }
-
     }
 }

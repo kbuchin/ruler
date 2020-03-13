@@ -280,24 +280,21 @@ namespace DotsAndPolygons
                 origin: b, twin: incident);
             incident.Twin = twin;
 
-            // if running gamemode 1, insert the new edge into the trap decomp
-            if (gameMode == GameMode.GameMode1)
+            // if running any gamemode, insert the new edge into the trap decomp
+            IDotsHalfEdge leftPointing;
+            IDotsHalfEdge rightPointing;
+            if (incident.Origin.Coordinates.x < incident.Destination.Coordinates.x)
             {
-                IDotsHalfEdge leftPointing;
-                IDotsHalfEdge rightPointing;
-                if (incident.Origin.Coordinates.x < incident.Destination.Coordinates.x)
-                {
-                    rightPointing = incident;
-                    leftPointing = twin;
-                }
-                else
-                {
-                    rightPointing = twin;
-                    leftPointing = incident;
-                }
-
-                TrapDecomHelper.Insert(root, new DotsEdge(leftPointing, rightPointing));
+                rightPointing = incident;
+                leftPointing = twin;
             }
+            else
+            {
+                rightPointing = twin;
+                leftPointing = incident;
+            }
+
+            TrapDecomHelper.Insert(root, new DotsEdge(leftPointing, rightPointing));
 
             AssignNextAndPrev(incident); // Also assigns twin
 
