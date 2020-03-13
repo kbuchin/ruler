@@ -223,7 +223,7 @@ namespace DotsAndPolygons
             {
                 dotsVertex.InFace = true;
             }
-            // TODO maybe color in entire screen
+            
         }
 
         public void AdvanceLevel()
