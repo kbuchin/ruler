@@ -117,7 +117,7 @@ namespace DotsAndPolygons
         private void ShowTrapDecomLines()
         {
             if (!_showTrapDecomLines) return;
-            faces = extract_faces(root.LeftChild, new List<TrapFace>(), 0);
+            faces = ExtractFaces(root.LeftChild, new List<TrapFace>(), 0);
 
             foreach (TrapFace face in faces)
             {
