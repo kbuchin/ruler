@@ -243,7 +243,7 @@ namespace DotsAndPolygons
             return Hull.Count == hullEdges.Count();
         }
         
-        public List<TrapFace> extract_faces(ITrapDecomNode current, List<TrapFace> result, int depth)
+        public static List<TrapFace> ExtractFaces(ITrapDecomNode current, List<TrapFace> result, int depth)
         {
             if (depth > 1000)
             {
@@ -258,8 +258,8 @@ namespace DotsAndPolygons
 
             if (current.GetType() == typeof(TrapDecomLine) || current.GetType() == typeof(TrapDecomPoint))
             {
-                result.AddRange(extract_faces(current.LeftChild, new List<TrapFace>(), depth + 1));
-                result.AddRange(extract_faces(current.RightChild, new List<TrapFace>(), depth + 1));
+                result.AddRange(ExtractFaces(current.LeftChild, new List<TrapFace>(), depth + 1));
+                result.AddRange(ExtractFaces(current.RightChild, new List<TrapFace>(), depth + 1));
             }
 
             return result;
