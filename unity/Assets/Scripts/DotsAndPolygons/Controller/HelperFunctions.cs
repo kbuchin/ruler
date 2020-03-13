@@ -45,23 +45,25 @@ namespace DotsAndPolygons
         }
 
         public static bool IsOnLine(Vector2 a_Point, Line line, float diff = .2f) =>
-            line.IsVertical
-                ? Math.Abs(line.Point1.x - a_Point.x) < diff
-                : Math.Abs(line.Y(a_Point.x) - a_Point.y) < diff;
+            line.DistanceToPoint(a_Point) < diff;
 
         public static bool Colinear(Vector2 a, Vector2 b, Vector2 c, float diff = .2f) =>
             IsOnLine(c, new Line(a, b), diff);
 
         // Return whether adding the new Vector2 point in the HashSet set would result in a General Position
         // set is assumed to be general already
-        public static bool IsInGeneralPosition(Vector2 point, IEnumerable<Vector2> set, float coordinateDiff = .2f,
-            float colinearDiff = .065f) =>
+        public static bool IsInGeneralPosition(
+            Vector2 point,
+            IEnumerable<Vector2> set,
+            float colinearDiff = .14f // .065f
+        ) =>
             set.All(setPoint =>
                 // first check if the x and y coordinates differ enough
-                Math.Abs(setPoint.x - point.x) >= coordinateDiff
-                && Math.Abs(setPoint.y - point.y) >= coordinateDiff
+//                Math.Abs(setPoint.x - point.x) >= coordinateDiff
+//                && Math.Abs(setPoint.y - point.y) >= coordinateDiff
                 // then check if the distance between the line between this point and the current setPoint has a great enough distance for all points in the set
-                && set.All(otherSetPoint =>
+//                && 
+                set.All(otherSetPoint =>
                     point == setPoint || point == otherSetPoint || setPoint == otherSetPoint ||
                     !Colinear(point, setPoint, otherSetPoint, colinearDiff)
                 )

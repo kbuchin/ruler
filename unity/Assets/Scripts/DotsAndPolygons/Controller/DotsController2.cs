@@ -139,7 +139,7 @@ namespace DotsAndPolygons
             }
         }
         
-        public bool CheckArea() => Math.Abs((TotalAreaP1 + TotalAreaP2) - HullArea) < .001f;
+        public bool CheckArea() => Math.Abs(TotalAreaP1 + TotalAreaP2 - HullArea) < .001f;
 
         public override void CheckSolution()
         {

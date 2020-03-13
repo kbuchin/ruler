@@ -1466,5 +1466,9 @@ MonoBehaviour:
     type: 3}
   p2WonBackgroundPrefab: {fileID: 4920042312877424211, guid: fc8c2c2f81f7c0d49b8b16a56b8d13a9,
     type: 3}
-  lines: []
   numberOfDots: 15
+  minX: -8
+  maxX: 8
+  minY: -3.8
+  maxY: 3.5
+  lines: []

@@ -34,27 +34,18 @@ namespace DotsAndPolygons
         [SerializeField] public Text currentPlayerText;
         [SerializeField] public GameObject p1WonBackgroundPrefab;
         [SerializeField] public GameObject p2WonBackgroundPrefab;
-        
+
+
+        [SerializeField] public int numberOfDots = 20;
+        [SerializeField] public float minX = -7f;
+        [SerializeField] public float maxX = 7f;
+        [SerializeField] public float minY = -3f;
+        [SerializeField] public float maxY = 3f;
+
         public HashSet<UnityTrapDecomLine> TrapDecomLines { get; set; } = new HashSet<UnityTrapDecomLine>();
         public TrapDecomRoot root;
 
-        public TrapFace frame = new TrapFace(
-            new LineSegmentWithDotsEdge(
-                new Vector2(-6, 3),
-                new Vector2(6, 3),
-                null),
-            new LineSegmentWithDotsEdge(
-                new Vector2(-6, -3),
-                new Vector2(6, -3),
-                null),
-            new LineSegment(
-                new Vector2(-6, -3),
-                new Vector2(-6, 3)),
-            new LineSegment(
-                new Vector2(6, -3),
-                new Vector2(6, 3)),
-            new Vector2(-6, 0),
-            new Vector2(6, 0));
+        public TrapFace frame;
 
         public List<TrapFace> faces = new List<TrapFace>();
         public List<GameObject> lines = new List<GameObject>();
@@ -62,7 +53,6 @@ namespace DotsAndPolygons
         public UnityDotsVertex FirstPoint { get; set; }
         public UnityDotsVertex SecondPoint { get; set; }
 
-        [SerializeField] public int numberOfDots;
 
         public HashSet<IDotsVertex> Vertices { get; set; } = new HashSet<IDotsVertex>();
         public HashSet<IDotsHalfEdge> HalfEdges { get; set; } = new HashSet<IDotsHalfEdge>();
@@ -92,6 +82,25 @@ namespace DotsAndPolygons
         // Start is called before the first frame update
         protected void Start()
         {
+            frame = new TrapFace(
+                new LineSegmentWithDotsEdge(
+                    new Vector2(minX, maxY),
+                    new Vector2(maxX, maxY),
+                    null),
+                new LineSegmentWithDotsEdge(
+                    new Vector2(minX, minY),
+                    new Vector2(maxX, minY),
+                    null),
+                new LineSegment(
+                    new Vector2(minX, minY),
+                    new Vector2(minX, maxY)),
+                new LineSegment(
+                    new Vector2(maxX, minY),
+                    new Vector2(maxX, maxY)),
+                new Vector2(minX, 0),
+                new Vector2(maxX, 0)
+            );
+
             // get unity objects
             Vertices = new HashSet<IDotsVertex>();
             foreach (UnityDotsVertex vertex in FindObjectsOfType<UnityDotsVertex>()) Vertices.Add(vertex);
@@ -124,10 +133,10 @@ namespace DotsAndPolygons
                 var counter = 0;
                 do
                 {
-                    coords = new Vector2(Random.Range(-6f, 6f), Random.Range(-3f, 3f));
+                    coords = new Vector2(Random.Range(minX, maxX), Random.Range(minY, maxY));
                     counter++;
                     if (counter <= 100000) continue;
-                    print("too many tries until general position");
+                    print($"too many tries until general position for dot {dots.Count}");
                     goto EndOfFor;
                 } while (ShortestPointDistance(coords, dots) < 1f || !IsInGeneralPosition(coords, dots));
 
@@ -140,7 +149,7 @@ namespace DotsAndPolygons
                 EndOfFor: ;
             }
         }
-        
+
         public virtual void InitLevel()
         {
             // start level using randomly positioned dots in general position
@@ -215,15 +224,15 @@ namespace DotsAndPolygons
             currentPlayerText.gameObject.GetComponentInParent<Image>().color =
                 TotalAreaP1 > TotalAreaP2 ? Color.blue : Color.red;
 
-            GameObject background = Instantiate(TotalAreaP1 > TotalAreaP2 ? p1WonBackgroundPrefab : p2WonBackgroundPrefab);
+            GameObject background =
+                Instantiate(TotalAreaP1 > TotalAreaP2 ? p1WonBackgroundPrefab : p2WonBackgroundPrefab);
             InstantObjects.Add(background);
-            
+
             // disable all vertices
             foreach (IDotsVertex dotsVertex in Vertices)
             {
                 dotsVertex.InFace = true;
             }
-            
         }
 
         public void AdvanceLevel()
@@ -242,7 +251,7 @@ namespace DotsAndPolygons
                 || hullEdge.Equals(edge.Segment)));
             return Hull.Count == hullEdges.Count();
         }
-        
+
         public static List<TrapFace> ExtractFaces(ITrapDecomNode current, List<TrapFace> result, int depth)
         {
             if (depth > 1000)
@@ -253,7 +262,7 @@ namespace DotsAndPolygons
             print(current.GetType());
             if (current.GetType() == typeof(TrapFace))
             {
-                return new List<TrapFace>() {(TrapFace) current};
+                return new List<TrapFace> {(TrapFace) current};
             }
 
             if (current.GetType() == typeof(TrapDecomLine) || current.GetType() == typeof(TrapDecomPoint))
@@ -264,6 +273,5 @@ namespace DotsAndPolygons
 
             return result;
         }
-
     }
 }

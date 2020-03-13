@@ -138,7 +138,7 @@ namespace DotsAndPolygons
             }
         }
 
-        public bool CheckArea() => Math.Abs((TotalAreaP1 + TotalAreaP2) - HullArea) < .001f;
+        public bool CheckArea() => Math.Abs(TotalAreaP1 + TotalAreaP2 - HullArea) < .001f;
 
         public override void CheckSolution()
         {
@@ -152,7 +152,7 @@ namespace DotsAndPolygons
         {
             base.InitLevel();
 
-            IEnumerable<IDotsVertex> dots = GetVerticesInConvexPosition(numberOfDots, false, radius: 3f);
+            IEnumerable<IDotsVertex> dots = GetVerticesInConvexPosition(numberOfDots, false, radius: 3.3f);
 
             foreach (IDotsVertex dotsVertex in dots)
             {
