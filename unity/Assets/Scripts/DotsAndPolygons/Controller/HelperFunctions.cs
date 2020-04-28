@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ClipperLib;
 using JetBrains.Annotations;
 using UnityEngine;
 using Util.Geometry;
@@ -104,7 +105,7 @@ namespace DotsAndPolygons
             Vector2 endAlpha = a - b;
             Vector2 endBeta = c - b;
             double angle = Math.Atan2(endAlpha.x * endBeta.y - endBeta.x * endAlpha.y,
-                               endAlpha.x * endBeta.x + endAlpha.y * endBeta.y) * 180.0 / Math.PI;
+                endAlpha.x * endBeta.x + endAlpha.y * endBeta.y) * 180.0 / Math.PI;
 
             double result = (angle + 360.0) % 360.0;
             return Math.Abs(result) < TOLERANCE ? 360.0 : result;
@@ -148,7 +149,7 @@ namespace DotsAndPolygons
             }
 
             double angle = Math.Atan2(endAlpha.x * endBeta.y - endBeta.x * endAlpha.y,
-                               endAlpha.x * endBeta.x + endAlpha.y * endBeta.y) * 180.0 / Math.PI;
+                endAlpha.x * endBeta.x + endAlpha.y * endBeta.y) * 180.0 / Math.PI;
 
             double result = (angle + 360.0) % 360.0;
             return Math.Abs(result) < TOLERANCE ? 360.0 : result;
@@ -194,7 +195,7 @@ namespace DotsAndPolygons
                 // fit in new half edge twin
                 destinationLeavingHalfEdges.Sort((a, b) =>
                     (AngleVertices(origin.Coordinates, destination.Coordinates /* == a.Origin*/,
-                         a.Destination.Coordinates) % 360)
+                        a.Destination.Coordinates) % 360)
                     .CompareTo(
                         AngleVertices(origin.Coordinates, destination.Coordinates, b.Destination.Coordinates) % 360
                     )
@@ -231,7 +232,7 @@ namespace DotsAndPolygons
                 // fit in new half edge twin
                 originLeavingHalfEdges.Sort((a, b) =>
                     (AngleVertices(a.Destination.Coordinates, origin.Coordinates /* == a.Destination*/,
-                         destination.Coordinates) % 360)
+                        destination.Coordinates) % 360)
                     .CompareTo(
                         AngleVertices(b.Destination.Coordinates, newHalfEdge.Origin.Coordinates,
                             destination.Coordinates) % 360
@@ -744,8 +745,23 @@ namespace DotsAndPolygons
         }
 
         private const int CLIPPER_ACCURACY = 100000000;
+        public static long toLongForClipper(this float number) => Mathf.RoundToInt(number * CLIPPER_ACCURACY);
+        public static float toFloatForClipper(this long number) => number / (float) CLIPPER_ACCURACY;
 
-        public static int toIntForClipper(this float number) => Mathf.RoundToInt(number * CLIPPER_ACCURACY);
-        public static float toFloatForClipper(this int number) => number * CLIPPER_ACCURACY;
+
+        public static string ToString(this PolyNode polyNode, string indent = "", bool toFloat = true) =>
+            $"{indent}Contour = ({string.Join(", ", polyNode.Contour.Select(it => $"({(toFloat ? it.X.toFloatForClipper(): it.X)},{(toFloat ? it.Y.toFloatForClipper(): it.Y)})"))})\n" +
+            $"{indent}IsHole = {polyNode.IsHole}\n" +
+            $"{indent}IsPolygon = {!polyNode.IsOpen}\n" +
+            $"{indent}ChildCount = {polyNode.ChildCount}" +
+            (polyNode.ChildCount > 0 ? "\n" : "") +
+            string.Join(
+                "\n",
+                polyNode.Childs.Select((child, i) => 
+                    $"{indent}Children[{i}]:\n" +
+                    child.ToString(indent + "  ")
+                ));
+
+        public static string toString(this PolyTree polyTree) => ToString(polyTree.GetFirst());
     }
 }

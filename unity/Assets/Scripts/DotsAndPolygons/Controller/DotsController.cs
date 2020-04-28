@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mime;
+using ClipperLib;
 using General.Controller;
 using General.Menu;
 using General.Model;
@@ -156,6 +157,21 @@ namespace DotsAndPolygons
             Clear();
 
             advanceButton.Disable();
+
+
+            // TODO REMOVE
+            var bounding = new Rect(0f, 0f, 10f, 10f);
+            var polygon = new List<Vector2>
+            {
+                new Vector2(1, 5),
+                new Vector2(1, 3),
+                new Vector2(6, 5),
+                new Vector2(6, 3)
+            };
+
+            PolyTree res = DotsPlacer.GetGeneralPositionArea(new List<List<Vector2>> {polygon}, bounding);
+            
+            print("DIT DING\n" + res.ToString(indent: ""));
         }
 
         public void Clear()
