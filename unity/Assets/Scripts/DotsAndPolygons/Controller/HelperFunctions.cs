@@ -759,7 +759,7 @@ namespace DotsAndPolygons
                 "\n",
                 polyNode.Childs.Select((child, i) => 
                     $"{indent}Children[{i}]:\n" +
-                    child.ToString(indent + "  ")
+                    child.ToString(indent + "    ")
                 ));
 
         public static string toString(this PolyTree polyTree) => ToString(polyTree.GetFirst());
