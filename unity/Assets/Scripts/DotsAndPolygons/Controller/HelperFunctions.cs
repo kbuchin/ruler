@@ -742,5 +742,10 @@ namespace DotsAndPolygons
 
             return new Tuple<IDotsVertex, IDotsVertex>(vertexA, vertexB);
         }
+
+        private const int CLIPPER_ACCURACY = 100000000;
+
+        public static int toIntForClipper(this float number) => Mathf.RoundToInt(number * CLIPPER_ACCURACY);
+        public static float toFloatForClipper(this int number) => number * CLIPPER_ACCURACY;
     }
 }

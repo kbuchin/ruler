@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Util.Geometry.Polygon;
 
 namespace DotsAndPolygons
 {
+    using ClipperLib;
+
     public class DotsPlacer
     {
         /**
@@ -34,7 +37,7 @@ namespace DotsAndPolygons
         public HashSet<Vector2> PlacedDots;
 
         private Dictionary<Tuple<Vector2, Vector2>, Polygon2D> _nonGeneralPositionAreas;
-        
+
 
         public DotsPlacer(Rect bounds)
         {
@@ -52,6 +55,22 @@ namespace DotsAndPolygons
             PlacedDots = new HashSet<Vector2>();
         }
 
+        /** attempt */
+        public List<List<IntPoint>> NonGeneralPositionArea()
+        {
+            List<List<IntPoint>> paths = _nonGeneralPositionAreas.Values.Select(it =>
+                it.Vertices.Select(coords =>
+                    new IntPoint(coords.x.toIntForClipper(), coords.y.toIntForClipper())
+                ).ToList()
+            ).ToList();
+            var clipper = new Clipper();
+            clipper.AddPaths(paths, PolyType.ptSubject, true);
+            var solution = new List<List<IntPoint>>();
+            clipper.Execute(ClipType.ctUnion, solution, PolyFillType.pftEvenOdd, PolyFillType.pftEvenOdd);
+
+            return solution;
+        }
+
         public void AddNewPoints(int amount)
         {
             for (var i = 0; i < amount; i++) AddNewPoint();
@@ -59,7 +78,6 @@ namespace DotsAndPolygons
 
         public void AddNewPoint()
         {
-            
         }
     }
 }
