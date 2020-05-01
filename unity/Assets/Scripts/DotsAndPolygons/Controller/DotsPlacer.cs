@@ -132,7 +132,7 @@ namespace DotsAndPolygons
             clipper.Execute(ClipType.ctDifference, availableArea, PolyFillType.pftEvenOdd, PolyFillType.pftEvenOdd);
 
             // TODO REMOVE
-            amount = 6;
+            amount = 5;
             for (var i = 1; i < amount; i++)
             {
                 MonoBehaviour.print(availableArea.ToString(""));
