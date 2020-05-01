@@ -127,27 +127,13 @@ namespace DotsAndPolygons
 
         public void AddDotsInGeneralPosition()
         {
-            var dots = new HashSet<Vector2>();
-            for (var i = 0; i <= numberOfDots; i++)
+            Rect bounds = new Rect(minX, minY, (maxX - maxY), (maxY - minY));
+            var dots = DotsPlacer.GeneratePoints(bounds, numberOfDots);
+            foreach(Vector2 dot in dots)
             {
-                Vector2 coords;
-                var counter = 0;
-                do
-                {
-                    coords = new Vector2(Random.Range(minX, maxX), Random.Range(minY, maxY));
-                    counter++;
-                    if (counter <= 100000) continue;
-                    print($"too many tries until general position for dot {dots.Count}");
-                    goto EndOfFor;
-                } while (ShortestPointDistance(coords, dots) < 1f || !IsInGeneralPosition(coords, dots));
-
-                dots.Add(coords);
-
-                GameObject dot = Instantiate(dotPrefab, new Vector3(coords.x, coords.y, 0), Quaternion.identity);
-                dot.transform.parent = transform;
-                InstantObjects.Add(dot);
-
-                EndOfFor: ;
+                GameObject gameDot = Instantiate(dotPrefab, new Vector3(dot.x, dot.y, 0), Quaternion.identity);
+                gameDot.transform.parent = transform;
+                InstantObjects.Add(gameDot);
             }
         }
 
@@ -157,21 +143,6 @@ namespace DotsAndPolygons
             Clear();
 
             advanceButton.Disable();
-
-
-            // TODO REMOVE
-            var bounding = new Rect(0f, 0f, 10f, 10f);
-            var polygon = new List<Vector2>
-            {
-                new Vector2(1, 5),
-                new Vector2(1, 3),
-                new Vector2(6, 5),
-                new Vector2(6, 3)
-            };
-
-            PolyTree res = DotsPlacer.GetGeneralPositionArea(new List<List<Vector2>> {polygon}, bounding);
-            
-            print("DIT DING\n" + res.ToString(indent: ""));
         }
 
         public void Clear()

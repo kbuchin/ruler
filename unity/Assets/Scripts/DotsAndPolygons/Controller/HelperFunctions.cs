@@ -763,5 +763,39 @@ namespace DotsAndPolygons
                 ));
 
         public static string toString(this PolyTree polyTree) => ToString(polyTree.GetFirst());
+        public static float GenerateRandomFloat(float bound1, float bound2)
+        {
+            System.Random random = new System.Random();
+            return bound1 < bound2 ? (float)random.NextDouble() * (bound2 - bound1) + bound2 : (float)random.NextDouble() * (bound1 - bound2) + bound1;
+        }
+
+        public static int GenerateRandomInt(int bound1, int bound2)
+        {
+            System.Random random = new System.Random();
+            return bound1 < bound2 ? random.Next(bound1, bound2) : random.Next(bound2, bound1);
+        }
+
+        public static long GenerateRandomLong(long bound1, long bound2)
+        {
+            System.Random random = new System.Random();
+            return bound1 < bound2 ? random.Next((int) bound1, (int) bound2) : random.Next((int)bound2, (int)bound1);
+        }
+
+        public static T DrawRandomItem<T>(this IEnumerable<T> collection)
+        {
+            int randomPos = GenerateRandomInt(0, collection.Count());
+            return collection.ElementAt(randomPos);
+        }
+
+        public static bool IsAbove(this LineSegment segment, LineSegment other)
+        {
+            return segment.Line.HeightAtYAxis > other.Line.HeightAtYAxis;
+        }
+
+        public static float DiagonalLength(this Rect input)
+        {
+            return Mathf.Sqrt(Mathf.Pow(input.width, 2.0f) + Mathf.Pow(input.height, 2.0f));
+        }
     }
+    
 }
