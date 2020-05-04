@@ -796,6 +796,7 @@ namespace DotsAndPolygons
 
         public static T DrawRandomItem<T>(this IEnumerable<T> collection)
         {
+            if (!collection.Any()) throw new Exception("Collection was empty");
             int randomPos = GenerateRandomInt(0, collection.Count());
             MonoBehaviour.print($"Retrieving element at index {randomPos}");
             return collection.ElementAt(randomPos);
