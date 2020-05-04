@@ -744,7 +744,7 @@ namespace DotsAndPolygons
             return new Tuple<IDotsVertex, IDotsVertex>(vertexA, vertexB);
         }
 
-        private const long CLIPPER_ACCURACY = 100000000000000;
+        private const long CLIPPER_ACCURACY = 1000000000000;
         public static long toLongForClipper(this float number) => Convert.ToInt64(number * CLIPPER_ACCURACY);
         public static float toFloatForClipper(this long number) => number / Convert.ToSingle(CLIPPER_ACCURACY);
 

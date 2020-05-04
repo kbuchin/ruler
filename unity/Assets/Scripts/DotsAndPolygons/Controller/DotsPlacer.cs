@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using UnityEngine;
+using Util.Algorithms.Triangulation;
 using Util.Geometry;
 using Util.Geometry.Polygon;
+using Util.Geometry.Triangulation;
 using IntPoint = ClipperLib.IntPoint;
 using Object = UnityEngine.Object;
 
@@ -44,15 +46,29 @@ namespace DotsAndPolygons
             int randomIndex = HelperFunctions.GenerateRandomInt(0, input.Contour.Count);
             IntPoint first = input.Contour[randomIndex];
             IntPoint second = input.Contour[(randomIndex + 1) % input.Contour.Count];
-            long randomX = HelperFunctions.GenerateRandomLong(first.X, second.X);
-            long randomY = HelperFunctions.GenerateRandomLong(first.Y, second.Y);
-            return new Vector2(randomX.toFloatForClipper(), randomY.toFloatForClipper());
+
+            IntPoint left = first.X < second.X ? first : second;
+            IntPoint right = first.X < second.X ? second : first;
+
+            var segment = new LineSegment(
+                new Vector2(left.X.toFloatForClipper(), left.Y.toFloatForClipper()),
+                new Vector2(right.X.toFloatForClipper(), second.Y.toFloatForClipper())
+            );
+
+            float randomX = HelperFunctions.GenerateRandomFloat(segment.Point1.x, segment.Point2.x);
+            float randomY = segment.IsVertical
+                ? HelperFunctions.GenerateRandomFloat(segment.Point1.y, segment.Point2.y)
+                : segment.Y(randomX);
+            
+            MonoBehaviour.print($"x = {randomX}, y = {randomY}");
+            return new Vector2(randomX, randomY);
         }
 
-        private static Vector2 GeneratePointFloat(PolyNode intermediate)
+        private static Vector2 GeneratePointFloat(DotsController dotsController, PolyNode intermediate)
         {
             while (true)
             {
+                // PrintFace(dotsController, intermediate);
                 MonoBehaviour.print(intermediate.ToString(""));
                 if (!intermediate.Childs.Any())
                 {
@@ -68,7 +84,23 @@ namespace DotsAndPolygons
                     }
                 }
 
-                intermediate = intermediate.Childs.DrawRandomItem();
+
+                var largeSet = new HashSet<int>();
+                for (var index = 0; index < intermediate.ChildCount; index++)
+                {
+                    PolyNode child = intermediate.Childs[index];
+                    IEnumerable<Vector2> vertices = child.Contour.Select(it =>
+                        new Vector2(it.X.toFloatForClipper(), it.Y.toFloatForClipper()));
+                    var polygon = new Polygon2D(vertices);
+                    Triangulation triangulation = Triangulator.Triangulate(polygon);
+                    var area = Convert.ToInt32(Math.Ceiling(triangulation.Area));
+
+                    for (var i = 0; i < area; i++) largeSet.Add(index);
+
+                    MonoBehaviour.print($"Area: {area}");
+                }
+
+                intermediate = intermediate.Childs[largeSet.DrawRandomItem()];
             }
         }
 
@@ -121,7 +153,8 @@ namespace DotsAndPolygons
             //             new Vector2(point2.X.toFloatForClipper(), point2.Y.toFloatForClipper())
             //         );
             //         UnityTrapDecomLine.CreateUnityTrapDecomLine(seg, dotsController);
-            //     }
+            //     }            float randomY;
+
             // }
 
             // calculate initial unavailable area
@@ -132,13 +165,13 @@ namespace DotsAndPolygons
             clipper.Execute(ClipType.ctDifference, availableArea, PolyFillType.pftEvenOdd, PolyFillType.pftEvenOdd);
 
             // TODO REMOVE
-            amount = 5;
+            // amount = 7;
             for (var i = 1; i < amount; i++)
             {
                 MonoBehaviour.print(availableArea.ToString(""));
                 if (!availableArea.Childs.Any()) break; // There is no room anymore
                 PolyNode random = availableArea.Childs.DrawRandomItem();
-                Vector2 newPoint = GeneratePointFloat(random);
+                Vector2 newPoint = GeneratePointFloat(dotsController, random);
                 foreach (Vector2 pointFloat in pointFloats)
                 {
                     // generate rectangle
@@ -311,7 +344,7 @@ namespace DotsAndPolygons
                 );
                 UnityTrapDecomLine.CreateUnityTrapDecomLine(seg, dotsController);
             }
-            
+
             GameObject faceObject = Object.Instantiate(
                 dotsController.facePrefab,
                 new Vector3(0, 0, 0),
