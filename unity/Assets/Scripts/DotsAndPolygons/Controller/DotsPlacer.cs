@@ -39,11 +39,27 @@ namespace DotsAndPolygons
          * http://www.cs.man.ac.uk/~toby/alan/software/gpc.html is great! but in c
          * http://www.angusj.com/delphi/clipper.php this might work, docs: http://www.angusj.com/delphi/clipper/documentation/Docs/Overview/_Body.htm
          */
-        private static float minDistance = .6f;
+        private static float minDistance = .5f;
 
         private static Vector2 GeneratePointOnCountour(PolyNode input)
         {
-            int randomIndex = HelperFunctions.GenerateRandomInt(0, input.Contour.Count);
+            var indexSex = new List<int>();
+            for (var i = 0; i < input.Contour.Count; i++)
+            {
+                IntPoint a = input.Contour[i];
+                IntPoint b = input.Contour[(i + 1) % input.Contour.Count];
+
+                var seg = new LineSegment(
+                    new Vector2(a.X.toFloatForClipper(), a.Y.toFloatForClipper()),
+                    new Vector2(b.X.toFloatForClipper(), b.Y.toFloatForClipper())
+                );
+
+                int length = Mathf.CeilToInt(seg.SqrMagnitude);
+
+                for (var j = 0; j < length; j++) indexSex.Add(i);
+            }
+
+            int randomIndex = indexSex.DrawRandomItem();
             IntPoint first = input.Contour[randomIndex];
             IntPoint second = input.Contour[(randomIndex + 1) % input.Contour.Count];
 
@@ -59,8 +75,7 @@ namespace DotsAndPolygons
             float randomY = segment.IsVertical
                 ? HelperFunctions.GenerateRandomFloat(segment.Point1.y, segment.Point2.y)
                 : segment.Y(randomX);
-            
-            MonoBehaviour.print($"x = {randomX}, y = {randomY}");
+
             return new Vector2(randomX, randomY);
         }
 
@@ -84,8 +99,7 @@ namespace DotsAndPolygons
                     }
                 }
 
-
-                var largeSet = new HashSet<int>();
+                var largeSet = new List<int>();
                 for (var index = 0; index < intermediate.ChildCount; index++)
                 {
                     PolyNode child = intermediate.Childs[index];
@@ -96,26 +110,15 @@ namespace DotsAndPolygons
                     var area = Convert.ToInt32(Math.Ceiling(triangulation.Area));
 
                     for (var i = 0; i < area; i++) largeSet.Add(index);
-
-                    MonoBehaviour.print($"Area: {area}");
                 }
 
                 intermediate = intermediate.Childs[largeSet.DrawRandomItem()];
             }
         }
 
-        /** attempt */
         public static HashSet<Vector2> GeneratePoints(Rect bounds, int amount, DotsController dotsController)
         {
-            Path boundingBox = new List<Vector2>
-            {
-                new Vector2(bounds.xMin, bounds.yMin),
-                new Vector2(bounds.xMax, bounds.yMin),
-                new Vector2(bounds.xMax, bounds.yMax),
-                new Vector2(bounds.xMin, bounds.yMax)
-            }.Select(coords =>
-                new IntPoint(coords.x.toLongForClipper(), coords.y.toLongForClipper())
-            ).ToList();
+            Path boundingBox = bounds.toPathForClipper();
 
             // generate first point and rectangle
             var pointFloats = new HashSet<Vector2>();
@@ -125,37 +128,27 @@ namespace DotsAndPolygons
             pointFloats.Add(firstPoint);
 
             // initialize first rectangle for clipper
-            var firstRect = new Path
-            {
-                new IntPoint((firstX - minDistance).toLongForClipper(),
-                    (firstY - minDistance).toLongForClipper()),
-                new IntPoint((firstX + minDistance).toLongForClipper(),
-                    (firstY - minDistance).toLongForClipper()),
-                new IntPoint((firstX + minDistance).toLongForClipper(),
-                    (firstY + minDistance).toLongForClipper()),
-                new IntPoint((firstX - minDistance).toLongForClipper(),
-                    (firstY + minDistance).toLongForClipper())
-            };
+            // var firstRect = new Path
+            // {
+            //     new IntPoint((firstX - minDistance).toLongForClipper(),
+            //         (firstY - minDistance).toLongForClipper()),
+            //     new IntPoint((firstX + minDistance).toLongForClipper(),
+            //         (firstY - minDistance).toLongForClipper()),
+            //     new IntPoint((firstX + minDistance).toLongForClipper(),
+            //         (firstY + minDistance).toLongForClipper()),
+            //     new IntPoint((firstX - minDistance).toLongForClipper(),
+            //         (firstY + minDistance).toLongForClipper())
+            // };
+            var firstHorizontalRect = new Rect(bounds.x, firstPoint.y - minDistance / 2f, bounds.width, minDistance);
+            var firstVerticalRect = new Rect(firstPoint.x - minDistance / 2f, bounds.y, minDistance, bounds.height);
+
 
             // add the first rectangle as unavailable area
-            var unavailableArea = new Paths {firstRect};
-
-            // nonAvailableArea.ForEach(it => PrintFace(dotsController, it, false));
-            //
-            // foreach (Path newPath in nonAvailableArea)
-            // {
-            //     for (var j = 0; j < newPath.Count; j++)
-            //     {
-            //         IntPoint point1 = newPath[j];
-            //         IntPoint point2 = newPath[(j + 1) % newPath.Count];
-            //         var seg = new LineSegment(
-            //             new Vector2(point1.X.toFloatForClipper(), point1.Y.toFloatForClipper()),
-            //             new Vector2(point2.X.toFloatForClipper(), point2.Y.toFloatForClipper())
-            //         );
-            //         UnityTrapDecomLine.CreateUnityTrapDecomLine(seg, dotsController);
-            //     }            float randomY;
-
-            // }
+            var unavailableArea = new Paths
+            {
+                firstHorizontalRect.toPathForClipper(),
+                firstVerticalRect.toPathForClipper()
+            };
 
             // calculate initial unavailable area
             var clipper = new Clipper();
@@ -164,11 +157,12 @@ namespace DotsAndPolygons
             var availableArea = new PolyTree();
             clipper.Execute(ClipType.ctDifference, availableArea, PolyFillType.pftEvenOdd, PolyFillType.pftEvenOdd);
 
-            // TODO REMOVE
-            // amount = 7;
+            // TODO remove
+            // amount = 4;
+
             for (var i = 1; i < amount; i++)
             {
-                MonoBehaviour.print(availableArea.ToString(""));
+                // MonoBehaviour.print(availableArea.ToString(""));
                 if (!availableArea.Childs.Any()) break; // There is no room anymore
                 PolyNode random = availableArea.Childs.DrawRandomItem();
                 Vector2 newPoint = GeneratePointFloat(dotsController, random);
@@ -176,17 +170,6 @@ namespace DotsAndPolygons
                 {
                     // generate rectangle
                     Path path = generateUnavailableRectangle(bounds, newPoint, pointFloat, dotsController);
-
-                    // for (var j = 0; j < path.Count; j++)
-                    // {
-                    //     IntPoint point1 = path[j];
-                    //     IntPoint point2 = path[(j + 1) % path.Count];
-                    //     var seg = new LineSegment(
-                    //         new Vector2(point1.X.toFloatForClipper(), point1.Y.toFloatForClipper()),
-                    //         new Vector2(point2.X.toFloatForClipper(), point2.Y.toFloatForClipper())
-                    //     );
-                    //     UnityTrapDecomLine.CreateUnityTrapDecomLine(seg, dotsController);
-                    // }
 
                     // first generate the clipper rectangle by taking the intersection with the bounding box and the newly unavailable rectangle
                     clipper.Clear();
@@ -196,59 +179,47 @@ namespace DotsAndPolygons
                     clipper.Execute(ClipType.ctIntersection, newUnavailableArea, PolyFillType.pftEvenOdd,
                         PolyFillType.pftEvenOdd);
 
-
-                    // newUnavailableArea.ForEach(it => PrintFace(dotsController, it, false));
-                    // foreach (Path newPath in newUnavailableArea)
-                    // {
-                    //     for (var j = 0; j < newPath.Count; j++)
-                    //     {
-                    //         IntPoint point1 = newPath[j];
-                    //         IntPoint point2 = newPath[(j + 1) % newPath.Count];
-                    //         var seg = new LineSegment(
-                    //             new Vector2(point1.X.toFloatForClipper(), point1.Y.toFloatForClipper()),
-                    //             new Vector2(point2.X.toFloatForClipper(), point2.Y.toFloatForClipper())
-                    //         );
-                    //         UnityTrapDecomLine.CreateUnityTrapDecomLine(seg, dotsController);
-                    //     }
-                    // }
-
                     // second add the new unavailable area to the old unavailable area by taking the union
                     clipper.Clear();
                     clipper.AddPaths(unavailableArea, PolyType.ptClip, true);
                     clipper.AddPaths(newUnavailableArea, PolyType.ptSubject, true);
                     clipper.Execute(ClipType.ctUnion, unavailableArea, PolyFillType.pftEvenOdd,
                         PolyFillType.pftEvenOdd);
-
-                    // finally take the difference with the all the unavailable area and the bounding box (i.e. all the available area)
-                    clipper.Clear();
-                    clipper.AddPaths(unavailableArea, PolyType.ptClip, true);
-                    clipper.AddPath(boundingBox, PolyType.ptSubject, true);
-                    availableArea = new PolyTree();
-                    clipper.Execute(ClipType.ctDifference, availableArea, PolyFillType.pftEvenOdd,
-                        PolyFillType.pftEvenOdd);
                 }
+
+                // rectangles to prevent same x/y coordinates
+                var horizontalRect = new Rect(bounds.x, newPoint.y - minDistance / 2f, bounds.width, minDistance);
+
+                // second add the new unavailable area to the old unavailable area by taking the union
+                clipper.Clear();
+                clipper.AddPaths(unavailableArea, PolyType.ptClip, true);
+                clipper.AddPath(horizontalRect.toPathForClipper(), PolyType.ptSubject, true);
+                clipper.Execute(ClipType.ctUnion, unavailableArea, PolyFillType.pftEvenOdd,
+                    PolyFillType.pftEvenOdd);
+
+                var verticalRect = new Rect(newPoint.x - minDistance / 2f, bounds.y, minDistance, bounds.height);
+
+                // second add the new unavailable area to the old unavailable area by taking the union
+                clipper.Clear();
+                clipper.AddPaths(unavailableArea, PolyType.ptClip, true);
+                clipper.AddPath(verticalRect.toPathForClipper(), PolyType.ptSubject, true);
+                clipper.Execute(ClipType.ctUnion, unavailableArea, PolyFillType.pftEvenOdd,
+                    PolyFillType.pftEvenOdd);
+
+                // finally take the difference with the all the unavailable area and the bounding box (i.e. all the available area)
+                clipper.Clear();
+                clipper.AddPaths(unavailableArea, PolyType.ptClip, true);
+                clipper.AddPath(boundingBox, PolyType.ptSubject, true);
+                availableArea = new PolyTree();
+                clipper.Execute(ClipType.ctDifference, availableArea, PolyFillType.pftEvenOdd,
+                    PolyFillType.pftEvenOdd);
+
 
                 pointFloats.Add(newPoint);
             }
 
-            // TODO remove
-            MonoBehaviour.print(availableArea.ToString(""));
 
             PrintFace(dotsController, availableArea);
-
-            // foreach (Path newPath in availableArea)
-            // {
-            //     for (var j = 0; j < newPath.Count; j++)
-            //     {
-            //         IntPoint point1 = newPath[j];
-            //         IntPoint point2 = newPath[(j + 1) % newPath.Count];
-            //         var seg = new LineSegment(
-            //             new Vector2(point1.X.toFloatForClipper(), point1.Y.toFloatForClipper()),
-            //             new Vector2(point2.X.toFloatForClipper(), point2.Y.toFloatForClipper())
-            //         );
-            //         UnityTrapDecomLine.CreateUnityTrapDecomLine(seg, dotsController);
-            //     }
-            // }
 
             return pointFloats;
         }
@@ -258,31 +229,21 @@ namespace DotsAndPolygons
         {
             var lineSegment = new LineSegment(point1, point2);
 
-            // TODO remove
-            // UnityTrapDecomLine.CreateUnityTrapDecomLine(lineSegment, dotsController);
-
-
-            Vector2 a = point1 + minDistance * lineSegment.RightNormal().normalized;
-            Vector2 b = point2 + minDistance * lineSegment.RightNormal().normalized;
+            Vector2 a = point1 + minDistance / 2f * lineSegment.RightNormal().normalized;
+            Vector2 b = point2 + minDistance / 2f * lineSegment.RightNormal().normalized;
 
             var firstLineSegment = new LineSegment(
                 a.x < b.x ? a : b,
                 a.x < b.x ? b : a
             );
 
-            // TODO remove
-            // UnityTrapDecomLine.CreateUnityTrapDecomLine(firstLineSegment, dotsController);
-
-            Vector2 c = point1 + minDistance * -lineSegment.RightNormal().normalized;
-            Vector2 d = point2 + minDistance * -lineSegment.RightNormal().normalized;
+            Vector2 c = point1 + minDistance / 2f * -lineSegment.RightNormal().normalized;
+            Vector2 d = point2 + minDistance / 2f * -lineSegment.RightNormal().normalized;
 
             var secondLineSegment = new LineSegment(
                 c.x < d.x ? c : d,
                 c.x < d.x ? d : c
             );
-
-            // TODO remove
-            // UnityTrapDecomLine.CreateUnityTrapDecomLine(secondLineSegment, dotsController);
 
             LineSegment upper;
             LineSegment lower;
@@ -306,13 +267,6 @@ namespace DotsAndPolygons
 
             Vector2 lowerRight = lower.Point2 + diagonalLength * direction;
             Vector2 lowerLeft = lower.Point1 + diagonalLength * otherDirection;
-
-            // MonoBehaviour.print(
-            //     $"upper left: {upperLeft}, upper right: {upperRight}, lower right: {lowerRight}, lower left: {lowerLeft}");
-
-            // TODO remove
-            // UnityTrapDecomLine.CreateUnityTrapDecomLine(new LineSegment(upperLeft, upperRight), dotsController);
-            // UnityTrapDecomLine.CreateUnityTrapDecomLine(new LineSegment(lowerLeft, lowerRight), dotsController);
 
             return new Path
             {

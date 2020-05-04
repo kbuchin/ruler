@@ -10,6 +10,8 @@ using Random = UnityEngine.Random;
 
 namespace DotsAndPolygons
 {
+    using Path = List<IntPoint>;
+
     public static class HelperFunctions
     {
         public const float TOLERANCE = .0001f;
@@ -744,7 +746,7 @@ namespace DotsAndPolygons
             return new Tuple<IDotsVertex, IDotsVertex>(vertexA, vertexB);
         }
 
-        private const long CLIPPER_ACCURACY = 1000000000000;
+        private const long CLIPPER_ACCURACY = 1000000000000000;
         public static long toLongForClipper(this float number) => Convert.ToInt64(number * CLIPPER_ACCURACY);
         public static float toFloatForClipper(this long number) => number / Convert.ToSingle(CLIPPER_ACCURACY);
 
@@ -781,7 +783,7 @@ namespace DotsAndPolygons
         public static long GenerateRandomLong(long bound1, long bound2)
         {
             if (bound1 == bound2) return bound1;
-            
+
             var buf = new byte[8];
             new System.Random().NextBytes(buf);
             var longRand = BitConverter.ToInt64(buf, 0);
@@ -804,5 +806,15 @@ namespace DotsAndPolygons
 
         public static float DiagonalLength(this Rect input) =>
             Mathf.Sqrt(Mathf.Pow(input.width, 2.0f) + Mathf.Pow(input.height, 2.0f));
+
+        public static Path toPathForClipper(this Rect rect) => new List<Vector2>
+        {
+            new Vector2(rect.xMin, rect.yMin),
+            new Vector2(rect.xMax, rect.yMin),
+            new Vector2(rect.xMax, rect.yMax),
+            new Vector2(rect.xMin, rect.yMax)
+        }.Select(coords =>
+            new IntPoint(coords.x.toLongForClipper(), coords.y.toLongForClipper())
+        ).ToList();
     }
 }

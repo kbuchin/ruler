@@ -129,6 +129,9 @@ namespace DotsAndPolygons
         {
             var bounds = new Rect(minX, minY, maxX - minX, maxY - minY);
             HashSet<Vector2> dots = DotsPlacer.GeneratePoints(bounds, numberOfDots, this);
+
+            print($"Number of placed dots: {dots.Count}");
+            
             foreach(Vector2 dot in dots)
             {
                 GameObject gameDot = Instantiate(dotPrefab, new Vector3(dot.x, dot.y, 0), Quaternion.identity);
