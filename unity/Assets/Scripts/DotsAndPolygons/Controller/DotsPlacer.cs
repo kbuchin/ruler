@@ -160,7 +160,7 @@ namespace DotsAndPolygons
 
             PolyTree availableArea = Difference(clipper, unavailableArea, boundingBox);
             // TODO remove
-            amount = 6;
+            // amount = 6;
 
             Paths newUnavailableArea = null;
             
@@ -199,14 +199,15 @@ namespace DotsAndPolygons
 
                 pointFloats.Add(newPoint);
             }
-
-            clipper.Clear();
-            var newUnavailableAreaTree = new PolyTree();
-            clipper.AddPaths(newUnavailableArea, PolyType.ptClip, true);
-            clipper.AddPaths(newUnavailableArea, PolyType.ptSubject, true);
-            clipper.Execute(ClipType.ctUnion, newUnavailableAreaTree, PolyFillType.pftEvenOdd, PolyFillType.pftEvenOdd);
-
-            PrintFace(dotsController, newUnavailableAreaTree);
+            
+            // TODO printen
+            // clipper.Clear();
+            // var newUnavailableAreaTree = new PolyTree();
+            // clipper.AddPaths(newUnavailableArea, PolyType.ptClip, true);
+            // clipper.AddPaths(newUnavailableArea, PolyType.ptSubject, true);
+            // clipper.Execute(ClipType.ctUnion, newUnavailableAreaTree, PolyFillType.pftEvenOdd, PolyFillType.pftEvenOdd);
+            //
+            // PrintFace(dotsController, newUnavailableAreaTree);
             
 
             // clipper.Clear();
