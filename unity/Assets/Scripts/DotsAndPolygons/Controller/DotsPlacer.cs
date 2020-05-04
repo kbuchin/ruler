@@ -68,7 +68,7 @@ namespace DotsAndPolygons
         {
             int randomIndex = HelperFunctions.GenerateRandomInt(0, input.Contour.Count);
             IntPoint first = input.Contour[randomIndex];
-            IntPoint second = input.Contour[randomIndex + 1];
+            IntPoint second = input.Contour[(randomIndex+1) % input.Contour.Count];
             long randomX = HelperFunctions.GenerateRandomLong(first.X, second.X);
             long randomY = HelperFunctions.GenerateRandomLong(first.Y, second.Y);
             return new Vector2(randomX.toFloatForClipper(), randomY.toFloatForClipper());
@@ -131,9 +131,10 @@ namespace DotsAndPolygons
             Clipper clipper = new Clipper();
             clipper.AddPaths(nonAvailablearea, PolyType.ptClip, true);
             clipper.AddPath(boundingBox, PolyType.ptSubject, true);
-            var availableArea = new PolyTree();
+            PolyTree availableArea = new PolyTree();
+            MonoBehaviour.print(((PolyNode)availableArea).ToString(""));
             clipper.Execute(ClipType.ctDifference, availableArea, PolyFillType.pftEvenOdd, PolyFillType.pftEvenOdd);
-
+            
             for (int i = 1; i < amount; i++)
             {
                 PolyNode random = availableArea.Childs.DrawRandomItem();
