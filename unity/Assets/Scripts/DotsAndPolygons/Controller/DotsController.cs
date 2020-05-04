@@ -127,8 +127,11 @@ namespace DotsAndPolygons
 
         public void AddDotsInGeneralPosition()
         {
-            Rect bounds = new Rect(minX, minY, (maxX - maxY), (maxY - minY));
-            var dots = DotsPlacer.GeneratePoints(bounds, numberOfDots);
+            var bounds = new Rect(minX, minY, maxX - minX, maxY - minY);
+            HashSet<Vector2> dots = DotsPlacer.GeneratePoints(bounds, numberOfDots, this);
+
+            print($"Number of placed dots: {dots.Count}");
+            
             foreach(Vector2 dot in dots)
             {
                 GameObject gameDot = Instantiate(dotPrefab, new Vector3(dot.x, dot.y, 0), Quaternion.identity);

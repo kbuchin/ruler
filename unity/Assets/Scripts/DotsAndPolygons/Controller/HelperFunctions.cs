@@ -10,6 +10,8 @@ using Random = UnityEngine.Random;
 
 namespace DotsAndPolygons
 {
+    using Path = List<IntPoint>;
+
     public static class HelperFunctions
     {
         public const float TOLERANCE = .0001f;
@@ -744,58 +746,76 @@ namespace DotsAndPolygons
             return new Tuple<IDotsVertex, IDotsVertex>(vertexA, vertexB);
         }
 
-        private const int CLIPPER_ACCURACY = 100000000;
-        public static long toLongForClipper(this float number) => Mathf.RoundToInt(number * CLIPPER_ACCURACY);
-        public static float toFloatForClipper(this long number) => number / (float) CLIPPER_ACCURACY;
+        private const long CLIPPER_ACCURACY = 1000000000000000;
+        public static long toLongForClipper(this float number) => Convert.ToInt64(number * CLIPPER_ACCURACY);
+        public static float toFloatForClipper(this long number) => number / Convert.ToSingle(CLIPPER_ACCURACY);
 
 
         public static string ToString(this PolyNode polyNode, string indent = "", bool toFloat = true) =>
-            $"{indent}Contour = ({string.Join(", ", polyNode.Contour.Select(it => $"({(toFloat ? it.X.toFloatForClipper(): it.X)},{(toFloat ? it.Y.toFloatForClipper(): it.Y)})"))})\n" +
+            $"{indent}Contour = ({string.Join(", ", polyNode.Contour.Select(it => $"({(toFloat ? it.X.toFloatForClipper() : it.X)},{(toFloat ? it.Y.toFloatForClipper() : it.Y)})"))})\n" +
             $"{indent}IsHole = {polyNode.IsHole}\n" +
             $"{indent}IsPolygon = {!polyNode.IsOpen}\n" +
             $"{indent}ChildCount = {polyNode.ChildCount}" +
             (polyNode.ChildCount > 0 ? "\n" : "") +
             string.Join(
                 "\n",
-                polyNode.Childs.Select((child, i) => 
+                polyNode.Childs.Select((child, i) =>
                     $"{indent}Children[{i}]:\n" +
                     child.ToString(indent + "    ")
                 ));
 
         public static string toString(this PolyTree polyTree) => ToString(polyTree.GetFirst());
+
         public static float GenerateRandomFloat(float bound1, float bound2)
         {
-            System.Random random = new System.Random();
-            return bound1 < bound2 ? (float)random.NextDouble() * (bound2 - bound1) + bound2 : (float)random.NextDouble() * (bound1 - bound2) + bound1;
+            var random = new System.Random();
+            return bound1 < bound2
+                ? (float) random.NextDouble() * (bound2 - bound1) + bound1
+                : (float) random.NextDouble() * (bound1 - bound2) + bound2;
         }
 
         public static int GenerateRandomInt(int bound1, int bound2)
         {
-            System.Random random = new System.Random();
+            var random = new System.Random();
             return bound1 < bound2 ? random.Next(bound1, bound2) : random.Next(bound2, bound1);
         }
 
         public static long GenerateRandomLong(long bound1, long bound2)
         {
-            System.Random random = new System.Random();
-            return bound1 < bound2 ? random.Next((int) bound1, (int) bound2) : random.Next((int)bound2, (int)bound1);
+            if (bound1 == bound2) return bound1;
+
+            var buf = new byte[8];
+            new System.Random().NextBytes(buf);
+            var longRand = BitConverter.ToInt64(buf, 0);
+
+            long max = bound1 > bound2 ? bound1 : bound2;
+            long min = bound1 > bound2 ? bound2 : bound1;
+
+            return Math.Abs(longRand % (max - min)) + min;
         }
 
         public static T DrawRandomItem<T>(this IEnumerable<T> collection)
         {
+            if (!collection.Any()) throw new Exception("Collection was empty");
             int randomPos = GenerateRandomInt(0, collection.Count());
+            MonoBehaviour.print($"Retrieving element at index {randomPos}");
             return collection.ElementAt(randomPos);
         }
 
-        public static bool IsAbove(this LineSegment segment, LineSegment other)
-        {
-            return segment.Line.HeightAtYAxis > other.Line.HeightAtYAxis;
-        }
+        public static bool IsAbove(this LineSegment segment, LineSegment other) =>
+            segment.Line.HeightAtYAxis > other.Line.HeightAtYAxis;
 
-        public static float DiagonalLength(this Rect input)
+        public static float DiagonalLength(this Rect input) =>
+            Mathf.Sqrt(Mathf.Pow(input.width, 2.0f) + Mathf.Pow(input.height, 2.0f));
+
+        public static Path toPathForClipper(this Rect rect) => new List<Vector2>
         {
-            return Mathf.Sqrt(Mathf.Pow(input.width, 2.0f) + Mathf.Pow(input.height, 2.0f));
-        }
+            new Vector2(rect.xMin, rect.yMin),
+            new Vector2(rect.xMax, rect.yMin),
+            new Vector2(rect.xMax, rect.yMax),
+            new Vector2(rect.xMin, rect.yMax)
+        }.Select(coords =>
+            new IntPoint(coords.x.toLongForClipper(), coords.y.toLongForClipper())
+        ).ToList();
     }
-    
 }
