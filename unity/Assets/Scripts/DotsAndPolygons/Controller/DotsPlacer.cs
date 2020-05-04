@@ -71,23 +71,12 @@ namespace DotsAndPolygons
                 new Vector2(right.X.toFloatForClipper(), second.Y.toFloatForClipper())
             );
 
-<<<<<<< HEAD
-        private static Vector2 GeneratePointOnCountour(PolyNode input)
-        {
-            int randomIndex = HelperFunctions.GenerateRandomInt(0, input.Contour.Count);
-            IntPoint first = input.Contour[randomIndex];
-            IntPoint second = input.Contour[(randomIndex+1) % input.Contour.Count];
-            long randomX = HelperFunctions.GenerateRandomLong(first.X, second.X);
-            long randomY = HelperFunctions.GenerateRandomLong(first.Y, second.Y);
-            return new Vector2(randomX.toFloatForClipper(), randomY.toFloatForClipper());
-=======
             float randomX = HelperFunctions.GenerateRandomFloat(segment.Point1.x, segment.Point2.x);
             float randomY = segment.IsVertical
                 ? HelperFunctions.GenerateRandomFloat(segment.Point1.y, segment.Point2.y)
                 : segment.Y(randomX);
 
             return new Vector2(randomX, randomY);
->>>>>>> 79817a9dce20f2b176cf65283fdc1004bbd6cb1d
         }
 
         private static Vector2? GeneratePointFloat(DotsController dotsController, PolyNode intermediate)
@@ -168,16 +157,6 @@ namespace DotsAndPolygons
             AddToUnion(clipper, unavailableArea, firstVerticalRect.toPathForClipper());
 
             // calculate initial unavailable area
-<<<<<<< HEAD
-            Clipper clipper = new Clipper();
-            clipper.AddPaths(nonAvailablearea, PolyType.ptClip, true);
-            clipper.AddPath(boundingBox, PolyType.ptSubject, true);
-            PolyTree availableArea = new PolyTree();
-            MonoBehaviour.print(((PolyNode)availableArea).ToString(""));
-            clipper.Execute(ClipType.ctDifference, availableArea, PolyFillType.pftEvenOdd, PolyFillType.pftEvenOdd);
-            
-            for (int i = 1; i < amount; i++)
-=======
 
             PolyTree availableArea = Difference(clipper, unavailableArea, boundingBox);
             // TODO remove
@@ -186,7 +165,6 @@ namespace DotsAndPolygons
             Paths newUnavailableArea = null;
             
             for (var i = 1; i < amount; i++)
->>>>>>> 79817a9dce20f2b176cf65283fdc1004bbd6cb1d
             {
                 // MonoBehaviour.print(availableArea.ToString(""));
                 if (!availableArea.Childs.Any()) break; // There is no room anymore
