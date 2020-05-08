@@ -59,7 +59,7 @@ namespace DotsAndPolygons
 
         public void AddNewPoint()
         {
-            var availableArea = _availableArea.ToPolyTree();
+            var availableArea = _availableArea.ToPolyTree(_clipper);
             if (!availableArea.Childs.Any()) return; // There is no room anymore
             Vector2? generatedPoint = GeneratePointFloat(availableArea);
             if (generatedPoint == null) return;
@@ -91,7 +91,7 @@ namespace DotsAndPolygons
 
         public void PrintAvailableArea(DotsController dotsController, HashSet<GameObject> faces)
         {
-            PrintFace(dotsController, _availableArea.ToPolyTree(), faces);
+            PrintFace(dotsController, _availableArea.ToPolyTree(_clipper), faces);
         }
 
 

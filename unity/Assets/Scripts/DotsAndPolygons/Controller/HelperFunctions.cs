@@ -819,9 +819,10 @@ namespace DotsAndPolygons
             new IntPoint(coords.x.toLongForClipper(), coords.y.toLongForClipper())
         ).ToList();
 
-        public static PolyTree ToPolyTree(this Paths paths)
+        public static PolyTree ToPolyTree(this Paths paths, Clipper clipper = null)
         {
-            var clipper = new Clipper();
+            clipper = clipper ?? new Clipper();
+            clipper.Clear();
             clipper.AddPaths(paths, PolyType.ptClip, true);
             clipper.AddPaths(paths, PolyType.ptSubject, true);
             var polyTree = new PolyTree();
@@ -829,9 +830,10 @@ namespace DotsAndPolygons
             return polyTree;
         }
 
-        public static PolyTree ToPolyTree(this Path path)
+        public static PolyTree ToPolyTree(this Path path, Clipper clipper = null)
         {
-            var clipper = new Clipper();
+            clipper = clipper ?? new Clipper();
+            clipper.Clear();
             clipper.AddPath(path, PolyType.ptClip, true);
             clipper.AddPath(path, PolyType.ptSubject, true);
             var polyTree = new PolyTree();
