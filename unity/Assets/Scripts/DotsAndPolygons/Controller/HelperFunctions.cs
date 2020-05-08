@@ -11,6 +11,7 @@ using Random = UnityEngine.Random;
 namespace DotsAndPolygons
 {
     using Path = List<IntPoint>;
+    using Paths = List<List<IntPoint>>;
 
     public static class HelperFunctions
     {
@@ -808,7 +809,7 @@ namespace DotsAndPolygons
         public static float DiagonalLength(this Rect input) =>
             Mathf.Sqrt(Mathf.Pow(input.width, 2.0f) + Mathf.Pow(input.height, 2.0f));
 
-        public static Path toPathForClipper(this Rect rect) => new List<Vector2>
+        public static Path ToPathForClipper(this Rect rect) => new List<Vector2>
         {
             new Vector2(rect.xMin, rect.yMax),
             new Vector2(rect.xMax, rect.yMax),
@@ -817,5 +818,30 @@ namespace DotsAndPolygons
         }.Select(coords =>
             new IntPoint(coords.x.toLongForClipper(), coords.y.toLongForClipper())
         ).ToList();
+
+        public static PolyTree ToPolyTree(this Paths paths)
+        {
+            var clipper = new Clipper();
+            clipper.AddPaths(paths, PolyType.ptClip, true);
+            clipper.AddPaths(paths, PolyType.ptSubject, true);
+            var polyTree = new PolyTree();
+            clipper.Execute(ClipType.ctUnion, polyTree, PolyFillType.pftEvenOdd, PolyFillType.pftEvenOdd);
+            return polyTree;
+        }
+
+        public static PolyTree ToPolyTree(this Path path)
+        {
+            var clipper = new Clipper();
+            clipper.AddPath(path, PolyType.ptClip, true);
+            clipper.AddPath(path, PolyType.ptSubject, true);
+            var polyTree = new PolyTree();
+            clipper.Execute(ClipType.ctUnion, polyTree, PolyFillType.pftEvenOdd, PolyFillType.pftEvenOdd);
+            return polyTree;
+        }
+        
+        public static void ForEach<T>(this IEnumerable<T> iEnumerable, Action<T> action)
+        {
+            foreach (T x in iEnumerable) action(x);
+        }
     }
 }

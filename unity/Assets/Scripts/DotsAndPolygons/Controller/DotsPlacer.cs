@@ -44,16 +44,24 @@ namespace DotsAndPolygons
         private readonly Clipper _clipper = new Clipper();
         private Rect _bounds;
 
-        private readonly Path _boundingBox;
+        // private readonly Path _boundingBox;
 
         public HashSet<Vector2> Dots { get; } = new HashSet<Vector2>();
-        private readonly Paths _unavailableArea = new Paths();
-        private PolyTree _availableArea;
+
+        // private readonly Paths _unavailableArea = new Paths();
+        private Paths _availableArea = new Paths();
 
         public DotsPlacer(Rect bounds)
         {
             _bounds = bounds;
-            _boundingBox = bounds.toPathForClipper();
+
+            // use bounding box to create the initial available area
+            Path boundingBox = bounds.ToPathForClipper();
+            _clipper.Clear();
+            _clipper.AddPath(boundingBox, PolyType.ptClip, true);
+            _clipper.AddPath(boundingBox, PolyType.ptSubject, true);
+            _clipper.Execute(ClipType.ctUnion, _availableArea, PolyFillType.pftEvenOdd, PolyFillType.pftEvenOdd);
+
 
             // generate first point
             float firstX = HelperFunctions.GenerateRandomFloat(bounds.xMin, bounds.xMax);
@@ -62,42 +70,49 @@ namespace DotsAndPolygons
             Dots.Add(firstPoint);
 
             // calculate initial unavailable area
-            CreateAndAddUnavailableRectangles(firstPoint);
-            CreateAndAddUnavailableSquare(firstPoint);
+            CreateUnavailableRectangles(firstPoint)
+                .Select(it => it.ToPathForClipper())
+                .ForEach(RemoveFromAvailableArea);
 
-            _availableArea = Difference(_unavailableArea, _boundingBox);
+            RemoveFromAvailableArea(
+                CreateUnavailableSquare(firstPoint)
+                    .ToPathForClipper()
+            );
         }
 
         public void AddNewPoint()
         {
-            if (!_availableArea.Childs.Any()) return; // There is no room anymore
-            Vector2? generatedPoint = GeneratePointFloat(_availableArea);
+            var availableArea = _availableArea.ToPolyTree();
+            if (!availableArea.Childs.Any()) return; // There is no room anymore
+            Vector2? generatedPoint = GeneratePointFloat(availableArea);
             if (generatedPoint == null) return;
             Vector2 newPoint = generatedPoint.Value;
             foreach (Vector2 pointFloat in Dots)
             {
                 // generate rectangle
-                Paths paths = GenerateUnavailableCups(_bounds, newPoint, pointFloat);
-                foreach (Path path in paths)
-                {
-                    AddToUnion(_unavailableArea, path);
-                }
+                GenerateUnavailableCups(_bounds, newPoint, pointFloat)
+                    .ForEach(RemoveFromAvailableArea);
 
                 // rectangles to prevent same x/y coordinates
-                CreateAndAddUnavailableRectangles(newPoint);
+                CreateUnavailableRectangles(newPoint)
+                    .Select(it => it.ToPathForClipper())
+                    .ForEach(RemoveFromAvailableArea);
 
-                CreateAndAddUnavailableSquare(newPoint);
+                RemoveFromAvailableArea(
+                    CreateUnavailableSquare(newPoint)
+                        .ToPathForClipper()
+                );
 
-                // first generate the clipper rectangle by taking the intersection with the bounding box and the newly unavailable rectangle
-                _clipper.Clear();
-                _clipper.AddPaths(_unavailableArea, PolyType.ptClip, true);
-                _clipper.AddPath(_boundingBox, PolyType.ptSubject, true);
-                var newUnavailableArea = new Paths();
-                _clipper.Execute(ClipType.ctIntersection, newUnavailableArea, PolyFillType.pftEvenOdd,
-                    PolyFillType.pftEvenOdd);
-
-                // finally take the difference with the all the unavailable area and the bounding box (i.e. all the available area)
-                _availableArea = Difference(newUnavailableArea, _boundingBox);
+                // // first generate the clipper rectangle by taking the intersection with the bounding box and the newly unavailable rectangle
+                // _clipper.Clear();
+                // _clipper.AddPaths(_unavailableArea, PolyType.ptClip, true);
+                // _clipper.AddPath(_boundingBox, PolyType.ptSubject, true);
+                // var newUnavailableArea = new Paths();
+                // _clipper.Execute(ClipType.ctIntersection, newUnavailableArea, PolyFillType.pftEvenOdd,
+                //     PolyFillType.pftEvenOdd);
+                //
+                // // finally take the difference with the all the unavailable area and the bounding box (i.e. all the available area)
+                // _availableArea = Difference(newUnavailableArea, _boundingBox);
             }
 
             Dots.Add(newPoint);
@@ -110,14 +125,14 @@ namespace DotsAndPolygons
 
         public void PrintAvailableArea(DotsController dotsController, HashSet<GameObject> faces)
         {
-            _clipper.Clear();
-            var unavailableAreaTree = new PolyTree();
-            _clipper.AddPaths(_unavailableArea, PolyType.ptClip, true);
-            _clipper.AddPaths(_unavailableArea, PolyType.ptSubject, true);
-            _clipper.Execute(ClipType.ctUnion, unavailableAreaTree, PolyFillType.pftEvenOdd,
-                PolyFillType.pftEvenOdd);
+            // _clipper.Clear();
+            // var unavailableAreaTree = new PolyTree();
+            // _clipper.AddPaths(_unavailableArea, PolyType.ptClip, true);
+            // _clipper.AddPaths(_unavailableArea, PolyType.ptSubject, true);
+            // _clipper.Execute(ClipType.ctUnion, unavailableAreaTree, PolyFillType.pftEvenOdd,
+            //     PolyFillType.pftEvenOdd);
 
-            PrintFace(dotsController, unavailableAreaTree, faces);
+            PrintFace(dotsController, _availableArea.ToPolyTree(), faces);
         }
 
 
@@ -204,41 +219,47 @@ namespace DotsAndPolygons
             }
         }
 
-        private void CreateAndAddUnavailableRectangles(Vector2 point)
+        private List<Rect> CreateUnavailableRectangles(Vector2 point)
         {
             var firstHorizontalRect = new Rect(_bounds.x, point.y - MinDistance / 8f, _bounds.width, MinDistance / 4f);
             var firstVerticalRect = new Rect(point.x - MinDistance / 8f, _bounds.y, MinDistance / 4f, _bounds.height);
-            AddToUnion(_unavailableArea, firstHorizontalRect.toPathForClipper());
-            AddToUnion(_unavailableArea, firstVerticalRect.toPathForClipper());
+            return new List<Rect> {firstHorizontalRect, firstVerticalRect};
         }
 
-        private void CreateAndAddUnavailableSquare(Vector2 point)
+        private Rect CreateUnavailableSquare(Vector2 point)
         {
-            var rect = new Rect(point.x - MinDistance * 2f, point.y - MinDistance * 2f, MinDistance * 4f,
+            return new Rect(point.x - MinDistance * 2f, point.y - MinDistance * 2f, MinDistance * 4f,
                 MinDistance * 4f);
-            AddToUnion(_unavailableArea, rect.toPathForClipper());
         }
 
-        private PolyTree Difference(Paths newUnavailableArea, Path boundingBox)
+        private void RemoveFromAvailableArea(Path unavailableArea)
         {
             _clipper.Clear();
-            _clipper.AddPaths(newUnavailableArea, PolyType.ptClip, true);
-            _clipper.AddPath(boundingBox, PolyType.ptSubject, true);
-            var availableArea = new PolyTree();
-            _clipper.Execute(ClipType.ctDifference, availableArea, PolyFillType.pftEvenOdd,
-                PolyFillType.pftEvenOdd);
-            return availableArea;
+            _clipper.AddPaths(_availableArea, PolyType.ptSubject, true);
+            _clipper.AddPath(unavailableArea, PolyType.ptClip, true);
+            _clipper.Execute(ClipType.ctDifference, _availableArea, PolyFillType.pftEvenOdd, PolyFillType.pftEvenOdd);
         }
 
-        private void AddToUnion(Paths unavailableArea, Path path)
-        {
-            // second add the new unavailable area to the old unavailable area by taking the union
-            _clipper.Clear();
-            _clipper.AddPaths(unavailableArea, PolyType.ptClip, true);
-            _clipper.AddPath(path, PolyType.ptSubject, true);
-            _clipper.Execute(ClipType.ctUnion, unavailableArea, PolyFillType.pftEvenOdd,
-                PolyFillType.pftEvenOdd);
-        }
+        // private PolyTree Difference(Paths newUnavailableArea, Path boundingBox)
+        // {
+        //     _clipper.Clear();
+        //     _clipper.AddPaths(newUnavailableArea, PolyType.ptClip, true);
+        //     _clipper.AddPath(boundingBox, PolyType.ptSubject, true);
+        //     var availableArea = new PolyTree();
+        //     _clipper.Execute(ClipType.ctDifference, availableArea, PolyFillType.pftEvenOdd,
+        //         PolyFillType.pftEvenOdd);
+        //     return availableArea;
+        // }
+        //
+        // private void AddToUnion(Paths unavailableArea, Path path)
+        // {
+        //     // second add the new unavailable area to the old unavailable area by taking the union
+        //     _clipper.Clear();
+        //     _clipper.AddPaths(unavailableArea, PolyType.ptClip, true);
+        //     _clipper.AddPath(path, PolyType.ptSubject, true);
+        //     _clipper.Execute(ClipType.ctUnion, unavailableArea, PolyFillType.pftEvenOdd,
+        //         PolyFillType.pftEvenOdd);
+        // }
 
 
         private static (Vector2, Vector2) SortLeftRight(Vector2 vec1, Vector2 vec2) =>

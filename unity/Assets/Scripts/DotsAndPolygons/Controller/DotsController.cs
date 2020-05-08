@@ -124,10 +124,10 @@ namespace DotsAndPolygons
         // Define mouse clicking behavior etc
         public void Update()
         {
-            if (Input.GetKeyDown(KeyCode.D))
-            {
-                AddDot();
-            }
+            // if (Input.GetKeyDown(KeyCode.D))
+            // {
+            //     AddDot();
+            // }
         }
 
         private HashSet<GameObject> _dots = new HashSet<GameObject>();
@@ -159,17 +159,18 @@ namespace DotsAndPolygons
         
         public void AddDotsInGeneralPosition()
         {
+            DotsPlacer.AddNewPoints(20);
             // TODO add 20 points using dotsplacer
             //
-            // print($"Number of placed dots: {dots.Count}");
+            print($"Number of placed dots: {DotsPlacer.Dots.Count}");
 
-            // foreach (Vector2 dot in dots)
-            // {
-            //     GameObject gameDot = Instantiate(dotPrefab, new Vector3(dot.x, dot.y, 0), Quaternion.identity);
-            //     gameDot.transform.parent = transform;
-            //     InstantObjects.Add(gameDot);
-            //     _dots.Add(gameDot);
-            // }
+            foreach (Vector2 dot in DotsPlacer.Dots)
+            {
+                GameObject gameDot = Instantiate(dotPrefab, new Vector3(dot.x, dot.y, 0), Quaternion.identity);
+                gameDot.transform.parent = transform;
+                InstantObjects.Add(gameDot);
+                _dots.Add(gameDot);
+            }
         }
 
         public virtual void InitLevel()
