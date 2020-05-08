@@ -1,10 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using UnityEngine;
 using Util.Algorithms.Triangulation;
-using Util.Geometry;
 using Util.Geometry.Polygon;
 using Util.Geometry.Triangulation;
 using IntPoint = ClipperLib.IntPoint;
