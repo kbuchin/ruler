@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ClipperLib;
 using JetBrains.Annotations;
 using UnityEngine;
 using Util.Geometry;
@@ -9,6 +10,9 @@ using Random = UnityEngine.Random;
 
 namespace DotsAndPolygons
 {
+    using Path = List<IntPoint>;
+    using Paths = List<List<IntPoint>>;
+
     public static class HelperFunctions
     {
         public const float TOLERANCE = .0001f;
@@ -104,7 +108,7 @@ namespace DotsAndPolygons
             Vector2 endAlpha = a - b;
             Vector2 endBeta = c - b;
             double angle = Math.Atan2(endAlpha.x * endBeta.y - endBeta.x * endAlpha.y,
-                               endAlpha.x * endBeta.x + endAlpha.y * endBeta.y) * 180.0 / Math.PI;
+                endAlpha.x * endBeta.x + endAlpha.y * endBeta.y) * 180.0 / Math.PI;
 
             double result = (angle + 360.0) % 360.0;
             return Math.Abs(result) < TOLERANCE ? 360.0 : result;
@@ -148,7 +152,7 @@ namespace DotsAndPolygons
             }
 
             double angle = Math.Atan2(endAlpha.x * endBeta.y - endBeta.x * endAlpha.y,
-                               endAlpha.x * endBeta.x + endAlpha.y * endBeta.y) * 180.0 / Math.PI;
+                endAlpha.x * endBeta.x + endAlpha.y * endBeta.y) * 180.0 / Math.PI;
 
             double result = (angle + 360.0) % 360.0;
             return Math.Abs(result) < TOLERANCE ? 360.0 : result;
@@ -194,7 +198,7 @@ namespace DotsAndPolygons
                 // fit in new half edge twin
                 destinationLeavingHalfEdges.Sort((a, b) =>
                     (AngleVertices(origin.Coordinates, destination.Coordinates /* == a.Origin*/,
-                         a.Destination.Coordinates) % 360)
+                        a.Destination.Coordinates) % 360)
                     .CompareTo(
                         AngleVertices(origin.Coordinates, destination.Coordinates, b.Destination.Coordinates) % 360
                     )
@@ -231,7 +235,7 @@ namespace DotsAndPolygons
                 // fit in new half edge twin
                 originLeavingHalfEdges.Sort((a, b) =>
                     (AngleVertices(a.Destination.Coordinates, origin.Coordinates /* == a.Destination*/,
-                         destination.Coordinates) % 360)
+                        destination.Coordinates) % 360)
                     .CompareTo(
                         AngleVertices(b.Destination.Coordinates, newHalfEdge.Origin.Coordinates,
                             destination.Coordinates) % 360
@@ -741,6 +745,105 @@ namespace DotsAndPolygons
             ).Last();
 
             return new Tuple<IDotsVertex, IDotsVertex>(vertexA, vertexB);
+        }
+
+        private const long CLIPPER_ACCURACY = 1000000000000000;
+        public static long toLongForClipper(this float number) => Convert.ToInt64(number * CLIPPER_ACCURACY);
+        public static float toFloatForClipper(this long number) => number / Convert.ToSingle(CLIPPER_ACCURACY);
+
+
+        public static string ToString(this PolyNode polyNode, string indent = "", bool toFloat = true) =>
+            $"{indent}Contour = ({string.Join(", ", polyNode.Contour.Select(it => $"({(toFloat ? it.X.toFloatForClipper() : it.X)},{(toFloat ? it.Y.toFloatForClipper() : it.Y)})"))})\n" +
+            $"{indent}IsHole = {polyNode.IsHole}\n" +
+            $"{indent}IsPolygon = {!polyNode.IsOpen}\n" +
+            $"{indent}ChildCount = {polyNode.ChildCount}" +
+            (polyNode.ChildCount > 0 ? "\n" : "") +
+            string.Join(
+                "\n",
+                polyNode.Childs.Select((child, i) =>
+                    $"{indent}Children[{i}]:\n" +
+                    child.ToString(indent + "    ")
+                ));
+
+        public static string toString(this PolyTree polyTree) => ToString(polyTree.GetFirst());
+
+        public static float GenerateRandomFloat(float bound1, float bound2)
+        {
+            var random = new System.Random();
+            return bound1 < bound2
+                ? (float) random.NextDouble() * (bound2 - bound1) + bound1
+                : (float) random.NextDouble() * (bound1 - bound2) + bound2;
+        }
+
+        public static int GenerateRandomInt(int bound1, int bound2)
+        {
+            var random = new System.Random();
+            return bound1 < bound2 ? random.Next(bound1, bound2) : random.Next(bound2, bound1);
+        }
+
+        public static long GenerateRandomLong(long bound1, long bound2)
+        {
+            if (bound1 == bound2) return bound1;
+
+            var buf = new byte[8];
+            new System.Random().NextBytes(buf);
+            var longRand = BitConverter.ToInt64(buf, 0);
+
+            long max = bound1 > bound2 ? bound1 : bound2;
+            long min = bound1 > bound2 ? bound2 : bound1;
+
+            return Math.Abs(longRand % (max - min)) + min;
+        }
+
+        public static T DrawRandomItem<T>(this IEnumerable<T> collection)
+        {
+            if (!collection.Any()) throw new Exception("Collection was empty");
+            int randomPos = GenerateRandomInt(0, collection.Count());
+            MonoBehaviour.print($"Retrieving element at index {randomPos}");
+            return collection.ElementAt(randomPos);
+        }
+
+        public static bool IsAbove(this LineSegment segment, LineSegment other) =>
+            segment.Line.HeightAtYAxis > other.Line.HeightAtYAxis;
+
+        public static float DiagonalLength(this Rect input) =>
+            Mathf.Sqrt(Mathf.Pow(input.width, 2.0f) + Mathf.Pow(input.height, 2.0f));
+
+        public static Path ToPathForClipper(this Rect rect) => new List<Vector2>
+        {
+            new Vector2(rect.xMin, rect.yMax),
+            new Vector2(rect.xMax, rect.yMax),
+            new Vector2(rect.xMax, rect.yMin),
+            new Vector2(rect.xMin, rect.yMin)
+        }.Select(coords =>
+            new IntPoint(coords.x.toLongForClipper(), coords.y.toLongForClipper())
+        ).ToList();
+
+        public static PolyTree ToPolyTree(this Paths paths, Clipper clipper = null)
+        {
+            clipper = clipper ?? new Clipper();
+            clipper.Clear();
+            clipper.AddPaths(paths, PolyType.ptClip, true);
+            clipper.AddPaths(paths, PolyType.ptSubject, true);
+            var polyTree = new PolyTree();
+            clipper.Execute(ClipType.ctUnion, polyTree, PolyFillType.pftEvenOdd, PolyFillType.pftEvenOdd);
+            return polyTree;
+        }
+
+        public static PolyTree ToPolyTree(this Path path, Clipper clipper = null)
+        {
+            clipper = clipper ?? new Clipper();
+            clipper.Clear();
+            clipper.AddPath(path, PolyType.ptClip, true);
+            clipper.AddPath(path, PolyType.ptSubject, true);
+            var polyTree = new PolyTree();
+            clipper.Execute(ClipType.ctUnion, polyTree, PolyFillType.pftEvenOdd, PolyFillType.pftEvenOdd);
+            return polyTree;
+        }
+        
+        public static void ForEach<T>(this IEnumerable<T> iEnumerable, Action<T> action)
+        {
+            foreach (T x in iEnumerable) action(x);
         }
     }
 }

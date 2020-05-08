@@ -133,7 +133,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 11426352, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
       propertyPath: m_Color.r
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 11426352, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
       propertyPath: m_Color.g
@@ -141,7 +141,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 11426352, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
       propertyPath: m_Color.b
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 11498874, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
       propertyPath: m_Color.r
@@ -843,7 +843,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 11426352, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
       propertyPath: m_Color.r
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 11426352, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
       propertyPath: m_Color.g
@@ -851,7 +851,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 11426352, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
       propertyPath: m_Color.b
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 11498874, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
       propertyPath: m_Color.r
@@ -1102,6 +1102,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1955554123}
     m_Modifications:
+    - target: {fileID: 112202, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
+      propertyPath: m_Name
+      value: Current Player Text
+      objectReference: {fileID: 0}
     - target: {fileID: 135086, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
       propertyPath: m_Name
       value: CurrentPlayer
@@ -1132,10 +1136,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 11498874, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
       propertyPath: m_Color.r
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 11498874, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
       propertyPath: m_Color.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 11498874, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
+      propertyPath: m_Color.b
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 22409496, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
@@ -1221,10 +1229,6 @@ PrefabInstance:
     - target: {fileID: 22409496, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
       propertyPath: m_Pivot.y
       value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 112202, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
-      propertyPath: m_Name
-      value: Current Player Text
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
@@ -1446,25 +1450,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   trapDecompEdgeMeshPrefab: {fileID: 2055434187397189538, guid: a1bd5bbe4a8ce094dbbc9ae4a482f6ab,
     type: 3}
-  p1Line: {fileID: 1362821691}
-  p2Line: {fileID: 1788963093}
-  p1EdgeMeshPrefab: {fileID: 2793580545154881219, guid: e8ef5a87cf464d54685b7d198a605af5,
+  p1Line: {fileID: 1788963093}
+  p2Line: {fileID: 1362821691}
+  p1EdgeMeshPrefab: {fileID: 2548965527874237926, guid: 553c6afbe254fe347b2a3573be054712,
     type: 3}
-  p2EdgeMeshPrefab: {fileID: 2548965527874237926, guid: 553c6afbe254fe347b2a3573be054712,
+  p2EdgeMeshPrefab: {fileID: 2793580545154881219, guid: e8ef5a87cf464d54685b7d198a605af5,
     type: 3}
   dotPrefab: {fileID: 5379444692555187572, guid: 7995fe0228907ca4f89041eec8765dac,
     type: 3}
   advanceButton: {fileID: 400552560}
-  p1FaceMaterial: {fileID: 2100000, guid: 60aa8cba3274f8e479f3c6dd51a92c33, type: 2}
-  p2FaceMaterial: {fileID: 2100000, guid: 065570e13928a0f4fbd81d2604000295, type: 2}
+  p1FaceMaterial: {fileID: 2100000, guid: 065570e13928a0f4fbd81d2604000295, type: 2}
+  p2FaceMaterial: {fileID: 2100000, guid: 60aa8cba3274f8e479f3c6dd51a92c33, type: 2}
   facePrefab: {fileID: 2235539252479065452, guid: 5f1c3d23d690b7b45a2313810a4dbf69,
     type: 3}
   p1TextArea: {fileID: 43975410}
   p2TextArea: {fileID: 1754523343}
   currentPlayerText: {fileID: 1942796605}
-  p1WonBackgroundPrefab: {fileID: 2550574167301350191, guid: eb0bf41c982000341a946a0257220260,
+  p1WonBackgroundPrefab: {fileID: 4920042312877424211, guid: fc8c2c2f81f7c0d49b8b16a56b8d13a9,
     type: 3}
-  p2WonBackgroundPrefab: {fileID: 4920042312877424211, guid: fc8c2c2f81f7c0d49b8b16a56b8d13a9,
+  p2WonBackgroundPrefab: {fileID: 2550574167301350191, guid: eb0bf41c982000341a946a0257220260,
     type: 3}
   numberOfDots: 20
   minX: -8

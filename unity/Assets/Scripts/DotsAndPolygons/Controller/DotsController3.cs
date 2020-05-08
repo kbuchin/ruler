@@ -19,7 +19,7 @@ namespace DotsAndPolygons
     {
         private bool _showTrapDecomLines = false;
 
-        public override void Update()
+        public void Update()
         {
             if (Input.GetKeyDown(KeyCode.T))
             {
@@ -89,7 +89,7 @@ namespace DotsAndPolygons
                         CurrentPlayer = CurrentPlayer == 1 ? 2 : 1;
                         currentPlayerText.text = $"Go Player {CurrentPlayer}!";
                         currentPlayerText.gameObject.GetComponentInParent<Image>().color =
-                            CurrentPlayer == 1 ? Color.blue : Color.red;
+                            CurrentPlayer == 2 ? Color.blue : Color.red;
                     }
 
                     CheckSolution();
