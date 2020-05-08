@@ -245,7 +245,7 @@ namespace DotsAndPolygons
             advanceButton.Enable();
             currentPlayerText.text = $"Player {(TotalAreaP1 > TotalAreaP2 ? "1" : "2")} Wins!!";
             currentPlayerText.gameObject.GetComponentInParent<Image>().color =
-                TotalAreaP1 > TotalAreaP2 ? Color.blue : Color.red;
+                TotalAreaP1 < TotalAreaP2 ? Color.blue : Color.red;
 
             GameObject background =
                 Instantiate(TotalAreaP1 > TotalAreaP2 ? p1WonBackgroundPrefab : p2WonBackgroundPrefab);
