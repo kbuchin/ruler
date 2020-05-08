@@ -19,7 +19,6 @@ namespace DotsAndPolygons
         // Update is called once per frame
         public void Update()
         {
-            base.Update();
             if (Input.GetKeyDown(KeyCode.T))
             {
                 _showTrapDecomLines = !_showTrapDecomLines;

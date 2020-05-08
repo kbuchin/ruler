@@ -22,7 +22,6 @@ namespace DotsAndPolygons
 
         public void Update()
         {
-            base.Update();
             if (Input.GetKeyDown(KeyCode.T))
             {
                 _showTrapDecomLines = !_showTrapDecomLines;

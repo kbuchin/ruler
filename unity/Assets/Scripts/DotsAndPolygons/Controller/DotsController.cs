@@ -63,8 +63,6 @@ namespace DotsAndPolygons
         public HashSet<LineSegment> Hull { get; set; }
         public float HullArea { get; set; }
 
-        public DotsPlacer DotsPlacer { get; set; }
-
         public void AddToPlayerArea(int player, float area)
         {
             if (player == 1) TotalAreaP1 += Math.Abs(area);
@@ -81,7 +79,6 @@ namespace DotsAndPolygons
         // Start is called before the first frame update
         protected void Start()
         {
-            DotsPlacer = new DotsPlacer(new Rect(minX, minY, maxX - minX, maxY - minY));
             frame = new TrapFace(
                 new LineSegmentWithDotsEdge(
                     new Vector2(minX, maxY),
@@ -121,55 +118,52 @@ namespace DotsAndPolygons
             UpdateVisualArea();
         }
 
-        // Define mouse clicking behavior etc
-        public void Update()
-        {
-            // if (Input.GetKeyDown(KeyCode.D))
-            // {
-            //     AddDot();
-            // }
-        }
+        // TODO can be used for debugging DotsPlacer
+        // private HashSet<GameObject> _dots = new HashSet<GameObject>();
+        // private HashSet<GameObject> _faces = new HashSet<GameObject>();
+        // public void AddDot()
+        // {
+        //     DotsPlacer.AddNewPoint();
+        //
+        //     foreach (GameObject dot in _dots)
+        //     {
+        //         DestroyImmediate(dot);
+        //     }
+        //     
+        //     foreach (Vector2 dot in DotsPlacer.Dots)
+        //     {
+        //         GameObject gameDot = Instantiate(dotPrefab, new Vector3(dot.x, dot.y, 0), Quaternion.identity);
+        //         gameDot.transform.parent = transform;
+        //         InstantObjects.Add(gameDot);
+        //         _dots.Add(gameDot);
+        //     }
+        //
+        //     foreach (GameObject face in _faces)
+        //     {
+        //         DestroyImmediate(face);
+        //     }
+        //     
+        //     DotsPlacer.PrintAvailableArea(this, _faces);
+        // }
 
-        private HashSet<GameObject> _dots = new HashSet<GameObject>();
-        private HashSet<GameObject> _faces = new HashSet<GameObject>();
-        public void AddDot()
-        {
-            DotsPlacer.AddNewPoint();
-
-            foreach (GameObject dot in _dots)
-            {
-                DestroyImmediate(dot);
-            }
-            
-            foreach (Vector2 dot in DotsPlacer.Dots)
-            {
-                GameObject gameDot = Instantiate(dotPrefab, new Vector3(dot.x, dot.y, 0), Quaternion.identity);
-                gameDot.transform.parent = transform;
-                InstantObjects.Add(gameDot);
-                _dots.Add(gameDot);
-            }
-
-            foreach (GameObject face in _faces)
-            {
-                DestroyImmediate(face);
-            }
-            
-            DotsPlacer.PrintAvailableArea(this, _faces);
-        }
-        
         public void AddDotsInGeneralPosition()
         {
-            DotsPlacer.AddNewPoints(20);
-            // TODO add 20 points using dotsplacer
-            //
-            print($"Number of placed dots: {DotsPlacer.Dots.Count}");
+            // Take the best out of 2
+            var bestDots = new HashSet<Vector2>();
+            for (var i = 0; i < 2; i++)
+            {
+                var dotsPlacer = new DotsPlacer(new Rect(minX, minY, maxX - minX, maxY - minY));
+                dotsPlacer.AddNewPoints(numberOfDots);
+                if (dotsPlacer.Dots.Count > bestDots.Count) bestDots = dotsPlacer.Dots;
+            }
 
-            foreach (Vector2 dot in DotsPlacer.Dots)
+            print($"Number of placed dots: {bestDots.Count}");
+
+            foreach (Vector2 dot in bestDots)
             {
                 GameObject gameDot = Instantiate(dotPrefab, new Vector3(dot.x, dot.y, 0), Quaternion.identity);
                 gameDot.transform.parent = transform;
                 InstantObjects.Add(gameDot);
-                _dots.Add(gameDot);
             }
         }
 
