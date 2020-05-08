@@ -39,7 +39,7 @@ namespace DotsAndPolygons
          * http://www.cs.man.ac.uk/~toby/alan/software/gpc.html is great! but in c
          * http://www.angusj.com/delphi/clipper.php this might work, docs: http://www.angusj.com/delphi/clipper/documentation/Docs/Overview/_Body.htm
          */
-        private const float MinDistance = .5f;
+        private const float MinDistance = .25f;
 
         private static Vector2 GeneratePointOnCountour(PolyNode input)
         {
@@ -113,7 +113,7 @@ namespace DotsAndPolygons
 
                     int areaInt = Mathf.CeilToInt(area * 100f);
 
-                    MonoBehaviour.print($"MAG WELLUS: {area}|||||{areaInt}");
+                    // MonoBehaviour.print($"MAG WELLUS: {area}|||||{areaInt}");
 
                     for (var i = 0; i < areaInt; i++) largeSet.Add(index);
                 }
@@ -122,6 +122,22 @@ namespace DotsAndPolygons
 
                 intermediate = intermediate.Childs[largeSet.DrawRandomItem()];
             }
+        }
+
+        private static void CreateAndAddUnavailableRectangles(Vector2 point, Paths unavailableArea, Clipper clipper,
+            Rect bounds)
+        {
+            var firstHorizontalRect = new Rect(bounds.x, point.y - MinDistance / 8f, bounds.width, MinDistance / 4f);
+            var firstVerticalRect = new Rect(point.x - MinDistance / 8f, bounds.y, MinDistance / 4f, bounds.height);
+            AddToUnion(clipper, unavailableArea, firstHorizontalRect.toPathForClipper());
+            AddToUnion(clipper, unavailableArea, firstVerticalRect.toPathForClipper());
+        }
+
+        private static void CreateAndAddUnavailableSquare(Vector2 point, Paths unavailableArea, Clipper clipper)
+        {
+            var rect = new Rect(point.x - MinDistance * 2f, point.y - MinDistance * 2f, MinDistance * 4f,
+                MinDistance * 4f);
+            AddToUnion(clipper, unavailableArea, rect.toPathForClipper());
         }
 
         public static HashSet<Vector2> GeneratePoints(Rect bounds, int amount, DotsController dotsController)
@@ -136,34 +152,19 @@ namespace DotsAndPolygons
             var firstPoint = new Vector2(firstX, firstY);
             pointFloats.Add(firstPoint);
 
-            // initialize first rectangle for clipper
-            // var firstRect = new Path
-            // {
-            //     new IntPoint((firstX - minDistance).toLongForClipper(),
-            //         (firstY - minDistance).toLongForClipper()),
-            //     new IntPoint((firstX + minDistance).toLongForClipper(),
-            //         (firstY - minDistance).toLongForClipper()),
-            //     new IntPoint((firstX + minDistance).toLongForClipper(),
-            //         (firstY + minDistance).toLongForClipper()),
-            //     new IntPoint((firstX - minDistance).toLongForClipper(),
-            //         (firstY + minDistance).toLongForClipper())
-            // };
-            var firstHorizontalRect = new Rect(bounds.x, firstPoint.y - MinDistance / 2f, bounds.width, MinDistance);
-            var firstVerticalRect = new Rect(firstPoint.x - MinDistance / 2f, bounds.y, MinDistance, bounds.height);
-
-
             var unavailableArea = new Paths();
-            AddToUnion(clipper, unavailableArea, firstHorizontalRect.toPathForClipper());
-            AddToUnion(clipper, unavailableArea, firstVerticalRect.toPathForClipper());
+
+            CreateAndAddUnavailableRectangles(firstPoint, unavailableArea, clipper, bounds);
+            CreateAndAddUnavailableSquare(firstPoint, unavailableArea, clipper);
 
             // calculate initial unavailable area
 
             PolyTree availableArea = Difference(clipper, unavailableArea, boundingBox);
             // TODO remove
-            // amount = 6;
+            // amount = 2;
 
             Paths newUnavailableArea = null;
-            
+
             for (var i = 1; i < amount; i++)
             {
                 // MonoBehaviour.print(availableArea.ToString(""));
@@ -175,16 +176,17 @@ namespace DotsAndPolygons
                 foreach (Vector2 pointFloat in pointFloats)
                 {
                     // generate rectangle
-                    Path path = generateUnavailableRectangle(bounds, newPoint, pointFloat, dotsController);
-                    AddToUnion(clipper, unavailableArea, path);
+                    Paths paths = generateUnavailableCups(bounds, newPoint, pointFloat);
+                    foreach (Path path in paths)
+                    {
+                        AddToUnion(clipper, unavailableArea, path);
+                    }
                 }
 
                 // rectangles to prevent same x/y coordinates
-                var horizontalRect = new Rect(bounds.x, newPoint.y - MinDistance / 2f, bounds.width, MinDistance);
-                AddToUnion(clipper, unavailableArea, horizontalRect.toPathForClipper());
+                CreateAndAddUnavailableRectangles(newPoint, unavailableArea, clipper, bounds);
 
-                var verticalRect = new Rect(newPoint.x - MinDistance / 2f, bounds.y, MinDistance, bounds.height);
-                AddToUnion(clipper, unavailableArea, verticalRect.toPathForClipper());
+                CreateAndAddUnavailableSquare(newPoint, unavailableArea, clipper);
 
                 // first generate the clipper rectangle by taking the intersection with the bounding box and the newly unavailable rectangle
                 clipper.Clear();
@@ -199,20 +201,19 @@ namespace DotsAndPolygons
 
                 pointFloats.Add(newPoint);
             }
-            
+
             // TODO printen
-            // clipper.Clear();
-            // var newUnavailableAreaTree = new PolyTree();
-            // clipper.AddPaths(newUnavailableArea, PolyType.ptClip, true);
-            // clipper.AddPaths(newUnavailableArea, PolyType.ptSubject, true);
-            // clipper.Execute(ClipType.ctUnion, newUnavailableAreaTree, PolyFillType.pftEvenOdd, PolyFillType.pftEvenOdd);
-            //
-            // PrintFace(dotsController, newUnavailableAreaTree);
-            
+            clipper.Clear();
+            var newUnavailableAreaTree = new PolyTree();
+            clipper.AddPaths(newUnavailableArea, PolyType.ptClip, true);
+            clipper.AddPaths(newUnavailableArea, PolyType.ptSubject, true);
+            clipper.Execute(ClipType.ctUnion, newUnavailableAreaTree, PolyFillType.pftEvenOdd, PolyFillType.pftEvenOdd);
+
+            PrintFace(dotsController, newUnavailableAreaTree);
+
 
             // clipper.Clear();
             // clipper.AddPaths(availableArea, PolyType.ptClip, true);
-
 
             return pointFloats;
         }
@@ -239,56 +240,104 @@ namespace DotsAndPolygons
                 PolyFillType.pftEvenOdd);
         }
 
-        private static Path generateUnavailableRectangle(Rect bounds, Vector2 point1, Vector2 point2,
-            DotsController dotsController)
+
+        private static (Vector2, Vector2) SortLeftRight(Vector2 vec1, Vector2 vec2) =>
+            (vec1.x < vec2.x ? vec1 : vec2, vec1.x < vec2.x ? vec2 : vec1);
+
+        private static (Vector2, Vector2) SortUpDown(Vector2 vec1, Vector2 vec2) =>
+            (vec1.y > vec2.y ? vec1 : vec2, vec1.y > vec2.y ? vec2 : vec1);
+
+
+        /**
+         * This generates cups of unavailable area according to the picture shown here: [https://imgur.com/a/wvcx3fO]
+         */
+        private static Paths generateUnavailableCups(Rect bounds, Vector2 point1, Vector2 point2)
         {
+            // Make sure point1 is left of point2
+            (point1, point2) = SortLeftRight(point1, point2);
+
+            // Minimum length needed to make sure the cup always extends to outside the bounds
+            float diagonalLength = bounds.DiagonalLength();
+
+            // line between two points
             var lineSegment = new LineSegment(point1, point2);
 
-            Vector2 a = point1 + MinDistance / 2f * lineSegment.RightNormal().normalized;
-            Vector2 b = point2 + MinDistance / 2f * lineSegment.RightNormal().normalized;
-
-            var firstLineSegment = new LineSegment(
-                a.x < b.x ? a : b,
-                a.x < b.x ? b : a
+            // Creating point a1, b2
+            (Vector2 a1, Vector2 b1) = SortUpDown(
+                point2 + MinDistance * .75f * lineSegment.RightNormal().normalized,
+                point2 + MinDistance * .75f * -lineSegment.RightNormal().normalized
             );
 
-            Vector2 c = point1 + MinDistance / 2f * -lineSegment.RightNormal().normalized;
-            Vector2 d = point2 + MinDistance / 2f * -lineSegment.RightNormal().normalized;
-
-            var secondLineSegment = new LineSegment(
-                c.x < d.x ? c : d,
-                c.x < d.x ? d : c
+            // Draw line segments from point1 through a1 and b1 respectively
+            Vector2 directionFirstLineSegment1 = new LineSegment(point1, a1).Orientation().normalized;
+            var firstLineSegment1 = new LineSegment(
+                point1,
+                a1 + diagonalLength * directionFirstLineSegment1
             );
 
-            LineSegment upper;
-            LineSegment lower;
-            if (firstLineSegment.IsAbove(secondLineSegment))
+            Vector2 directionSecondLineSegment1 = new LineSegment(point1, b1).Orientation().normalized;
+            var secondLineSegment1 = new LineSegment(
+                point1,
+                b1 + diagonalLength * directionSecondLineSegment1
+            );
+
+
+            // Add points in clockwise manner to a new path
+            var path1 = new Path
             {
-                upper = firstLineSegment;
-                lower = secondLineSegment;
-            }
-            else
+                new IntPoint(
+                    point1.x.toLongForClipper(),
+                    point1.y.toLongForClipper()
+                ),
+                new IntPoint(
+                    firstLineSegment1.Point2.x.toLongForClipper(),
+                    firstLineSegment1.Point2.y.toLongForClipper()
+                ),
+                new IntPoint(
+                    secondLineSegment1.Point2.x.toLongForClipper(),
+                    secondLineSegment1.Point2.y.toLongForClipper()
+                )
+            };
+
+            // Creating point a2, b2
+            (Vector2 a2, Vector2 b2) = SortUpDown(
+                point1 + MinDistance * .75f * lineSegment.RightNormal().normalized,
+                point1 + MinDistance * .75f * -lineSegment.RightNormal().normalized
+            );
+
+            // Draw line segments from point2 through a2 and b2 respectively
+            Vector2 directionFirstLineSegment2 = new LineSegment(point2, a2).Orientation().normalized;
+            var firstLineSegment2 = new LineSegment(
+                point2,
+                a2 + diagonalLength * directionFirstLineSegment2
+            );
+
+            Vector2 directionSecondLineSegment2 = new LineSegment(point2, b2).Orientation().normalized;
+            var secondLineSegment2 = new LineSegment(
+                point2,
+                b2 + diagonalLength * directionSecondLineSegment2
+            );
+
+            // Add points in clockwise manner to a new path
+            var path2 = new Path
             {
-                upper = secondLineSegment;
-                lower = firstLineSegment;
-            }
+                new IntPoint(
+                    point2.x.toLongForClipper(),
+                    point2.y.toLongForClipper()
+                ),
+                new IntPoint(
+                    firstLineSegment2.Point2.x.toLongForClipper(),
+                    firstLineSegment2.Point2.y.toLongForClipper()
+                ),
+                new IntPoint(
+                    secondLineSegment2.Point2.x.toLongForClipper(),
+                    secondLineSegment2.Point2.y.toLongForClipper()
+                )
+            };
 
-            Vector2 direction = upper.Orientation().normalized;
-            Vector2 otherDirection = -upper.Orientation().normalized;
-
-            float diagonalLength = bounds.DiagonalLength();
-            Vector2 upperLeft = upper.Point1 + diagonalLength * otherDirection;
-            Vector2 upperRight = upper.Point2 + diagonalLength * direction;
-
-            Vector2 lowerRight = lower.Point2 + diagonalLength * direction;
-            Vector2 lowerLeft = lower.Point1 + diagonalLength * otherDirection;
-
-            return new Path
+            return new Paths
             {
-                new IntPoint(upperLeft.x.toLongForClipper(), upperLeft.y.toLongForClipper()),
-                new IntPoint(upperRight.x.toLongForClipper(), upperRight.y.toLongForClipper()),
-                new IntPoint(lowerRight.x.toLongForClipper(), lowerRight.y.toLongForClipper()),
-                new IntPoint(lowerLeft.x.toLongForClipper(), lowerLeft.y.toLongForClipper())
+                path1, path2
             };
         }
 
@@ -344,7 +393,7 @@ namespace DotsAndPolygons
             }
 
             face.Player = isHole ? 1 : 2;
-            
+
             face.Constructor(halfEdges.First());
         }
     }

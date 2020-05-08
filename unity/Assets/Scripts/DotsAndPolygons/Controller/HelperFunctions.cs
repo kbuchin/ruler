@@ -810,10 +810,10 @@ namespace DotsAndPolygons
 
         public static Path toPathForClipper(this Rect rect) => new List<Vector2>
         {
-            new Vector2(rect.xMin, rect.yMin),
-            new Vector2(rect.xMax, rect.yMin),
+            new Vector2(rect.xMin, rect.yMax),
             new Vector2(rect.xMax, rect.yMax),
-            new Vector2(rect.xMin, rect.yMax)
+            new Vector2(rect.xMax, rect.yMin),
+            new Vector2(rect.xMin, rect.yMin)
         }.Select(coords =>
             new IntPoint(coords.x.toLongForClipper(), coords.y.toLongForClipper())
         ).ToList();
