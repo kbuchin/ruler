@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Mime;
-using ClipperLib;
 using General.Controller;
 using General.Menu;
 using General.Model;
@@ -11,8 +9,6 @@ using UnityEngine.UI;
 using Util.Algorithms.Triangulation;
 using Util.Geometry;
 using Util.Geometry.Polygon;
-using Object = UnityEngine.Object;
-using Random = UnityEngine.Random;
 
 namespace DotsAndPolygons
 {
@@ -67,6 +63,8 @@ namespace DotsAndPolygons
         public HashSet<LineSegment> Hull { get; set; }
         public float HullArea { get; set; }
 
+        public DotsPlacer DotsPlacer { get; set; }
+
         public void AddToPlayerArea(int player, float area)
         {
             if (player == 1) TotalAreaP1 += Math.Abs(area);
@@ -83,6 +81,7 @@ namespace DotsAndPolygons
         // Start is called before the first frame update
         protected void Start()
         {
+            DotsPlacer = new DotsPlacer(new Rect(minX, minY, maxX - minX, maxY - minY));
             frame = new TrapFace(
                 new LineSegmentWithDotsEdge(
                     new Vector2(minX, maxY),
@@ -123,21 +122,54 @@ namespace DotsAndPolygons
         }
 
         // Define mouse clicking behavior etc
-        public abstract void Update();
-
-        public void AddDotsInGeneralPosition()
+        public void Update()
         {
-            var bounds = new Rect(minX, minY, maxX - minX, maxY - minY);
-            HashSet<Vector2> dots = DotsPlacer.GeneratePoints(bounds, numberOfDots, this);
+            if (Input.GetKeyDown(KeyCode.D))
+            {
+                AddDot();
+            }
+        }
 
-            print($"Number of placed dots: {dots.Count}");
+        private HashSet<GameObject> _dots = new HashSet<GameObject>();
+        private HashSet<GameObject> _faces = new HashSet<GameObject>();
+        public void AddDot()
+        {
+            DotsPlacer.AddNewPoint();
+
+            foreach (GameObject dot in _dots)
+            {
+                DestroyImmediate(dot);
+            }
             
-            foreach(Vector2 dot in dots)
+            foreach (Vector2 dot in DotsPlacer.Dots)
             {
                 GameObject gameDot = Instantiate(dotPrefab, new Vector3(dot.x, dot.y, 0), Quaternion.identity);
                 gameDot.transform.parent = transform;
                 InstantObjects.Add(gameDot);
+                _dots.Add(gameDot);
             }
+
+            foreach (GameObject face in _faces)
+            {
+                DestroyImmediate(face);
+            }
+            
+            DotsPlacer.PrintAvailableArea(this, _faces);
+        }
+        
+        public void AddDotsInGeneralPosition()
+        {
+            // TODO add 20 points using dotsplacer
+            //
+            // print($"Number of placed dots: {dots.Count}");
+
+            // foreach (Vector2 dot in dots)
+            // {
+            //     GameObject gameDot = Instantiate(dotPrefab, new Vector3(dot.x, dot.y, 0), Quaternion.identity);
+            //     gameDot.transform.parent = transform;
+            //     InstantObjects.Add(gameDot);
+            //     _dots.Add(gameDot);
+            // }
         }
 
         public virtual void InitLevel()

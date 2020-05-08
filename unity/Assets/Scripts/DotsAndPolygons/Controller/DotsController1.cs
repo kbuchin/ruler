@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using UnityEngine.UI;
 
 // ReSharper disable ConvertToAutoPropertyWhenPossible
@@ -18,8 +17,9 @@ namespace DotsAndPolygons
         private bool _showTrapDecomLines = false;
 
         // Update is called once per frame
-        public override void Update()
+        public void Update()
         {
+            base.Update();
             if (Input.GetKeyDown(KeyCode.T))
             {
                 _showTrapDecomLines = !_showTrapDecomLines;

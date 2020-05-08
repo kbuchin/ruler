@@ -20,8 +20,9 @@ namespace DotsAndPolygons
         
         private bool _showTrapDecomLines = false;
 
-        public override void Update()
+        public void Update()
         {
+            base.Update();
             if (Input.GetKeyDown(KeyCode.T))
             {
                 _showTrapDecomLines = !_showTrapDecomLines;
