@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Mime;
-using ClipperLib;
 using General.Controller;
 using General.Menu;
 using General.Model;
@@ -11,8 +9,6 @@ using UnityEngine.UI;
 using Util.Algorithms.Triangulation;
 using Util.Geometry;
 using Util.Geometry.Polygon;
-using Object = UnityEngine.Object;
-using Random = UnityEngine.Random;
 
 namespace DotsAndPolygons
 {
@@ -122,17 +118,48 @@ namespace DotsAndPolygons
             UpdateVisualArea();
         }
 
-        // Define mouse clicking behavior etc
-        public abstract void Update();
+        // TODO can be used for debugging DotsPlacer
+        // private HashSet<GameObject> _dots = new HashSet<GameObject>();
+        // private HashSet<GameObject> _faces = new HashSet<GameObject>();
+        // public void AddDot()
+        // {
+        //     DotsPlacer.AddNewPoint();
+        //
+        //     foreach (GameObject dot in _dots)
+        //     {
+        //         DestroyImmediate(dot);
+        //     }
+        //     
+        //     foreach (Vector2 dot in DotsPlacer.Dots)
+        //     {
+        //         GameObject gameDot = Instantiate(dotPrefab, new Vector3(dot.x, dot.y, 0), Quaternion.identity);
+        //         gameDot.transform.parent = transform;
+        //         InstantObjects.Add(gameDot);
+        //         _dots.Add(gameDot);
+        //     }
+        //
+        //     foreach (GameObject face in _faces)
+        //     {
+        //         DestroyImmediate(face);
+        //     }
+        //     
+        //     DotsPlacer.PrintAvailableArea(this, _faces);
+        // }
 
         public void AddDotsInGeneralPosition()
         {
-            var bounds = new Rect(minX, minY, maxX - minX, maxY - minY);
-            HashSet<Vector2> dots = DotsPlacer.GeneratePoints(bounds, numberOfDots, this);
+            // Take the best out of 2
+            var bestDots = new HashSet<Vector2>();
+            for (var i = 0; i < 2; i++)
+            {
+                var dotsPlacer = new DotsPlacer(new Rect(minX, minY, maxX - minX, maxY - minY));
+                dotsPlacer.AddNewPoints(numberOfDots);
+                if (dotsPlacer.Dots.Count > bestDots.Count) bestDots = dotsPlacer.Dots;
+            }
 
-            print($"Number of placed dots: {dots.Count}");
-            
-            foreach(Vector2 dot in dots)
+            print($"Number of placed dots: {bestDots.Count}");
+
+            foreach (Vector2 dot in bestDots)
             {
                 GameObject gameDot = Instantiate(dotPrefab, new Vector3(dot.x, dot.y, 0), Quaternion.identity);
                 gameDot.transform.parent = transform;
@@ -212,7 +239,7 @@ namespace DotsAndPolygons
             advanceButton.Enable();
             currentPlayerText.text = $"Player {(TotalAreaP1 > TotalAreaP2 ? "1" : "2")} Wins!!";
             currentPlayerText.gameObject.GetComponentInParent<Image>().color =
-                TotalAreaP1 > TotalAreaP2 ? Color.blue : Color.red;
+                TotalAreaP1 < TotalAreaP2 ? Color.blue : Color.red;
 
             GameObject background =
                 Instantiate(TotalAreaP1 > TotalAreaP2 ? p1WonBackgroundPrefab : p2WonBackgroundPrefab);
