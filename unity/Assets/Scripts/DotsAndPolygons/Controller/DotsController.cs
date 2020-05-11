@@ -33,35 +33,37 @@ namespace DotsAndPolygons
         [SerializeField] public GameObject p2WonBackgroundPrefab;
 
 
-        [SerializeField] public int numberOfDots = 20;
-        [SerializeField] public float minX = -7f;
-        [SerializeField] public float maxX = 7f;
-        [SerializeField] public float minY = -3f;
-        [SerializeField] public float maxY = 3f;
+        protected int numberOfDots = 20;
+        private float minX = -8.0f;
+        private float maxX = 8.0f;
+        private float minY = -3.5f;
+        private float maxY = 3.5f;
 
-        public HashSet<UnityTrapDecomLine> TrapDecomLines { get; set; } = new HashSet<UnityTrapDecomLine>();
-        public TrapDecomRoot root;
+        private HashSet<UnityTrapDecomLine> TrapDecomLines { get; set; } = new HashSet<UnityTrapDecomLine>();
+        protected TrapDecomRoot root;
 
         public TrapFace frame;
 
-        public List<TrapFace> faces = new List<TrapFace>();
-        public List<GameObject> lines = new List<GameObject>();
+        protected List<TrapFace> faces;
+        protected List<GameObject> lines = new List<GameObject>();
 
         public UnityDotsVertex FirstPoint { get; set; }
         public UnityDotsVertex SecondPoint { get; set; }
 
 
         public HashSet<IDotsVertex> Vertices { get; set; } = new HashSet<IDotsVertex>();
-        public HashSet<IDotsHalfEdge> HalfEdges { get; set; } = new HashSet<IDotsHalfEdge>();
-        public HashSet<IDotsEdge> Edges { get; set; } = new HashSet<IDotsEdge>();
+        protected HashSet<IDotsHalfEdge> HalfEdges { get; set; } = new HashSet<IDotsHalfEdge>();
+        protected HashSet<IDotsEdge> Edges { get; set; } = new HashSet<IDotsEdge>();
         public HashSet<IDotsFace> Faces { get; set; } = new HashSet<IDotsFace>();
         public int CurrentPlayer { get; set; } = 1;
-        public float TotalAreaP1 { get; set; } = 0;
-        public float TotalAreaP2 { get; set; } = 0;
+        protected float TotalAreaP1 { get; set; } = 0;
+        protected float TotalAreaP2 { get; set; } = 0;
         public List<GameObject> InstantObjects { get; private set; } = new List<GameObject>();
 
         public HashSet<LineSegment> Hull { get; set; }
         public float HullArea { get; set; }
+
+        protected bool _showTrapDecomLines = false;
 
         public void AddToPlayerArea(int player, float area)
         {
@@ -79,24 +81,7 @@ namespace DotsAndPolygons
         // Start is called before the first frame update
         protected void Start()
         {
-            frame = new TrapFace(
-                new LineSegmentWithDotsEdge(
-                    new Vector2(minX, maxY),
-                    new Vector2(maxX, maxY),
-                    null),
-                new LineSegmentWithDotsEdge(
-                    new Vector2(minX, minY),
-                    new Vector2(maxX, minY),
-                    null),
-                new LineSegment(
-                    new Vector2(minX, minY),
-                    new Vector2(minX, maxY)),
-                new LineSegment(
-                    new Vector2(maxX, minY),
-                    new Vector2(maxX, maxY)),
-                new Vector2(minX, 0),
-                new Vector2(maxX, 0)
-            );
+            
 
             // get unity objects
             Vertices = new HashSet<IDotsVertex>();
@@ -116,6 +101,31 @@ namespace DotsAndPolygons
             ).Area;
 
             UpdateVisualArea();
+        }
+
+        protected void ShowTrapDecomLines()
+        {
+            if (!_showTrapDecomLines) return;
+            faces = root.FindAllFaces();
+            
+            foreach (TrapFace face in faces)
+            {
+                GameObject upper = UnityTrapDecomLine.CreateUnityTrapDecomLine(face.Upper.Segment, this);
+                if (upper != null)
+                    lines.Add(upper);
+
+                GameObject downer = UnityTrapDecomLine.CreateUnityTrapDecomLine(face.Downer.Segment, this);
+                if (downer != null)
+                    lines.Add(downer);
+
+                GameObject left = UnityTrapDecomLine.CreateUnityTrapDecomLine(face.Left, this);
+                if (left != null)
+                    lines.Add(left);
+
+                GameObject right = UnityTrapDecomLine.CreateUnityTrapDecomLine(face.Right, this);
+                if (right != null)
+                    lines.Add(right);
+            }
         }
 
         // TODO can be used for debugging DotsPlacer
@@ -146,6 +156,16 @@ namespace DotsAndPolygons
         //     DotsPlacer.PrintAvailableArea(this, _faces);
         // }
 
+        protected void RemoveTrapDecomLines()
+        {
+            foreach (GameObject line in lines)
+            {
+                Destroy(line);
+            }
+
+            lines.Clear();
+        }
+
         public void AddDotsInGeneralPosition()
         {
             // Take the best out of 2
@@ -173,6 +193,26 @@ namespace DotsAndPolygons
             Clear();
 
             advanceButton.Disable();
+            frame = new TrapFace(
+                new LineSegmentWithDotsEdge(
+                    new Vector2(minX, maxY),
+                    new Vector2(maxX, maxY),
+                    null),
+                new LineSegmentWithDotsEdge(
+                    new Vector2(minX, minY),
+                    new Vector2(maxX, minY),
+                    null),
+                new LineSegment(
+                    new Vector2(minX, minY),
+                    new Vector2(minX, maxY)),
+                new LineSegment(
+                    new Vector2(maxX, minY),
+                    new Vector2(maxX, maxY)),
+                new Vector2(minX, 0),
+                new Vector2(maxX, 0)
+            );
+
+            root = new TrapDecomRoot(frame);
         }
 
         public void Clear()

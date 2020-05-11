@@ -14,7 +14,6 @@ namespace DotsAndPolygons
 
     public class DotsController1 : DotsController
     {
-        private bool _showTrapDecomLines = false;
 
         // Update is called once per frame
         public void Update()
@@ -108,41 +107,6 @@ namespace DotsAndPolygons
             }
         }
 
-        private void RemoveTrapDecomLines()
-        {
-            foreach (GameObject line in lines)
-            {
-                Destroy(line);
-            }
-
-            lines.Clear();
-        }
-
-        private void ShowTrapDecomLines()
-        {
-            if (!_showTrapDecomLines) return;
-            faces = ExtractFaces(root.LeftChild, new List<TrapFace>(), 0);
-
-            foreach (TrapFace face in faces)
-            {
-                GameObject upper = UnityTrapDecomLine.CreateUnityTrapDecomLine(face.Upper.Segment, this);
-                if (upper != null)
-                    lines.Add(upper);
-
-                GameObject downer = UnityTrapDecomLine.CreateUnityTrapDecomLine(face.Downer.Segment, this);
-                if (downer != null)
-                    lines.Add(downer);
-
-                GameObject left = UnityTrapDecomLine.CreateUnityTrapDecomLine(face.Left, this);
-                if (left != null)
-                    lines.Add(left);
-
-                GameObject right = UnityTrapDecomLine.CreateUnityTrapDecomLine(face.Right, this);
-                if (right != null)
-                    lines.Add(right);
-            }
-        }
-
         public override void CheckSolution()
         {
             if (CheckHull())
@@ -157,12 +121,12 @@ namespace DotsAndPolygons
             
             AddDotsInGeneralPosition();
 
-            faces.Add(frame);
-            LineSegment left = new LineSegment(new Vector2(-6, 3), new Vector2(-6, -3));
-            LineSegment upper = new LineSegment(new Vector2(-6, 3), new Vector2(6, 3));
-            LineSegment right = new LineSegment(new Vector2(6, 3), new Vector2(6, -3));
-            LineSegment lower = new LineSegment(new Vector2(6, -3), new Vector2(-6, -3));
-            root = new TrapDecomRoot(frame);
+            //faces.Add(frame);
+            //LineSegment left = new LineSegment(new Vector2(-6, 3), new Vector2(-6, -3));
+            //LineSegment upper = new LineSegment(new Vector2(-6, 3), new Vector2(6, 3));
+            //LineSegment right = new LineSegment(new Vector2(6, 3), new Vector2(6, -3));
+            //LineSegment lower = new LineSegment(new Vector2(6, -3), new Vector2(-6, -3));
+            //root = new TrapDecomRoot(frame);
         }
 
     }
