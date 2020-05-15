@@ -120,13 +120,6 @@ namespace DotsAndPolygons
             base.InitLevel();
             
             AddDotsInGeneralPosition();
-
-            //faces.Add(frame);
-            //LineSegment left = new LineSegment(new Vector2(-6, 3), new Vector2(-6, -3));
-            //LineSegment upper = new LineSegment(new Vector2(-6, 3), new Vector2(6, 3));
-            //LineSegment right = new LineSegment(new Vector2(6, 3), new Vector2(6, -3));
-            //LineSegment lower = new LineSegment(new Vector2(6, -3), new Vector2(-6, -3));
-            //root = new TrapDecomRoot(frame);
         }
 
     }

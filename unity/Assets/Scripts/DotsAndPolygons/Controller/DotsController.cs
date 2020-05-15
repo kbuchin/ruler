@@ -31,7 +31,8 @@ namespace DotsAndPolygons
         [SerializeField] public Text currentPlayerText;
         [SerializeField] public GameObject p1WonBackgroundPrefab;
         [SerializeField] public GameObject p2WonBackgroundPrefab;
-
+        [SerializeField] public bool AiEnabled;
+        [SerializeField] public bool p1Ai;
 
         protected int numberOfDots = 20;
         private float minX = -8.0f;
@@ -56,8 +57,22 @@ namespace DotsAndPolygons
         protected HashSet<IDotsEdge> Edges { get; set; } = new HashSet<IDotsEdge>();
         public HashSet<IDotsFace> Faces { get; set; } = new HashSet<IDotsFace>();
         public int CurrentPlayer { get; set; } = 1;
-        protected float TotalAreaP1 { get; set; } = 0;
-        protected float TotalAreaP2 { get; set; } = 0;
+
+        protected DotsPlayer player1 { get; set; } 
+        protected DotsPlayer player2 { get; set; } 
+
+        protected float TotalAreaP1
+        {
+            get => player1.TotalArea;
+            set => player1.TotalArea = value;
+        }
+
+        protected float TotalAreaP2
+        {
+            get => player2.TotalArea;
+            set => player2.TotalArea = value;
+        }
+
         public List<GameObject> InstantObjects { get; private set; } = new List<GameObject>();
 
         public HashSet<LineSegment> Hull { get; set; }
@@ -80,9 +95,7 @@ namespace DotsAndPolygons
 
         // Start is called before the first frame update
         protected void Start()
-        {
-            
-
+        {          
             // get unity objects
             Vertices = new HashSet<IDotsVertex>();
             foreach (UnityDotsVertex vertex in FindObjectsOfType<UnityDotsVertex>()) Vertices.Add(vertex);
@@ -127,34 +140,6 @@ namespace DotsAndPolygons
                     lines.Add(right);
             }
         }
-
-        // TODO can be used for debugging DotsPlacer
-        // private HashSet<GameObject> _dots = new HashSet<GameObject>();
-        // private HashSet<GameObject> _faces = new HashSet<GameObject>();
-        // public void AddDot()
-        // {
-        //     DotsPlacer.AddNewPoint();
-        //
-        //     foreach (GameObject dot in _dots)
-        //     {
-        //         DestroyImmediate(dot);
-        //     }
-        //     
-        //     foreach (Vector2 dot in DotsPlacer.Dots)
-        //     {
-        //         GameObject gameDot = Instantiate(dotPrefab, new Vector3(dot.x, dot.y, 0), Quaternion.identity);
-        //         gameDot.transform.parent = transform;
-        //         InstantObjects.Add(gameDot);
-        //         _dots.Add(gameDot);
-        //     }
-        //
-        //     foreach (GameObject face in _faces)
-        //     {
-        //         DestroyImmediate(face);
-        //     }
-        //     
-        //     DotsPlacer.PrintAvailableArea(this, _faces);
-        // }
 
         protected void RemoveTrapDecomLines()
         {
