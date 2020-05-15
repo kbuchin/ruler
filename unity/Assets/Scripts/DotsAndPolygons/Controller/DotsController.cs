@@ -95,7 +95,11 @@ namespace DotsAndPolygons
 
         // Start is called before the first frame update
         protected void Start()
-        {          
+        {        
+            // Assign players
+            player1 = new DotsPlayer(PlayerNumber.Player1, Settings.Player1);
+            player2 = new DotsPlayer(PlayerNumber.Player2, Settings.Player2);
+            
             // get unity objects
             Vertices = new HashSet<IDotsVertex>();
             foreach (UnityDotsVertex vertex in FindObjectsOfType<UnityDotsVertex>()) Vertices.Add(vertex);
