@@ -97,8 +97,9 @@ namespace DotsAndPolygons
         protected void Start()
         {        
             // Assign players
-            player1 = new DotsPlayer(PlayerNumber.Player1, Settings.Player1);
-            player2 = new DotsPlayer(PlayerNumber.Player2, Settings.Player2);
+            // todo fix game mode parameter
+            player1 = new DotsPlayer(PlayerNumber.Player1, Settings.Player1, GameMode.GameMode1);
+            player2 = new DotsPlayer(PlayerNumber.Player2, Settings.Player2, GameMode.GameMode1);
             
             // get unity objects
             Vertices = new HashSet<IDotsVertex>();

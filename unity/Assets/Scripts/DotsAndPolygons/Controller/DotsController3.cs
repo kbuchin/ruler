@@ -78,7 +78,7 @@ namespace DotsAndPolygons
                     AddVisualEdge(FirstPoint, SecondPoint);
 
                     bool faceCreated = AddEdge(FirstPoint, SecondPoint, CurrentPlayer, HalfEdges, Vertices,
-                        GameMode.GameMode2, this, root);
+                        GameMode.GameMode2, this, root) > 0;
 
                     RemoveTrapDecomLines();
                     ShowTrapDecomLines();

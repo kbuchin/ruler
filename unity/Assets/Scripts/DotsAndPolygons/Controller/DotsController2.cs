@@ -44,64 +44,39 @@ namespace DotsAndPolygons
             }
             else // User let go of mouse button
             {
-                if (SecondPoint == null)
-                {
-                    print("SecondPoint was null");
-                }
-                else if (FirstPoint == SecondPoint)
-                {
-                    print("FirstPoint was same as SecondPoint");
-                }
-                // use isInside method to see of middle of line lies in a face
-                else if (Faces.Where(it => it?.OuterComponentHalfEdges != null).Any(face =>
-                    IsInside(
-                        face.OuterComponentVertices.Select(it => it.Coordinates).ToList(),
-                        new LineSegment(FirstPoint.Coordinates, SecondPoint.Coordinates).Midpoint
-                    )
-                ))
-                {
-                    print($"Line between {FirstPoint} and {SecondPoint} lies inside face");
-                }
-                else if (EdgeAlreadyExists(Edges, FirstPoint, SecondPoint))
-                {
-                    print("edge between first and second point already exists");
-                }
-                else if (InterSEGtsAny(
-                    new LineSegment(FirstPoint.Coordinates, SecondPoint.Coordinates),
-                    Edges.Select(edge => edge.Segment)
-                ))
-                {
-                    print(
-                        $"Edge between first and second point intersects something ({FirstPoint.Coordinates.x}, {FirstPoint.Coordinates.y}), ({SecondPoint.Coordinates.x}, {SecondPoint.Coordinates.y})");
-                }
-                else
-                {
-                    AddVisualEdge(FirstPoint, SecondPoint);
-                    
-                    bool faceCreated = AddEdge(FirstPoint, SecondPoint, CurrentPlayer, HalfEdges, Vertices,
-                        GameMode.GameMode2, this, root);
-
-                    RemoveTrapDecomLines();
-                    ShowTrapDecomLines();
-
-                    if (!faceCreated)
-                    {
-                        CurrentPlayer = CurrentPlayer == 1 ? 2 : 1;
-                        currentPlayerText.text = $"Go Player {CurrentPlayer}!";
-                        currentPlayerText.gameObject.GetComponentInParent<Image>().color =
-                            CurrentPlayer == 2 ? Color.blue : Color.red;
-                    }
-
-                    CheckSolution();
-                }
-
-                FirstPoint = null;
-                SecondPoint = null;
-                p1Line.enabled = false;
-                p2Line.enabled = false;
+                TryToPlaceLineSegment();
             }
         }
-        
+
+        private void TryToPlaceLineSegment()
+        {
+            if(EdgeIsPossible(FirstPoint, SecondPoint, Edges, Faces))
+            {
+                AddVisualEdge(FirstPoint, SecondPoint);
+
+                bool faceCreated = AddEdge(FirstPoint, SecondPoint, CurrentPlayer, HalfEdges, Vertices,
+                    GameMode.GameMode2, this, root) > 0.0f;
+
+                RemoveTrapDecomLines();
+                ShowTrapDecomLines();
+
+                if (!faceCreated)
+                {
+                    CurrentPlayer = CurrentPlayer == 1 ? 2 : 1;
+                    currentPlayerText.text = $"Go Player {CurrentPlayer}!";
+                    currentPlayerText.gameObject.GetComponentInParent<Image>().color =
+                        CurrentPlayer == 2 ? Color.blue : Color.red;
+                }
+
+                CheckSolution();
+            }
+
+            FirstPoint = null;
+            SecondPoint = null;
+            p1Line.enabled = false;
+            p2Line.enabled = false;
+        }
+
         public bool CheckArea() => Math.Abs(TotalAreaP1 + TotalAreaP2 - HullArea) < .001f;
 
         public override void CheckSolution()

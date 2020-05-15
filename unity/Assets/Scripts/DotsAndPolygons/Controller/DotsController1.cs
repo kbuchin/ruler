@@ -40,51 +40,13 @@ namespace DotsAndPolygons
                 SetDrawingLinePosition(1, pos);
             }
             else // User let go of mouse button
-            {
-                if (SecondPoint == null)
-                {
-                    print("SecondPoint was null");
-                }
-                else if (FirstPoint == SecondPoint)
-                {
-                    print("FirstPoint was same as SecondPoint");
-                }
-                else if (SecondPoint.InFace)
-                {
-                    print("SecondPoint was in face");
-                }
-                // use trap decom to see if middle of line lies in a face
-                else if (root.query(
-                    new DotsVertex(
-                        new LineSegment(FirstPoint.Coordinates, SecondPoint.Coordinates).Midpoint
-                    )
-                ).Let(it =>
-                {
-                    var face = it as TrapFace;
-                    return face?.Upper?.DotsEdge?.RightPointingHalfEdge?.IncidentFace != null
-                           || face?.Downer?.DotsEdge?.LeftPointingHalfEdge?.IncidentFace != null;
-                }))
-                {
-                    print($"Line between {FirstPoint} and {SecondPoint} lies inside face");
-                }
-                else if (EdgeAlreadyExists(Edges, FirstPoint, SecondPoint))
-                {
-                    print("edge between first and second point already exists");
-                }
-                else if (InterSEGtsAny(
-                    new LineSegment(FirstPoint.Coordinates, SecondPoint.Coordinates),
-                    Edges.Select(edge => edge.Segment)
-                ))
-                {
-                    print(
-                        $"Edge between first and second point intersects something ({FirstPoint.Coordinates.x}, {FirstPoint.Coordinates.y}), ({SecondPoint.Coordinates.x}, {SecondPoint.Coordinates.y})");
-                }
-                else
+            {               
+                if(EdgeIsPossible(FirstPoint, SecondPoint, Edges, Faces))
                 {
                     AddVisualEdge(FirstPoint, SecondPoint);
 
                     bool faceCreated = AddEdge(FirstPoint, SecondPoint, CurrentPlayer, HalfEdges, Vertices,
-                        GameMode.GameMode1, this, root);
+                        GameMode.GameMode1, this, root) > 0.0f;
 
                     RemoveTrapDecomLines();
                     ShowTrapDecomLines();

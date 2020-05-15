@@ -405,15 +405,15 @@ namespace DotsAndPolygons.Tests
 
             var allVertices = new List<IDotsVertex> {o, a1, a2, b1, b2, b3};
             var allHalfEdges = new HashSet<IDotsHalfEdge>();
-            Assert.IsFalse(AddEdge(o, a1, 0, allHalfEdges, allVertices, GameMode.GameMode2));
-            Assert.IsFalse(AddEdge(a1, a2, 0, allHalfEdges, allVertices, GameMode.GameMode2));
-            Assert.IsTrue(AddEdge(a2, o, 0, allHalfEdges, allVertices, GameMode.GameMode2));
+            Assert.IsFalse(AddEdge(o, a1, 0, allHalfEdges, allVertices, GameMode.GameMode2) > 0);
+            Assert.IsFalse(AddEdge(a1, a2, 0, allHalfEdges, allVertices, GameMode.GameMode2) > 0);
+            Assert.IsTrue(AddEdge(a2, o, 0, allHalfEdges, allVertices, GameMode.GameMode2) > 0);
 
 
-            Assert.IsFalse(AddEdge(o, b3, 0, allHalfEdges, allVertices, GameMode.GameMode2));
-            Assert.IsFalse(AddEdge(b3, b2, 0, allHalfEdges, allVertices, GameMode.GameMode2));
-            Assert.IsFalse(AddEdge(b2, b1, 0, allHalfEdges, allVertices, GameMode.GameMode2));
-            Assert.IsFalse(AddEdge(b1, o, 0, allHalfEdges, allVertices, GameMode.GameMode2));
+            Assert.IsFalse(AddEdge(o, b3, 0, allHalfEdges, allVertices, GameMode.GameMode2) > 0);
+            Assert.IsFalse(AddEdge(b3, b2, 0, allHalfEdges, allVertices, GameMode.GameMode2) > 0);
+            Assert.IsFalse(AddEdge(b2, b1, 0, allHalfEdges, allVertices, GameMode.GameMode2) > 0);
+            Assert.IsFalse(AddEdge(b1, o, 0, allHalfEdges, allVertices, GameMode.GameMode2) > 0);
         }
 
         [Test]
@@ -451,15 +451,15 @@ namespace DotsAndPolygons.Tests
 
             var allVertices = new List<IDotsVertex> {o, a1, a2, b1, b2, b3};
             var allHalfEdges = new HashSet<IDotsHalfEdge>();
-            Assert.IsFalse(AddEdge(o, a1, 0, allHalfEdges, allVertices, GameMode.GameMode2));
-            Assert.IsFalse(AddEdge(a1, a2, 0, allHalfEdges, allVertices, GameMode.GameMode2));
-            Assert.IsTrue(AddEdge(a2, o, 0, allHalfEdges, allVertices, GameMode.GameMode2));
+            Assert.IsFalse(AddEdge(o, a1, 0, allHalfEdges, allVertices, GameMode.GameMode2) > 0);
+            Assert.IsFalse(AddEdge(a1, a2, 0, allHalfEdges, allVertices, GameMode.GameMode2) > 0);
+            Assert.IsTrue(AddEdge(a2, o, 0, allHalfEdges, allVertices, GameMode.GameMode2) > 0);
 
 
-            Assert.IsFalse(AddEdge(o, b1, 0, allHalfEdges, allVertices, GameMode.GameMode2));
-            Assert.IsFalse(AddEdge(b1, b2, 0, allHalfEdges, allVertices, GameMode.GameMode2));
-            Assert.IsFalse(AddEdge(b2, b3, 0, allHalfEdges, allVertices, GameMode.GameMode2));
-            Assert.IsFalse(AddEdge(b3, o, 0, allHalfEdges, allVertices, GameMode.GameMode2));
+            Assert.IsFalse(AddEdge(o, b1, 0, allHalfEdges, allVertices, GameMode.GameMode2) > 0);
+            Assert.IsFalse(AddEdge(b1, b2, 0, allHalfEdges, allVertices, GameMode.GameMode2) > 0);
+            Assert.IsFalse(AddEdge(b2, b3, 0, allHalfEdges, allVertices, GameMode.GameMode2) > 0);
+            Assert.IsFalse(AddEdge(b3, o, 0, allHalfEdges, allVertices, GameMode.GameMode2) > 0);
         }
 
         [Test]

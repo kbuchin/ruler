@@ -266,14 +266,15 @@ namespace DotsAndPolygons
         public enum GameMode
         {
             GameMode1,
-            GameMode2
+            GameMode2,
+            GameMode3
         }
 
         public static HashSet<IDotsHalfEdge> HalfEdges(this IDotsEdge dotsEdge) =>
             new HashSet<IDotsHalfEdge> {dotsEdge.LeftPointingHalfEdge, dotsEdge.RightPointingHalfEdge};
 
         /** returns true if adding edge created a face */
-        public static bool AddEdge(IDotsVertex a, IDotsVertex b, int currentPlayer,
+        public static float AddEdge(IDotsVertex a, IDotsVertex b, int currentPlayer,
             HashSet<IDotsHalfEdge> m_halfEdges,
             IEnumerable<IDotsVertex> allVertices, GameMode gameMode, [CanBeNull] DotsController mGameController = null,
             [CanBeNull] TrapDecomRoot root = null
@@ -301,7 +302,7 @@ namespace DotsAndPolygons
                 leftPointing = incident;
             }
 
-            TrapDecomHelper.Insert(root, new DotsEdge(leftPointing, rightPointing));
+            if (root != null) TrapDecomHelper.Insert(root, new DotsEdge(leftPointing, rightPointing));
 
             AssignNextAndPrev(incident); // Also assigns twin
 
@@ -323,7 +324,7 @@ namespace DotsAndPolygons
             IDotsFace newFace = CreateFaceLoop(incident, gameMode, allVerticesNotInAFace, mGameController);
             IDotsFace secondNewFace = CreateFaceLoop(twin, gameMode, allVerticesNotInAFace, mGameController);
 
-            if (newFace == null && secondNewFace == null) return false;
+            if (newFace == null && secondNewFace == null) return 0.0f;
 
             if (newFace != null)
             {
@@ -400,8 +401,8 @@ namespace DotsAndPolygons
                     mGameController.Faces.Add(secondNewFace);
                 }
             }
-
-            return true;
+            float totalArea = newFace?.AreaMinusInner ?? 0.0f + secondNewFace?.AreaMinusInner ?? 0.0f;
+            return totalArea;
         }
 
         // Given three colinear vertices u, v and w, this method checks whether vertex v is on line segment (u,w)
@@ -569,7 +570,7 @@ namespace DotsAndPolygons
                                     innerComponents[entry.Key] = entry.Value;
                     }
                 }
-                else // gamemode 1
+                else // gamemode 1, 3
                 {
                     bool isInside = !verticesOnBorder.Contains(v.Coordinates) &&
                                     trapFacesInsideNewFace.Any(it => it == root.query(v));
@@ -844,6 +845,40 @@ namespace DotsAndPolygons
         public static void ForEach<T>(this IEnumerable<T> iEnumerable, Action<T> action)
         {
             foreach (T x in iEnumerable) action(x);
+        }
+
+        public static bool EdgeIsPossible(IDotsVertex p1, IDotsVertex p2, IEnumerable<IDotsEdge> edges, IEnumerable<IDotsFace> faces)
+        {
+            if (p2 == null)
+            {
+                return false;
+            }
+            else if (p1 == p2)
+            {
+                return false;
+            }
+            // use isInside method to see of middle of line lies in a face
+            else if (faces.Where(it => it?.OuterComponentHalfEdges != null).Any(face =>
+                IsInside(
+                    face.OuterComponentVertices.Select(it => it.Coordinates).ToList(),
+                    new LineSegment(p1.Coordinates, p2.Coordinates).Midpoint
+                )
+            ))
+            {
+                return false;
+            }
+            else if (EdgeAlreadyExists(edges, p1, p2))
+            {
+                return false;
+            }
+            else if (InterSEGtsAny(
+                new LineSegment(p1.Coordinates, p2.Coordinates),
+                edges.Select(edge => edge.Segment)
+            ))
+            {
+                return false;
+            }
+            return true;
         }
     }
 }
