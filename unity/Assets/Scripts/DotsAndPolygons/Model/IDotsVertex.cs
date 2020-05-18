@@ -17,5 +17,7 @@
         bool OnHull { get; set; }
         
         string ToString();
+
+        IDotsVertex Clone();
     }
 }

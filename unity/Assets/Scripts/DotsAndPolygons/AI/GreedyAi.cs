@@ -24,7 +24,7 @@ namespace DotsAndPolygons
             IDotsVertex maxAreaA = null;
             IDotsVertex maxAreaB = null;
             bool claimPossible = false;
-            PotentialMove result = null;
+            PotentialMove result;
             for (int i = start; i < end - 1; i++)
             {
                 for (int j = i + 1; j < end; j++)
@@ -33,13 +33,18 @@ namespace DotsAndPolygons
                     IDotsVertex a = vertices[i];
                     IDotsVertex b = vertices[j];
                     if (a.Equals(b)) continue;
-                    
+
                     if (HelperFunctions.EdgeIsPossible(a, b, edges, dotsFaces))
                     {
-                        var newDotsFaces = new HashSet<IDotsFace>(dotsFaces);
-                        var newHalfEdges = new HashSet<IDotsHalfEdge>(halfEdges);
-                        float area = HelperFunctions.AddEdge(a, b, Convert.ToInt32(this.PlayerNumber),
-                            newHalfEdges, vertices.ToList(), this.GameMode, dotsFaces: newDotsFaces);
+                        List<IDotsVertex> newVertices = vertices.Select(it => it.Clone()).ToList();
+                        IDotsVertex newA = newVertices[i];
+                        IDotsVertex newB = newVertices[j];
+
+                        var newDotsFaces = new HashSet<IDotsFace>(dotsFaces); // TODO maybe clone
+                        var newHalfEdges = new HashSet<IDotsHalfEdge>(halfEdges.Select(it => it.Clone()));
+
+                        float area = HelperFunctions.AddEdge(newA, newB, Convert.ToInt32(PlayerNumber),
+                            newHalfEdges, newVertices, GameMode, dotsFaces: newDotsFaces);
                         if (area > maximalArea)
                         {
                             maximalArea = area;
@@ -52,10 +57,11 @@ namespace DotsAndPolygons
                         {
                             var newEdges = new HashSet<IDotsEdge>(edges)
                             {
-                                new DotsEdge(new LineSegment(a.Coordinates, b.Coordinates))
+                                new DotsEdge(new LineSegment(newA.Coordinates, newB.Coordinates))
                             };
 
-                            float weight = CalculateWeight(a, b, vertices, newEdges, newHalfEdges, newDotsFaces);
+                            float weight = CalculateWeight(newA, newB, newVertices, newEdges, newHalfEdges,
+                                newDotsFaces);
                             if (weight < minimalWeight)
                             {
                                 minA = a;
@@ -73,21 +79,37 @@ namespace DotsAndPolygons
             return result;
         }
 
-        private float CalculateWeight(IDotsVertex dotsVertex1, IDotsVertex dotsVertex2, IDotsVertex[] dots,
+        private float CalculateWeight(IDotsVertex dotsVertex1, IDotsVertex dotsVertex2, List<IDotsVertex> dots,
             IEnumerable<IDotsEdge> edges, HashSet<IDotsHalfEdge> halfEdges, HashSet<IDotsFace> dotsFaces)
         {
             float maximalArea = 0.0f;
 
-            foreach (IDotsVertex b in dots)
+            for (var i = 0; i < dots.Count; i++)
             {
-                foreach (IDotsVertex a in new List<IDotsVertex> {dotsVertex1, dotsVertex2})
+                IEnumerable<int> dotsVertices = new List<IDotsVertex> {dotsVertex1, dotsVertex2}
+                    .Select(it => dots.IndexOf(it));
+                foreach (int j in dotsVertices)
                 {
+                    IDotsVertex a = dots[j];
+                    IDotsVertex b = dots[i];
                     if (b.Equals(dotsVertex1) || b.Equals(dotsVertex2)) continue;
-                    
+
                     if (HelperFunctions.EdgeIsPossible(a, b, edges, dotsFaces))
                     {
-                        float area = HelperFunctions.AddEdge(a, b, Convert.ToInt32(this.PlayerNumber),
-                            new HashSet<IDotsHalfEdge>(halfEdges), dots.ToList(), this.GameMode);
+                        List<IDotsVertex> newDots = dots.Select(it => it.Clone()).ToList();
+                        IDotsVertex newA = newDots[j];
+                        IDotsVertex newB = newDots[i];
+
+                        float area = HelperFunctions.AddEdge(
+                            newA,
+                            newB,
+                            Convert.ToInt32(PlayerNumber),
+                            new HashSet<IDotsHalfEdge>(
+                                halfEdges.Select(it => it.Clone())
+                            ),
+                            newDots,
+                            GameMode
+                        );
                         if (area > maximalArea)
                         {
                             maximalArea = area;
@@ -99,16 +121,17 @@ namespace DotsAndPolygons
             return maximalArea;
         }
 
-        public override (IDotsVertex, IDotsVertex) NextMove(IEnumerable<IDotsEdge> edges, IEnumerable<IDotsHalfEdge> halfEdges,
+        public override (IDotsVertex, IDotsVertex) NextMove(IEnumerable<IDotsEdge> edges,
+            IEnumerable<IDotsHalfEdge> halfEdges,
             HashSet<IDotsFace> faces, IEnumerable<IDotsVertex> vertices)
         {
             IDotsVertex[] verticesArray = vertices.ToArray();
-            
+
             MonoBehaviour.print("Calculating next minimal move for greedy player");
             PotentialMove potentialMove = MinimalMove(0, verticesArray.Length, verticesArray, edges, halfEdges, faces);
 
             MonoBehaviour.print($"PotentialMove: {potentialMove}");
-            
+
             return (potentialMove.A, potentialMove.B);
         }
     }

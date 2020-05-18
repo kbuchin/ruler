@@ -56,5 +56,7 @@ namespace DotsAndPolygons
         }
 
         public override string ToString() => $"[{Origin.Coordinates} -> {Destination?.Coordinates}]";
+        
+        public IDotsHalfEdge Clone() => new DotsHalfEdge().Constructor(GameController, Player, Origin, Twin, Prev, Next, Name);
     }
 }

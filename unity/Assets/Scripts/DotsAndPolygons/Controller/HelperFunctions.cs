@@ -164,6 +164,46 @@ namespace DotsAndPolygons
                 || edge.Segment.Point2 == point1.Coordinates && edge.Segment.Point1 == point2.Coordinates
             );
 
+
+        public static void RemoveFromDCEL(IDotsHalfEdge halfEdgeToRemove)
+        {
+            IDotsHalfEdge twinHalfEdgeToRemove = halfEdgeToRemove.Twin;
+
+            List<IDotsHalfEdge> destinationLeavingHalfEdges = twinHalfEdgeToRemove.Origin.LeavingHalfEdges()
+                .Where(it => !it.Equals(twinHalfEdgeToRemove))
+                .ToList();
+
+            if (destinationLeavingHalfEdges.Any())
+            {
+                twinHalfEdgeToRemove.Prev.Next = halfEdgeToRemove.Next;
+                halfEdgeToRemove.Next.Prev = twinHalfEdgeToRemove.Prev;
+            }
+
+            IDotsVertex dest = twinHalfEdgeToRemove.Origin;
+            if (twinHalfEdgeToRemove.Equals(dest.IncidentEdge))
+            {
+                dest.IncidentEdge = destinationLeavingHalfEdges.FirstOrDefault();
+            }
+            
+            
+            List<IDotsHalfEdge> originLeavingHalfEdges = halfEdgeToRemove.Origin.LeavingHalfEdges()
+                .Where(it => !it.Equals(halfEdgeToRemove))
+                .ToList();
+
+            if (originLeavingHalfEdges.Any())
+            {
+                halfEdgeToRemove.Prev.Next = twinHalfEdgeToRemove.Next;
+                twinHalfEdgeToRemove.Next.Prev = halfEdgeToRemove.Prev;
+            }
+
+            IDotsVertex orig = halfEdgeToRemove.Origin;
+            if (halfEdgeToRemove.Equals(orig.IncidentEdge))
+            {
+                orig.IncidentEdge = originLeavingHalfEdges.FirstOrDefault();
+            }
+
+        }
+
         // by jolan
         public static void AssignNextAndPrev(IDotsHalfEdge newHalfEdge)
         {
@@ -274,9 +314,14 @@ namespace DotsAndPolygons
             new HashSet<IDotsHalfEdge> {dotsEdge.LeftPointingHalfEdge, dotsEdge.RightPointingHalfEdge};
 
         /** returns true if adding edge created a face */
-        public static float AddEdge(IDotsVertex a, IDotsVertex b, int currentPlayer,
+        public static float AddEdge(
+            IDotsVertex a,
+            IDotsVertex b,
+            int currentPlayer,
             HashSet<IDotsHalfEdge> m_halfEdges,
-            IEnumerable<IDotsVertex> allVertices, GameMode gameMode, [CanBeNull] DotsController mGameController = null,
+            IEnumerable<IDotsVertex> allVertices,
+            GameMode gameMode,
+            [CanBeNull] DotsController mGameController = null,
             [CanBeNull] TrapDecomRoot root = null,
             [CanBeNull] HashSet<IDotsFace> dotsFaces = null
         )
@@ -363,6 +408,7 @@ namespace DotsAndPolygons
                         $"Area of new face = {newFace.Area}, with inner faces subtracted = {newFace.AreaMinusInner}");
                     mGameController.Faces.Add(newFace);
                 }
+
                 dotsFaces?.Add(newFace);
             }
 
@@ -402,8 +448,10 @@ namespace DotsAndPolygons
                         $"Area of new face = {secondNewFace.Area}, with inner faces subtracted = {secondNewFace.AreaMinusInner}");
                     mGameController.Faces.Add(secondNewFace);
                 }
+
                 dotsFaces?.Add(secondNewFace);
             }
+
             float totalArea = newFace?.AreaMinusInner ?? 0.0f + secondNewFace?.AreaMinusInner ?? 0.0f;
             return totalArea;
         }
@@ -842,13 +890,14 @@ namespace DotsAndPolygons
             clipper.Execute(ClipType.ctUnion, polyTree, PolyFillType.pftEvenOdd, PolyFillType.pftEvenOdd);
             return polyTree;
         }
-        
+
         public static void ForEach<T>(this IEnumerable<T> iEnumerable, Action<T> action)
         {
             foreach (T x in iEnumerable) action(x);
         }
 
-        public static bool EdgeIsPossible(IDotsVertex p1, IDotsVertex p2, IEnumerable<IDotsEdge> edges, IEnumerable<IDotsFace> faces)
+        public static bool EdgeIsPossible(IDotsVertex p1, IDotsVertex p2, IEnumerable<IDotsEdge> edges,
+            IEnumerable<IDotsFace> faces)
         {
             if (p2 == null)
             {
@@ -883,6 +932,7 @@ namespace DotsAndPolygons
             {
                 return false;
             }
+
             return true;
         }
     }
