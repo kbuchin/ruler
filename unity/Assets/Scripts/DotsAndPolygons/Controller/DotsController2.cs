@@ -18,6 +18,7 @@ namespace DotsAndPolygons
     public class DotsController2 : DotsController
     {
         
+        public override GameMode CurrentGamemode => GameMode.GameMode2;
 
         public void Update()
         {
@@ -52,23 +53,7 @@ namespace DotsAndPolygons
         {
             if(EdgeIsPossible(FirstPoint, SecondPoint, Edges, Faces))
             {
-                AddVisualEdge(FirstPoint, SecondPoint);
-
-                bool faceCreated = AddEdge(FirstPoint, SecondPoint, CurrentPlayer, HalfEdges, Vertices,
-                    GameMode.GameMode2, this, root) > 0.0f;
-
-                RemoveTrapDecomLines();
-                ShowTrapDecomLines();
-
-                if (!faceCreated)
-                {
-                    CurrentPlayer = CurrentPlayer == 1 ? 2 : 1;
-                    currentPlayerText.text = $"Go Player {CurrentPlayer}!";
-                    currentPlayerText.gameObject.GetComponentInParent<Image>().color =
-                        CurrentPlayer == 2 ? Color.blue : Color.red;
-                }
-
-                CheckSolution();
+                DoMove(FirstPoint, SecondPoint);
             }
 
             FirstPoint = null;

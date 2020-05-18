@@ -1,13 +1,10 @@
-﻿using DotsAndPolygons;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine.TestTools.Utils;
+using UnityEngine;
 using Util.Geometry;
 
-namespace Assets.Scripts.DotsAndPolygons.AI
+namespace DotsAndPolygons
 {
     public class GreedyAi : AiPlayer
     {
@@ -16,8 +13,8 @@ namespace Assets.Scripts.DotsAndPolygons.AI
             // todo fix check if ai can make a face
         }
 
-        public PotentialMove MinimalMove(int start, int length, 
-            IDotsVertex[] vertices, IEnumerable<IDotsEdge> edges, IEnumerable<IDotsHalfEdge> halfEdges, IEnumerable<IDotsFace> dotsFaces)
+        public PotentialMove MinimalMove(int start, int length, IDotsVertex[] vertices, IEnumerable<IDotsEdge> edges,
+            IEnumerable<IDotsHalfEdge> halfEdges, HashSet<IDotsFace> dotsFaces)
         {
             int end = start + length;
             float minimalWeight = float.MaxValue;
@@ -28,58 +25,91 @@ namespace Assets.Scripts.DotsAndPolygons.AI
             IDotsVertex maxAreaB = null;
             bool claimPossible = false;
             PotentialMove result = null;
-            for(int i = start; i < end - 1; i++)
+            for (int i = start; i < end - 1; i++)
             {
-                for(int j = i + 1; j < end; j++)
+                for (int j = i + 1; j < end; j++)
                 {
+                    MonoBehaviour.print($"Calculating minimal move, iteration {i}, {j}");
                     IDotsVertex a = vertices[i];
                     IDotsVertex b = vertices[j];
-                    if (HelperFunctions.EdgeIsPossible(a,b,edges, dotsFaces))
+                    if (a.Equals(b)) continue;
+                    
+                    if (HelperFunctions.EdgeIsPossible(a, b, edges, dotsFaces))
                     {
-                        float area = HelperFunctions.AddEdge(a, b, Convert.ToInt32(this.PlayerNumber), 
-                                new HashSet<IDotsHalfEdge>(halfEdges), vertices.ToList(), this.GameMode);
-                        if(area > maximalArea)
+                        var newDotsFaces = new HashSet<IDotsFace>(dotsFaces);
+                        var newHalfEdges = new HashSet<IDotsHalfEdge>(halfEdges);
+                        float area = HelperFunctions.AddEdge(a, b, Convert.ToInt32(this.PlayerNumber),
+                            newHalfEdges, vertices.ToList(), this.GameMode, dotsFaces: newDotsFaces);
+                        if (area > maximalArea)
                         {
                             maximalArea = area;
                             maxAreaA = a;
                             maxAreaB = b;
                             claimPossible = true;
-                            
                         }
-                        if(!claimPossible)
+
+                        if (!claimPossible)
                         {
-                            float weight = CalculateWeight(a, b, vertices);
+                            var newEdges = new HashSet<IDotsEdge>(edges)
+                            {
+                                new DotsEdge(new LineSegment(a.Coordinates, b.Coordinates))
+                            };
+
+                            float weight = CalculateWeight(a, b, vertices, newEdges, newHalfEdges, newDotsFaces);
                             if (weight < minimalWeight)
                             {
                                 minA = a;
                                 minB = b;
                                 minimalWeight = weight;
                             }
-                        }                        
+                        }
                     }
-                    
                 }
             }
-            result = claimPossible ? new AreaMove(maximalArea, maxAreaA, maxAreaB) : (PotentialMove)new WeightMove(minimalWeight, minA, minB);
+
+            result = claimPossible
+                ? new AreaMove(maximalArea, maxAreaA, maxAreaB)
+                : (PotentialMove) new WeightMove(minimalWeight, minA, minB);
             return result;
         }
 
-        private float CalculateWeight(IDotsVertex dotsVertex1, IDotsVertex dotsVertex2, IDotsVertex[] dots)
+        private float CalculateWeight(IDotsVertex dotsVertex1, IDotsVertex dotsVertex2, IDotsVertex[] dots,
+            IEnumerable<IDotsEdge> edges, HashSet<IDotsHalfEdge> halfEdges, HashSet<IDotsFace> dotsFaces)
         {
-            for(int i  = 0; i < dots.Length; i++)
+            float maximalArea = 0.0f;
+
+            foreach (IDotsVertex b in dots)
             {
-                
+                foreach (IDotsVertex a in new List<IDotsVertex> {dotsVertex1, dotsVertex2})
+                {
+                    if (b.Equals(dotsVertex1) || b.Equals(dotsVertex2)) continue;
+                    
+                    if (HelperFunctions.EdgeIsPossible(a, b, edges, dotsFaces))
+                    {
+                        float area = HelperFunctions.AddEdge(a, b, Convert.ToInt32(this.PlayerNumber),
+                            new HashSet<IDotsHalfEdge>(halfEdges), dots.ToList(), this.GameMode);
+                        if (area > maximalArea)
+                        {
+                            maximalArea = area;
+                        }
+                    }
+                }
             }
-            return 10.0f;
+
+            return maximalArea;
         }
 
-        public (IDotsVertex, IDotsVertex) NextMove(IEnumerable<IDotsEdge> edges, IEnumerable<IDotsVertex> vertices) 
+        public override (IDotsVertex, IDotsVertex) NextMove(IEnumerable<IDotsEdge> edges, IEnumerable<IDotsHalfEdge> halfEdges,
+            HashSet<IDotsFace> faces, IEnumerable<IDotsVertex> vertices)
         {
             IDotsVertex[] verticesArray = vertices.ToArray();
+            
+            MonoBehaviour.print("Calculating next minimal move for greedy player");
+            PotentialMove potentialMove = MinimalMove(0, verticesArray.Length, verticesArray, edges, halfEdges, faces);
 
-            return (null, null);
+            MonoBehaviour.print($"PotentialMove: {potentialMove}");
+            
+            return (potentialMove.A, potentialMove.B);
         }
-
-        
     }
 }

@@ -80,7 +80,7 @@ namespace DotsAndPolygons
             if (current == null) return leavingEdges; // vertex does not have any edges
             do
             {
-                print($"current leaving half edge {current}");
+                // print($"current leaving half edge {current}");
                 leavingEdges.Add(current);
                 if (current.Twin.Next == current) break;
                 current = current.Twin.Next;
@@ -277,7 +277,8 @@ namespace DotsAndPolygons
         public static float AddEdge(IDotsVertex a, IDotsVertex b, int currentPlayer,
             HashSet<IDotsHalfEdge> m_halfEdges,
             IEnumerable<IDotsVertex> allVertices, GameMode gameMode, [CanBeNull] DotsController mGameController = null,
-            [CanBeNull] TrapDecomRoot root = null
+            [CanBeNull] TrapDecomRoot root = null,
+            [CanBeNull] HashSet<IDotsFace> dotsFaces = null
         )
         {
             // Add edge for current player and check if new face is created
@@ -362,6 +363,7 @@ namespace DotsAndPolygons
                         $"Area of new face = {newFace.Area}, with inner faces subtracted = {newFace.AreaMinusInner}");
                     mGameController.Faces.Add(newFace);
                 }
+                dotsFaces?.Add(newFace);
             }
 
             if (secondNewFace != null)
@@ -400,6 +402,7 @@ namespace DotsAndPolygons
                         $"Area of new face = {secondNewFace.Area}, with inner faces subtracted = {secondNewFace.AreaMinusInner}");
                     mGameController.Faces.Add(secondNewFace);
                 }
+                dotsFaces?.Add(secondNewFace);
             }
             float totalArea = newFace?.AreaMinusInner ?? 0.0f + secondNewFace?.AreaMinusInner ?? 0.0f;
             return totalArea;
@@ -655,8 +658,7 @@ namespace DotsAndPolygons
             while (counter < 10000)
             {
                 counter++;
-                print(
-                    $"checking faceloop... Starting at [{halfEdge.Origin.Coordinates}, {halfEdge.Destination.Coordinates}] CurrentHalfEdge: [{currentHalfEdge.Origin.Coordinates}, {currentHalfEdge.Destination.Coordinates}]");
+                // print($"checking faceloop... Starting at [{halfEdge.Origin.Coordinates}, {halfEdge.Destination.Coordinates}] CurrentHalfEdge: [{currentHalfEdge.Origin.Coordinates}, {currentHalfEdge.Destination.Coordinates}]");
                 if (halfEdge == currentHalfEdge)
                 {
                     visitedHalfEdges.Add(currentHalfEdge);
@@ -671,8 +673,7 @@ namespace DotsAndPolygons
                             return null;
                     }
 
-                    print(
-                        $"Face created! face consists of: {string.Join("\n", visitedHalfEdges.Select(it => $"[{it.Origin.Coordinates} -> {it.Destination.Coordinates}]"))}");
+                    // print($"Face created! face consists of: {string.Join("\n", visitedHalfEdges.Select(it => $"[{it.Origin.Coordinates} -> {it.Destination.Coordinates}]"))}");
 
                     IDotsFace face;
                     if (mGameController != null)
@@ -853,12 +854,14 @@ namespace DotsAndPolygons
             {
                 return false;
             }
-            else if (p1 == p2)
+
+            if (p1 == p2)
             {
                 return false;
             }
             // use isInside method to see of middle of line lies in a face
-            else if (faces.Where(it => it?.OuterComponentHalfEdges != null).Any(face =>
+
+            if (faces.Where(it => it?.OuterComponentHalfEdges != null).Any(face =>
                 IsInside(
                     face.OuterComponentVertices.Select(it => it.Coordinates).ToList(),
                     new LineSegment(p1.Coordinates, p2.Coordinates).Midpoint
@@ -867,11 +870,13 @@ namespace DotsAndPolygons
             {
                 return false;
             }
-            else if (EdgeAlreadyExists(edges, p1, p2))
+
+            if (EdgeAlreadyExists(edges, p1, p2))
             {
                 return false;
             }
-            else if (InterSEGtsAny(
+
+            if (InterSEGtsAny(
                 new LineSegment(p1.Coordinates, p2.Coordinates),
                 edges.Select(edge => edge.Segment)
             ))

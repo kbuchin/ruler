@@ -56,21 +56,24 @@ namespace DotsAndPolygons
         protected HashSet<IDotsHalfEdge> HalfEdges { get; set; } = new HashSet<IDotsHalfEdge>();
         protected HashSet<IDotsEdge> Edges { get; set; } = new HashSet<IDotsEdge>();
         public HashSet<IDotsFace> Faces { get; set; } = new HashSet<IDotsFace>();
-        public int CurrentPlayer { get; set; } = 1;
+        public DotsPlayer CurrentPlayer { get; set; }
+        public DotsPlayer Player1 { get; set; }
+        public DotsPlayer Player2 { get; set; }
 
-        protected DotsPlayer player1 { get; set; } 
-        protected DotsPlayer player2 { get; set; } 
+        public int CurrentPlayerValue => CurrentPlayer.Equals(Player1) ? 1 : 2;
+
+        public abstract GameMode CurrentGamemode { get; }
 
         protected float TotalAreaP1
         {
-            get => player1.TotalArea;
-            set => player1.TotalArea = value;
+            get => Player1.TotalArea;
+            set => Player1.TotalArea = value;
         }
 
         protected float TotalAreaP2
         {
-            get => player2.TotalArea;
-            set => player2.TotalArea = value;
+            get => Player2.TotalArea;
+            set => Player2.TotalArea = value;
         }
 
         public List<GameObject> InstantObjects { get; private set; } = new List<GameObject>();
@@ -79,6 +82,49 @@ namespace DotsAndPolygons
         public float HullArea { get; set; }
 
         protected bool _showTrapDecomLines = false;
+
+        public void SwitchPlayer()
+        {
+            CurrentPlayer = CurrentPlayer.Equals(Player1) ? Player2 : Player1;
+            currentPlayerText.text = $"Go Player {CurrentPlayerValue}";
+            currentPlayerText.gameObject.GetComponentInParent<Image>().color =
+                CurrentPlayer == Player2 ? Color.blue : Color.red;
+
+            if (CurrentPlayer.PlayerType != PlayerType.Player)
+            {
+                MoveForAiPlayer();
+            }
+        }
+
+        public void MoveForAiPlayer()
+        {
+            if (CurrentPlayer.PlayerType != PlayerType.Player)
+            {
+                (IDotsVertex a, IDotsVertex b) =
+                    (CurrentPlayer as AiPlayer).NextMove(Edges, HalfEdges, Faces, Vertices);
+
+                DoMove(a, b);
+            }
+        }
+
+        public void DoMove(IDotsVertex firstPoint, IDotsVertex secondPoint)
+        {
+            AddVisualEdge(firstPoint, secondPoint);
+
+            bool faceCreated = AddEdge(firstPoint, secondPoint, CurrentPlayerValue, HalfEdges, Vertices,
+                CurrentGamemode, this, root) > 0.0f;
+
+            RemoveTrapDecomLines();
+            ShowTrapDecomLines();
+
+            if (!faceCreated)
+            {
+                SwitchPlayer();
+            }
+
+            CheckSolution();
+        }
+
 
         public void AddToPlayerArea(int player, float area)
         {
@@ -95,12 +141,33 @@ namespace DotsAndPolygons
 
         // Start is called before the first frame update
         protected void Start()
-        {        
+        {
             // Assign players
             // todo fix game mode parameter
-            player1 = new DotsPlayer(PlayerNumber.Player1, Settings.Player1, GameMode.GameMode1);
-            player2 = new DotsPlayer(PlayerNumber.Player2, Settings.Player2, GameMode.GameMode1);
-            
+            switch (Settings.Player1)
+            {
+                case PlayerType.Player:
+                    Player1 = new DotsPlayer(PlayerNumber.Player1, PlayerType.Player, CurrentGamemode);
+                    break;
+                case PlayerType.GreedyAi:
+                    Player1 = new GreedyAi(PlayerNumber.Player1, CurrentGamemode);
+                    break;
+            }
+
+            switch (Settings.Player2)
+            {
+                case PlayerType.Player:
+                    Player2 = new DotsPlayer(PlayerNumber.Player2, PlayerType.Player, CurrentGamemode);
+                    break;
+                case PlayerType.GreedyAi:
+                    Player2 = new GreedyAi(PlayerNumber.Player2, CurrentGamemode);
+                    break;
+            }
+
+            CurrentPlayer = Player1;
+
+            print($"Starting game with Player1 as {Player1.PlayerType} and Player2 as {Player2.PlayerType}");
+
             // get unity objects
             Vertices = new HashSet<IDotsVertex>();
             foreach (UnityDotsVertex vertex in FindObjectsOfType<UnityDotsVertex>()) Vertices.Add(vertex);
@@ -125,7 +192,7 @@ namespace DotsAndPolygons
         {
             if (!_showTrapDecomLines) return;
             faces = root.FindAllFaces();
-            
+
             foreach (TrapFace face in faces)
             {
                 GameObject upper = UnityTrapDecomLine.CreateUnityTrapDecomLine(face.Upper.Segment, this);
@@ -228,7 +295,7 @@ namespace DotsAndPolygons
 
         public void EnableDrawingLine()
         {
-            if (CurrentPlayer == 1)
+            if (CurrentPlayer.Equals(Player1))
                 p1Line.enabled = true;
             else
                 p2Line.enabled = true;
@@ -236,18 +303,18 @@ namespace DotsAndPolygons
 
         public void SetDrawingLinePosition(int index, Vector2 position)
         {
-            if (CurrentPlayer == 1)
+            if (CurrentPlayer.Equals(Player1))
                 p1Line.SetPosition(index, position);
             else
                 p2Line.SetPosition(index, position);
         }
 
-        public void AddVisualEdge(UnityDotsVertex a_point1, UnityDotsVertex a_point2)
+        public void AddVisualEdge(IDotsVertex a_point1, IDotsVertex a_point2)
         {
             var segment = new LineSegment(a_point1.Coordinates, a_point2.Coordinates);
 
             GameObject edgeMesh = Instantiate(
-                CurrentPlayer == 1 ? p1EdgeMeshPrefab : p2EdgeMeshPrefab,
+                CurrentPlayer.Equals(Player1) ? p1EdgeMeshPrefab : p2EdgeMeshPrefab,
                 Vector3.forward,
                 Quaternion.identity);
             edgeMesh.transform.parent = transform;

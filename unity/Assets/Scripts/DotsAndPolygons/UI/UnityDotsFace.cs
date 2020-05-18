@@ -59,7 +59,7 @@ namespace DotsAndPolygons
         void Awake()
         {
             _mGameController = FindObjectOfType<DotsController>();
-            Player = _mGameController.CurrentPlayer;
+            Player = _mGameController.CurrentPlayer == _mGameController.Player1 ? 1 : 2;
         }
 
         // Constructor for this face with a reference to the outer component and optional list of inner components

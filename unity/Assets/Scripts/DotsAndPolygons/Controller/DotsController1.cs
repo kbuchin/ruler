@@ -14,7 +14,9 @@ namespace DotsAndPolygons
 
     public class DotsController1 : DotsController
     {
-
+        
+        public override GameMode CurrentGamemode => GameMode.GameMode1;
+        
         // Update is called once per frame
         public void Update()
         {
@@ -40,26 +42,10 @@ namespace DotsAndPolygons
                 SetDrawingLinePosition(1, pos);
             }
             else // User let go of mouse button
-            {               
-                if(EdgeIsPossible(FirstPoint, SecondPoint, Edges, Faces))
+            {
+                if (EdgeIsPossible(FirstPoint, SecondPoint, Edges, Faces))
                 {
-                    AddVisualEdge(FirstPoint, SecondPoint);
-
-                    bool faceCreated = AddEdge(FirstPoint, SecondPoint, CurrentPlayer, HalfEdges, Vertices,
-                        GameMode.GameMode1, this, root) > 0.0f;
-
-                    RemoveTrapDecomLines();
-                    ShowTrapDecomLines();
-
-                    if (!faceCreated)
-                    {
-                        CurrentPlayer = CurrentPlayer == 1 ? 2 : 1;
-                        currentPlayerText.text = $"Go Player {CurrentPlayer}!";
-                        currentPlayerText.gameObject.GetComponentInParent<Image>().color =
-                            CurrentPlayer == 2 ? Color.blue : Color.red;
-                    }
-
-                    CheckSolution();
+                    DoMove(FirstPoint, SecondPoint);
                 }
 
                 FirstPoint = null;
@@ -80,9 +66,8 @@ namespace DotsAndPolygons
         public override void InitLevel()
         {
             base.InitLevel();
-            
+
             AddDotsInGeneralPosition();
         }
-
     }
 }

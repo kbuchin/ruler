@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Assets.Scripts.DotsAndPolygons.AI
+namespace DotsAndPolygons
 {
-    public class PotentialMove
+    public abstract class PotentialMove
     {
         public IDotsVertex A { get; set; }
         public IDotsVertex B { get; set; }
@@ -16,25 +16,32 @@ namespace Assets.Scripts.DotsAndPolygons.AI
             this.A = A;
             this.B = B;
         }
+
+        public abstract float GetValue();
     }
 
-    public class AreaMove : PotentialMove
+    public sealed class AreaMove : PotentialMove
     {
         public float MaxArea { get; set; }
         public AreaMove(float maxArea, IDotsVertex A, IDotsVertex B) : base(A, B)
         {
             MaxArea = maxArea;
         }
+        public override float GetValue() => MaxArea;
 
-        
+        public override string ToString() => $"AreaMove(MaxArea = {MaxArea}, A = {A}, B = {B})";
     }
 
-    public class WeightMove : PotentialMove
+    public sealed class WeightMove : PotentialMove
     {
         public float MinWeight { get; set; }
         public WeightMove(float minWeight, IDotsVertex A, IDotsVertex B) : base (A, B)
         {
             MinWeight = minWeight;
         }
+
+        public override float GetValue() => MinWeight;
+        
+        public override string ToString() => $"WeightMove(MaxArea = {MinWeight}, A = {A}, B = {B})";
     }
 }
