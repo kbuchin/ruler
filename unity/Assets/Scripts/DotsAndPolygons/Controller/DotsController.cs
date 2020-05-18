@@ -100,8 +100,8 @@ namespace DotsAndPolygons
         {
             if (CurrentPlayer.PlayerType != PlayerType.Player)
             {
-                (IDotsVertex a, IDotsVertex b) =
-                    (CurrentPlayer as AiPlayer).NextMove(Edges, HalfEdges, Faces, Vertices);
+                (IDotsVertex a, IDotsVertex b) = (CurrentPlayer as AiPlayer)
+                    .NextMove(Edges, HalfEdges, Faces, Vertices);
 
                 DoMove(a, b);
             }
@@ -325,7 +325,7 @@ namespace DotsAndPolygons
             Edges.Add(edge);
 
             var edgeMeshScript = edgeMesh.GetComponent<ReshapingMesh>();
-            edgeMeshScript.CreateNewMesh(FirstPoint.Coordinates, SecondPoint.Coordinates);
+            edgeMeshScript.CreateNewMesh(a_point1.Coordinates, a_point2.Coordinates);
         }
 
         // Enable advance button if "solution" is correct

@@ -13,8 +13,8 @@ namespace DotsAndPolygons
             // todo fix check if ai can make a face
         }
 
-        public PotentialMove MinimalMove(int start, int length, IDotsVertex[] vertices, IEnumerable<IDotsEdge> edges,
-            IEnumerable<IDotsHalfEdge> halfEdges, HashSet<IDotsFace> dotsFaces)
+        public PotentialMove MinimalMove(int start, int length, IDotsVertex[] vertices, HashSet<IDotsEdge> edges,
+            HashSet<IDotsHalfEdge> halfEdges, HashSet<IDotsFace> dotsFaces)
         {
             int end = start + length;
             float minimalWeight = float.MaxValue;
@@ -36,15 +36,12 @@ namespace DotsAndPolygons
 
                     if (HelperFunctions.EdgeIsPossible(a, b, edges, dotsFaces))
                     {
-                        List<IDotsVertex> newVertices = vertices.Select(it => it.Clone()).ToList();
-                        IDotsVertex newA = newVertices[i];
-                        IDotsVertex newB = newVertices[j];
+                        float area = HelperFunctions.AddEdge(a, b, Convert.ToInt32(PlayerNumber),
+                            halfEdges, vertices, GameMode, dotsFaces: dotsFaces);
 
-                        var newDotsFaces = new HashSet<IDotsFace>(dotsFaces); // TODO maybe clone
-                        var newHalfEdges = new HashSet<IDotsHalfEdge>(halfEdges.Select(it => it.Clone()));
+                        var newEdge = new DotsEdge(new LineSegment(a.Coordinates, b.Coordinates));
+                        edges.Add(newEdge);
 
-                        float area = HelperFunctions.AddEdge(newA, newB, Convert.ToInt32(PlayerNumber),
-                            newHalfEdges, newVertices, GameMode, dotsFaces: newDotsFaces);
                         if (area > maximalArea)
                         {
                             maximalArea = area;
@@ -55,13 +52,8 @@ namespace DotsAndPolygons
 
                         if (!claimPossible)
                         {
-                            var newEdges = new HashSet<IDotsEdge>(edges)
-                            {
-                                new DotsEdge(new LineSegment(newA.Coordinates, newB.Coordinates))
-                            };
-
-                            float weight = CalculateWeight(newA, newB, newVertices, newEdges, newHalfEdges,
-                                newDotsFaces);
+                            float weight = CalculateWeight(a, b, vertices, edges, halfEdges,
+                                dotsFaces);
                             if (weight < minimalWeight)
                             {
                                 minA = a;
@@ -69,6 +61,9 @@ namespace DotsAndPolygons
                                 minimalWeight = weight;
                             }
                         }
+
+                        CleanUp(halfEdges, a, b);
+                        edges.Remove(newEdge);
                     }
                 }
             }
@@ -79,41 +74,35 @@ namespace DotsAndPolygons
             return result;
         }
 
-        private float CalculateWeight(IDotsVertex dotsVertex1, IDotsVertex dotsVertex2, List<IDotsVertex> dots,
+        private float CalculateWeight(IDotsVertex dotsVertex1, IDotsVertex dotsVertex2, IDotsVertex[] dots,
             IEnumerable<IDotsEdge> edges, HashSet<IDotsHalfEdge> halfEdges, HashSet<IDotsFace> dotsFaces)
         {
             float maximalArea = 0.0f;
 
-            for (var i = 0; i < dots.Count; i++)
+            foreach (IDotsVertex a in dots)
             {
-                IEnumerable<int> dotsVertices = new List<IDotsVertex> {dotsVertex1, dotsVertex2}
-                    .Select(it => dots.IndexOf(it));
-                foreach (int j in dotsVertices)
+                var dotsVertices = new List<IDotsVertex> {dotsVertex1, dotsVertex2};
+                foreach (IDotsVertex b in dotsVertices)
                 {
-                    IDotsVertex a = dots[j];
-                    IDotsVertex b = dots[i];
-                    if (b.Equals(dotsVertex1) || b.Equals(dotsVertex2)) continue;
+                    if (a.Equals(dotsVertex1) || a.Equals(dotsVertex2)) continue;
 
                     if (HelperFunctions.EdgeIsPossible(a, b, edges, dotsFaces))
                     {
-                        List<IDotsVertex> newDots = dots.Select(it => it.Clone()).ToList();
-                        IDotsVertex newA = newDots[j];
-                        IDotsVertex newB = newDots[i];
-
                         float area = HelperFunctions.AddEdge(
-                            newA,
-                            newB,
+                            a,
+                            b,
                             Convert.ToInt32(PlayerNumber),
-                            new HashSet<IDotsHalfEdge>(
-                                halfEdges.Select(it => it.Clone())
-                            ),
-                            newDots,
+                            halfEdges,
+                            dots,
                             GameMode
                         );
+                        
                         if (area > maximalArea)
                         {
                             maximalArea = area;
                         }
+                        
+                        CleanUp(halfEdges, a, b);
                     }
                 }
             }
@@ -121,8 +110,18 @@ namespace DotsAndPolygons
             return maximalArea;
         }
 
-        public override (IDotsVertex, IDotsVertex) NextMove(IEnumerable<IDotsEdge> edges,
-            IEnumerable<IDotsHalfEdge> halfEdges,
+        private static void CleanUp(HashSet<IDotsHalfEdge> halfEdges, IDotsVertex a, IDotsVertex b)
+        {
+            IDotsHalfEdge toRemove = a.LeavingHalfEdges()
+                .FirstOrDefault(it => it.Destination.Equals(b));
+
+            HelperFunctions.RemoveFromDCEL(toRemove);
+            halfEdges.Remove(toRemove);
+            halfEdges.Remove(toRemove.Twin);
+        }
+
+        public override (IDotsVertex, IDotsVertex) NextMove(HashSet<IDotsEdge> edges,
+            HashSet<IDotsHalfEdge> halfEdges,
             HashSet<IDotsFace> faces, IEnumerable<IDotsVertex> vertices)
         {
             IDotsVertex[] verticesArray = vertices.ToArray();

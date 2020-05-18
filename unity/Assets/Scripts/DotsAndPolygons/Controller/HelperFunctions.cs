@@ -392,12 +392,12 @@ namespace DotsAndPolygons
                 // remove new face if it happened to be inside the inner faces (this should never happen)
                 innerFaces.Remove(newFace);
 
-                print("Inner faces");
-                foreach (KeyValuePair<IDotsFace, IDotsHalfEdge> entry in innerFaces)
-                {
-                    print(
-                        $"Face area: {entry.Key.Area}, inner component edge: [{entry.Value.Origin.Coordinates}, {entry.Value.Destination.Coordinates}]");
-                }
+                // print("Inner faces");
+                // foreach (KeyValuePair<IDotsFace, IDotsHalfEdge> entry in innerFaces)
+                // {
+                //     print(
+                //         $"Face area: {entry.Key.Area}, inner component edge: [{entry.Value.Origin.Coordinates}, {entry.Value.Destination.Coordinates}]");
+                // }
 
                 newFace.InnerComponents = innerFaces.Values.ToList();
                 if (mGameController != null)
@@ -521,10 +521,10 @@ namespace DotsAndPolygons
         public static bool InterSEGting(LineSegment s1, LineSegment s2)
         {
             bool result = InterSEGting(s1.Point1, s1.Point2, s2.Point1, s2.Point2);
-            if (result)
-            {
-                print(s1 + " intersects " + s2);
-            }
+            // if (result)
+            // {
+            //     print(s1 + " intersects " + s2);
+            // }
 
             return result;
         }
@@ -645,24 +645,24 @@ namespace DotsAndPolygons
                 (it.Destination.Coordinates.y + it.Origin.Coordinates.y)
             ).Sum() > 0;
 
-        public static bool IsValidGM1(this List<IDotsHalfEdge> halfEdges)
+        public static bool IsValidGM1(this List<IDotsHalfEdge> halfEdges, bool debug = false)
         {
             if (halfEdges.Count <= 2)
             {
-                print(
+                if (debug) print(
                     $"face consisting of [{string.Join(", ", halfEdges)}] is not valid because halfEdges.count <= 2");
                 return false;
             }
 
             if (halfEdges.All(he => halfEdges.Contains(he.Twin)))
             {
-                print($"face consisting of [{string.Join(", ", halfEdges)}] is not valid because it's a path");
+                if (debug) print($"face consisting of [{string.Join(", ", halfEdges)}] is not valid because it's a path");
                 return false;
             }
 
             if (!halfEdges.IsClockwise())
             {
-                print(
+                if (debug) print(
                     $"face consisting of [{string.Join(", ", halfEdges)}] is not valid because it's not clockwise");
                 return false;
             }
@@ -671,7 +671,7 @@ namespace DotsAndPolygons
         }
 
         public static bool IsValidGM2(this List<IDotsHalfEdge> halfEdges,
-            IEnumerable<IDotsVertex> allVerticesNotInAFace)
+            IEnumerable<IDotsVertex> allVerticesNotInAFace, bool debug = false)
         {
             if (!halfEdges.IsValidGM1()) return false;
 
@@ -681,7 +681,7 @@ namespace DotsAndPolygons
                 IsInside(originCoordinates, v.Coordinates)
             ))
             {
-                print(
+                if (debug) print(
                     $"face consisting of [{string.Join(", ", halfEdges)}] is not valid because it has a vertex inside");
                 return false;
             }
@@ -689,7 +689,7 @@ namespace DotsAndPolygons
             // Check whether face would be simple or not
             if (originCoordinates.Any(it => originCoordinates.Count(a => a == it) > 1))
             {
-                print($"face consisting of [{string.Join(", ", halfEdges)}] is not valid because it is not simple");
+                if (debug) print($"face consisting of [{string.Join(", ", halfEdges)}] is not valid because it is not simple");
                 return false;
             }
 

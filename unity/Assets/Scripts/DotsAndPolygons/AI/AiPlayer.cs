@@ -1,9 +1,4 @@
-﻿using DotsAndPolygons;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace DotsAndPolygons
 {
@@ -13,8 +8,10 @@ namespace DotsAndPolygons
         {
         }
 
-        public abstract (IDotsVertex, IDotsVertex) NextMove(IEnumerable<IDotsEdge> edges,
-            IEnumerable<IDotsHalfEdge> halfEdges,
-            HashSet<IDotsFace> faces, IEnumerable<IDotsVertex> vertices);
+        public abstract (IDotsVertex, IDotsVertex) NextMove(
+            HashSet<IDotsEdge> dotsEdges,
+            HashSet<IDotsHalfEdge> dotsHalfEdges,
+            HashSet<IDotsFace> faces, 
+            IEnumerable<IDotsVertex> vertices);
     }
 }
