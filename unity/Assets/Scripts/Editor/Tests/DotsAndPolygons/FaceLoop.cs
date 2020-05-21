@@ -72,8 +72,8 @@ namespace DotsAndPolygons.Tests
             HashSet<IDotsHalfEdge> edges = GetFullTriangle();
 
             IDotsHalfEdge ab = edges.First(it =>
-                Math.Abs(it.Origin.Coordinates[0]) < TOLERANCE &&
-                Math.Abs(it.Origin.Coordinates[1]) < TOLERANCE);
+                Math.Abs(it.Origin.Coordinates[0]) < BIETJE &&
+                Math.Abs(it.Origin.Coordinates[1]) < BIETJE);
 
 
             Assert.True(ab.IncidentFace == null ^ ab.Twin.IncidentFace == null); // Calculate face

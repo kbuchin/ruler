@@ -1,11 +1,11 @@
-﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
-using System;
-using System.Threading.Tasks;
-
-namespace DotsAndPolygons
+﻿namespace DotsAndPolygons
 {
+    using System.Threading.Tasks;
+    using System.Collections;
+    using System;
+    using System.Collections.Generic;
+    using UnityEngine;
+
     /// Author: Pim de Witte (pimdewitte.com) and contributors, https://github.com/PimDeWitte/UnityMainThreadDispatcher
     /// <summary>
     /// A thread-safe class which holds a queue with actions to execute on the next Update() method. It can be used to make calls to the main thread for

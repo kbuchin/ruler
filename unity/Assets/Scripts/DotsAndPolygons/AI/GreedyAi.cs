@@ -36,8 +36,9 @@ namespace DotsAndPolygons
 
                     if (HelperFunctions.EdgeIsPossible(a, b, edges, dotsFaces))
                     {
+                        List<IDotsVertex> disabled = new List<IDotsVertex>();
                         (IDotsFace face1, IDotsFace face2) = HelperFunctions.AddEdge(a, b, Convert.ToInt32(PlayerNumber),
-                            halfEdges, vertices, GameMode);
+                            halfEdges, vertices, GameMode, newlyDisabled: disabled);
 
                         var newEdge = new DotsEdge(new LineSegment(a.Coordinates, b.Coordinates));
                         edges.Add(newEdge);
@@ -62,7 +63,7 @@ namespace DotsAndPolygons
                             }
                         }
 
-                        CleanUp(halfEdges, a, b, face1, face2);
+                        CleanUp(halfEdges, a, b, face1, face2, disabled);
                         edges.Remove(newEdge);
                     }
                 }
@@ -88,21 +89,22 @@ namespace DotsAndPolygons
 
                     if (HelperFunctions.EdgeIsPossible(a, b, edges, dotsFaces))
                     {
+                        List<IDotsVertex> disabled = new List<IDotsVertex>();
                         (IDotsFace face1, IDotsFace face2) = HelperFunctions.AddEdge(
                             a,
                             b,
                             Convert.ToInt32(PlayerNumber),
                             halfEdges,
                             dots,
-                            GameMode
+                            GameMode,
+                            newlyDisabled: disabled 
                         );
                         float area = face1?.AreaMinusInner ?? 0.0f + face2?.AreaMinusInner ?? 0.0f;
                         if (area > maximalArea)
                         {
                             maximalArea = area;
                         }
-                        
-                        CleanUp(halfEdges, a, b, face1, face2);
+                        CleanUp(halfEdges, a, b, face1, face2, disabled);
 
                     }
                 }
@@ -112,11 +114,11 @@ namespace DotsAndPolygons
         }
 
         private static void CleanUp(HashSet<IDotsHalfEdge> halfEdges, IDotsVertex a, IDotsVertex b, 
-            IDotsFace created1, IDotsFace created2)
+            IDotsFace created1, IDotsFace created2, List<IDotsVertex> disabled)
         {
             IDotsHalfEdge toRemove = a.LeavingHalfEdges()
                 .FirstOrDefault(it => it.Destination.Equals(b));
-
+            disabled.ForEach(it => it.InFace = false);
             created1?.OuterComponentHalfEdges.ForEach(it => it.IncidentFace = null);
             created2?.OuterComponentHalfEdges.ForEach(it => it.IncidentFace = null);
             HelperFunctions.RemoveFromDCEL(toRemove);

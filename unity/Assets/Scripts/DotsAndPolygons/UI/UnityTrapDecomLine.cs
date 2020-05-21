@@ -15,7 +15,7 @@ namespace DotsAndPolygons
         public static GameObject CreateUnityTrapDecomLine(Vector2 point1, Vector2 point2,
             DotsController gameController)
         {
-            if (Math.Abs(point1.x - point2.x) < TOLERANCE && Math.Abs(point1.y - point2.y) < TOLERANCE)
+            if (Math.Abs(point1.x - point2.x) < BIETJE && Math.Abs(point1.y - point2.y) < BIETJE)
             {
                 return null;
             }

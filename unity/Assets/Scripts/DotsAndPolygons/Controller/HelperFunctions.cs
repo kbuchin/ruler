@@ -15,7 +15,7 @@ namespace DotsAndPolygons
 
     public static class HelperFunctions
     {
-        public const float TOLERANCE = .0001f;
+        public const float BIETJE = .0001f;
         public static void print(object message) => MonoBehaviour.print(message);
 
         public static float GetAreaOfAllInnerComponents(this IDotsFace dotsFace)
@@ -111,7 +111,7 @@ namespace DotsAndPolygons
                 endAlpha.x * endBeta.x + endAlpha.y * endBeta.y) * 180.0 / Math.PI;
 
             double result = (angle + 360.0) % 360.0;
-            return Math.Abs(result) < TOLERANCE ? 360.0 : result;
+            return Math.Abs(result) < BIETJE ? 360.0 : result;
         }
 
         /** returns angle between three vertices with the overlapping vertex between alpha and beta as the middle */
@@ -155,7 +155,7 @@ namespace DotsAndPolygons
                 endAlpha.x * endBeta.x + endAlpha.y * endBeta.y) * 180.0 / Math.PI;
 
             double result = (angle + 360.0) % 360.0;
-            return Math.Abs(result) < TOLERANCE ? 360.0 : result;
+            return Math.Abs(result) < BIETJE ? 360.0 : result;
         }
 
         public static bool EdgeAlreadyExists(IEnumerable<IDotsEdge> edges, IDotsVertex point1, IDotsVertex point2) =>
@@ -322,7 +322,8 @@ namespace DotsAndPolygons
             IEnumerable<IDotsVertex> allVertices,
             GameMode gameMode,
             [CanBeNull] DotsController mGameController = null,
-            [CanBeNull] TrapDecomRoot root = null
+            [CanBeNull] TrapDecomRoot root = null,
+            List<IDotsVertex> newlyDisabled = null
         )
         {
             // Add edge for current player and check if new face is created
@@ -387,7 +388,7 @@ namespace DotsAndPolygons
                 }
 
                 Dictionary<IDotsFace, IDotsHalfEdge> innerFaces =
-                    UpdateVerticesInFace(allVertices, newFace, trapFacesInsideNewFace, root);
+                    UpdateVerticesInFace(allVertices, newFace, trapFacesInsideNewFace, root, newlyDisabled);
                 // remove new face if it happened to be inside the inner faces (this should never happen)
                 innerFaces.Remove(newFace);
 
@@ -425,7 +426,7 @@ namespace DotsAndPolygons
                 }
 
                 Dictionary<IDotsFace, IDotsHalfEdge> innerFaces =
-                    UpdateVerticesInFace(allVertices, secondNewFace, trapFacesInsideNewFace, root);
+                    UpdateVerticesInFace(allVertices, secondNewFace, trapFacesInsideNewFace, root, newlyDisabled);
                 // remove new face if it happened to be inside the inner faces (this should never happen)
                 innerFaces.Remove(secondNewFace);
 
@@ -473,7 +474,7 @@ namespace DotsAndPolygons
         {
             float slopes = (v.y - u.y) * (w.x - v.x) - (v.x - u.x) * (w.y - v.y);
 
-            if (Math.Abs(slopes) < TOLERANCE) return 0f;
+            if (Math.Abs(slopes) < BIETJE) return 0f;
             return slopes > 0 ? 1 : 2;
         }
 
@@ -492,20 +493,20 @@ namespace DotsAndPolygons
             float TD4 = TurnDirection(v2, u2, u1);
 
             // General check
-            if (Math.Abs(TD1 - TD2) > TOLERANCE && Math.Abs(TD3 - TD4) > TOLERANCE) return true;
+            if (Math.Abs(TD1 - TD2) > BIETJE && Math.Abs(TD3 - TD4) > BIETJE) return true;
 
             // Colinear check 
             // v1, u1 and v2 are colinear and v2 lies on segment v1u1 
-            if (Math.Abs(TD1) < TOLERANCE && OnSeg(v1, v2, u1)) return true;
+            if (Math.Abs(TD1) < BIETJE && OnSeg(v1, v2, u1)) return true;
 
             // v1, u1 and v2 are colinear and u2 lies on segment v1u1 
-            if (Math.Abs(TD2) < TOLERANCE && OnSeg(v1, u2, u1)) return true;
+            if (Math.Abs(TD2) < BIETJE && OnSeg(v1, u2, u1)) return true;
 
             // v2, u2 and v1 are colinear and v1 lies on segment v2u2 
-            if (Math.Abs(TD3) < TOLERANCE && OnSeg(v2, v1, u2)) return true;
+            if (Math.Abs(TD3) < BIETJE && OnSeg(v2, v1, u2)) return true;
 
             // v2, u2 and u1 are colinear and u1 lies on segment v2u2 
-            if (Math.Abs(TD4) < TOLERANCE && OnSeg(v2, u1, u2)) return true;
+            if (Math.Abs(TD4) < BIETJE && OnSeg(v2, u1, u2)) return true;
 
             // Not interSEGting
             return false;
@@ -550,7 +551,7 @@ namespace DotsAndPolygons
                     // If vertex is colinear with line  
                     // segment 'iter-next', then check if it lies  
                     // on segment. If it does, return true, otherwise false 
-                    if (Math.Abs(TurnDirection(face[iter], vertex, face[next])) < TOLERANCE)
+                    if (Math.Abs(TurnDirection(face[iter], vertex, face[next])) < BIETJE)
                     {
                         return OnSeg(face[iter], vertex, face[next]);
                     }
@@ -569,7 +570,7 @@ namespace DotsAndPolygons
 
         // Given a newly created half edge hEdge, this method updates the inFace values of all vertices, returns any faces and their InnerComponents inside newly created face
         public static Dictionary<IDotsFace, IDotsHalfEdge> UpdateVerticesInFace(IEnumerable<IDotsVertex> allVertices,
-            IDotsFace newFace, IEnumerable<TrapFace> trapFacesInsideNewFace = null, ITrapDecomNode root = null)
+            IDotsFace newFace, IEnumerable<TrapFace> trapFacesInsideNewFace = null, ITrapDecomNode root = null, List<IDotsVertex> newlyDisabled = null)
         {
             // Initialize an empty list of vertices on the border of the new face
             var verticesOnBorder = new List<Vector2>();
@@ -607,7 +608,11 @@ namespace DotsAndPolygons
                     bool isInside = IsInside(verticesOnBorder, v.Coordinates); // excludes vertices on border
                     if (verticesOnBorder.Contains(v.Coordinates) && !LineCanBeDrawnFrom(v) || isInside)
                     {
-                        if (!v.OnHull) v.InFace = true;
+                        if (!v.OnHull)
+                        {
+                            v.InFace = true;
+                            newlyDisabled?.Add(v);
+                        }
                         if (isInside)
                             foreach (KeyValuePair<IDotsFace, IDotsHalfEdge> entry in v.GetNeighbouringFaces())
                                 if (!innerComponents.ContainsKey(entry.Key))

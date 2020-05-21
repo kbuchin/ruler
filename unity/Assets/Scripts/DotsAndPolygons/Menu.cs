@@ -9,6 +9,36 @@ namespace DotsAndPolygons
 
         [SerializeField] public Text Player2Text;
 
+        public void Start()
+        {
+            switch (Settings.Player1)
+            {
+                case PlayerType.GreedyAi:
+                    Player1Text.text = "P1: Greedy AI";
+                    break;
+                case PlayerType.Player:
+                    Player1Text.text = "P1: Player";
+                    break;
+                default:
+                    Player1Text.text = "P1: Player";
+                    break;
+
+            }
+
+            switch (Settings.Player2)
+            {
+                case PlayerType.GreedyAi:
+                    Player2Text.text = "P2: Greedy AI";
+                    break;
+                case PlayerType.Player:
+                    Player2Text.text = "P2: Player";
+                    break;
+                default:
+                    Player2Text.text = "P2: Player";
+                    break;
+            }
+        }
+
         public void TogglePlayer1()
         {
             switch (Settings.Player1)
