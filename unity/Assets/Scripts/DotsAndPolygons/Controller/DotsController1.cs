@@ -55,12 +55,14 @@ namespace DotsAndPolygons
             }
         }
 
-        public override void CheckSolution()
+        public override bool CheckSolutionOfGameState()
         {
             if (CheckHull())
             {
                 FinishLevel();
+                return true;
             }
+            return false;
         }
 
         public override void InitLevel()

@@ -314,7 +314,7 @@ namespace DotsAndPolygons
             new HashSet<IDotsHalfEdge> {dotsEdge.LeftPointingHalfEdge, dotsEdge.RightPointingHalfEdge};
 
         /** returns true if adding edge created a face */
-        public static float AddEdge(
+        public static (IDotsFace, IDotsFace) AddEdge(
             IDotsVertex a,
             IDotsVertex b,
             int currentPlayer,
@@ -322,8 +322,7 @@ namespace DotsAndPolygons
             IEnumerable<IDotsVertex> allVertices,
             GameMode gameMode,
             [CanBeNull] DotsController mGameController = null,
-            [CanBeNull] TrapDecomRoot root = null,
-            [CanBeNull] HashSet<IDotsFace> dotsFaces = null
+            [CanBeNull] TrapDecomRoot root = null
         )
         {
             // Add edge for current player and check if new face is created
@@ -370,7 +369,7 @@ namespace DotsAndPolygons
             IDotsFace newFace = CreateFaceLoop(incident, gameMode, allVerticesNotInAFace, mGameController);
             IDotsFace secondNewFace = CreateFaceLoop(twin, gameMode, allVerticesNotInAFace, mGameController);
 
-            if (newFace == null && secondNewFace == null) return 0.0f;
+            if (newFace == null && secondNewFace == null) return (null, null);
 
             if (newFace != null)
             {
@@ -408,8 +407,6 @@ namespace DotsAndPolygons
                         $"Area of new face = {newFace.Area}, with inner faces subtracted = {newFace.AreaMinusInner}");
                     mGameController.Faces.Add(newFace);
                 }
-
-                dotsFaces?.Add(newFace);
             }
 
             if (secondNewFace != null)
@@ -448,12 +445,8 @@ namespace DotsAndPolygons
                         $"Area of new face = {secondNewFace.Area}, with inner faces subtracted = {secondNewFace.AreaMinusInner}");
                     mGameController.Faces.Add(secondNewFace);
                 }
-
-                dotsFaces?.Add(secondNewFace);
             }
-
-            float totalArea = newFace?.AreaMinusInner ?? 0.0f + secondNewFace?.AreaMinusInner ?? 0.0f;
-            return totalArea;
+            return (newFace, secondNewFace);
         }
 
         // Given three colinear vertices u, v and w, this method checks whether vertex v is on line segment (u,w)

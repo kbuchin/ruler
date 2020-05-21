@@ -36,15 +36,15 @@ namespace DotsAndPolygons
 
                     if (HelperFunctions.EdgeIsPossible(a, b, edges, dotsFaces))
                     {
-                        float area = HelperFunctions.AddEdge(a, b, Convert.ToInt32(PlayerNumber),
-                            halfEdges, vertices, GameMode, dotsFaces: dotsFaces);
+                        (IDotsFace face1, IDotsFace face2) = HelperFunctions.AddEdge(a, b, Convert.ToInt32(PlayerNumber),
+                            halfEdges, vertices, GameMode);
 
                         var newEdge = new DotsEdge(new LineSegment(a.Coordinates, b.Coordinates));
                         edges.Add(newEdge);
 
-                        if (area > maximalArea)
+                        if (face1 != null || face2 != null)
                         {
-                            maximalArea = area;
+                            maximalArea = face1?.AreaMinusInner ?? 0.0f  + face2?.AreaMinusInner ?? 0.0f;
                             maxAreaA = a;
                             maxAreaB = b;
                             claimPossible = true;
@@ -62,7 +62,7 @@ namespace DotsAndPolygons
                             }
                         }
 
-                        CleanUp(halfEdges, a, b);
+                        CleanUp(halfEdges, a, b, face1, face2);
                         edges.Remove(newEdge);
                     }
                 }
@@ -88,7 +88,7 @@ namespace DotsAndPolygons
 
                     if (HelperFunctions.EdgeIsPossible(a, b, edges, dotsFaces))
                     {
-                        float area = HelperFunctions.AddEdge(
+                        (IDotsFace face1, IDotsFace face2) = HelperFunctions.AddEdge(
                             a,
                             b,
                             Convert.ToInt32(PlayerNumber),
@@ -96,13 +96,14 @@ namespace DotsAndPolygons
                             dots,
                             GameMode
                         );
-                        
+                        float area = face1?.AreaMinusInner ?? 0.0f + face2?.AreaMinusInner ?? 0.0f;
                         if (area > maximalArea)
                         {
                             maximalArea = area;
                         }
                         
-                        CleanUp(halfEdges, a, b);
+                        CleanUp(halfEdges, a, b, face1, face2);
+
                     }
                 }
             }
@@ -110,14 +111,18 @@ namespace DotsAndPolygons
             return maximalArea;
         }
 
-        private static void CleanUp(HashSet<IDotsHalfEdge> halfEdges, IDotsVertex a, IDotsVertex b)
+        private static void CleanUp(HashSet<IDotsHalfEdge> halfEdges, IDotsVertex a, IDotsVertex b, 
+            IDotsFace created1, IDotsFace created2)
         {
             IDotsHalfEdge toRemove = a.LeavingHalfEdges()
                 .FirstOrDefault(it => it.Destination.Equals(b));
 
+            created1?.OuterComponentHalfEdges.ForEach(it => it.IncidentFace = null);
+            created2?.OuterComponentHalfEdges.ForEach(it => it.IncidentFace = null);
             HelperFunctions.RemoveFromDCEL(toRemove);
             halfEdges.Remove(toRemove);
             halfEdges.Remove(toRemove.Twin);
+            
         }
 
         public override (IDotsVertex, IDotsVertex) NextMove(HashSet<IDotsEdge> edges,

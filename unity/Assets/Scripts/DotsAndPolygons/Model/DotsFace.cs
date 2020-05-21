@@ -18,8 +18,10 @@ namespace DotsAndPolygons
             {
                 var visitedHalfEdges = new List<IDotsHalfEdge>();
                 IDotsHalfEdge currentHalfEdge = OuterComponent.Next;
-                while (true)
+                int count = 0;
+                while (count < 10000)
                 {
+                    count++;
                     if (currentHalfEdge == OuterComponent)
                     {
                         visitedHalfEdges.Add(currentHalfEdge);
@@ -33,6 +35,7 @@ namespace DotsAndPolygons
                     }
                     else return null;
                 }
+                return null;
             }
         }
 

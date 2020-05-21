@@ -88,12 +88,14 @@ namespace DotsAndPolygons
 
         public bool CheckArea() => Math.Abs(TotalAreaP1 + TotalAreaP2 - HullArea) < .001f;
 
-        public override void CheckSolution()
+        public override bool CheckSolutionOfGameState()
         {
-            if (CheckHull() && CheckArea())
+            if (CheckHull())
             {
                 FinishLevel();
+                return true;
             }
+            return false;
         }
 
         public override void InitLevel()

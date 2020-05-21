@@ -111,18 +111,21 @@ namespace DotsAndPolygons
         {
             AddVisualEdge(firstPoint, secondPoint);
 
-            bool faceCreated = AddEdge(firstPoint, secondPoint, CurrentPlayerValue, HalfEdges, Vertices,
-                CurrentGamemode, this, root) > 0.0f;
+            (IDotsFace face1, IDotsFace face2) = AddEdge(firstPoint, secondPoint, CurrentPlayerValue, HalfEdges, Vertices,
+                CurrentGamemode, this, root);
 
             RemoveTrapDecomLines();
             ShowTrapDecomLines();
 
-            if (!faceCreated)
+            bool finished = CheckSolutionOfGameState();
+            if (!finished && face1 == null && face2 == null)
             {
                 SwitchPlayer();
             }
-
-            CheckSolution();
+            else if(!finished && CurrentPlayer.PlayerType != PlayerType.Player)
+            {
+                MoveForAiPlayer();
+            }
         }
 
 
@@ -186,6 +189,10 @@ namespace DotsAndPolygons
             ).Area;
 
             UpdateVisualArea();
+            if (Player1.PlayerType != PlayerType.Player)
+            {
+                MoveForAiPlayer();
+            }
         }
 
         protected void ShowTrapDecomLines()
@@ -328,8 +335,13 @@ namespace DotsAndPolygons
             edgeMeshScript.CreateNewMesh(a_point1.Coordinates, a_point2.Coordinates);
         }
 
+        public void CheckSolution()
+        {
+            // C# is awesome
+        }
+
         // Enable advance button if "solution" is correct
-        public abstract void CheckSolution();
+        public abstract bool CheckSolutionOfGameState();
 
         public void FinishLevel()
         {
