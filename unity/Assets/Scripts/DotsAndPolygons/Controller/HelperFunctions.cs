@@ -15,7 +15,7 @@ namespace DotsAndPolygons
 
     public static class HelperFunctions
     {
-        public const float TOLERANCE = .0001f;
+        public const float BIETJE = .0001f;
         public static void print(object message) => MonoBehaviour.print(message);
 
         public static float GetAreaOfAllInnerComponents(this IDotsFace dotsFace)
@@ -80,7 +80,7 @@ namespace DotsAndPolygons
             if (current == null) return leavingEdges; // vertex does not have any edges
             do
             {
-                print($"current leaving half edge {current}");
+                // print($"current leaving half edge {current}");
                 leavingEdges.Add(current);
                 if (current.Twin.Next == current) break;
                 current = current.Twin.Next;
@@ -111,7 +111,7 @@ namespace DotsAndPolygons
                 endAlpha.x * endBeta.x + endAlpha.y * endBeta.y) * 180.0 / Math.PI;
 
             double result = (angle + 360.0) % 360.0;
-            return Math.Abs(result) < TOLERANCE ? 360.0 : result;
+            return Math.Abs(result) < BIETJE ? 360.0 : result;
         }
 
         /** returns angle between three vertices with the overlapping vertex between alpha and beta as the middle */
@@ -155,7 +155,7 @@ namespace DotsAndPolygons
                 endAlpha.x * endBeta.x + endAlpha.y * endBeta.y) * 180.0 / Math.PI;
 
             double result = (angle + 360.0) % 360.0;
-            return Math.Abs(result) < TOLERANCE ? 360.0 : result;
+            return Math.Abs(result) < BIETJE ? 360.0 : result;
         }
 
         public static bool EdgeAlreadyExists(IEnumerable<IDotsEdge> edges, IDotsVertex point1, IDotsVertex point2) =>
@@ -163,6 +163,46 @@ namespace DotsAndPolygons
                 edge.Segment.Point1 == point1.Coordinates && edge.Segment.Point2 == point2.Coordinates
                 || edge.Segment.Point2 == point1.Coordinates && edge.Segment.Point1 == point2.Coordinates
             );
+
+
+        public static void RemoveFromDCEL(IDotsHalfEdge halfEdgeToRemove)
+        {
+            IDotsHalfEdge twinHalfEdgeToRemove = halfEdgeToRemove.Twin;
+
+            List<IDotsHalfEdge> destinationLeavingHalfEdges = twinHalfEdgeToRemove.Origin.LeavingHalfEdges()
+                .Where(it => !it.Equals(twinHalfEdgeToRemove))
+                .ToList();
+
+            if (destinationLeavingHalfEdges.Any())
+            {
+                twinHalfEdgeToRemove.Prev.Next = halfEdgeToRemove.Next;
+                halfEdgeToRemove.Next.Prev = twinHalfEdgeToRemove.Prev;
+            }
+
+            IDotsVertex dest = twinHalfEdgeToRemove.Origin;
+            if (twinHalfEdgeToRemove.Equals(dest.IncidentEdge))
+            {
+                dest.IncidentEdge = destinationLeavingHalfEdges.FirstOrDefault();
+            }
+            
+            
+            List<IDotsHalfEdge> originLeavingHalfEdges = halfEdgeToRemove.Origin.LeavingHalfEdges()
+                .Where(it => !it.Equals(halfEdgeToRemove))
+                .ToList();
+
+            if (originLeavingHalfEdges.Any())
+            {
+                halfEdgeToRemove.Prev.Next = twinHalfEdgeToRemove.Next;
+                twinHalfEdgeToRemove.Next.Prev = halfEdgeToRemove.Prev;
+            }
+
+            IDotsVertex orig = halfEdgeToRemove.Origin;
+            if (halfEdgeToRemove.Equals(orig.IncidentEdge))
+            {
+                orig.IncidentEdge = originLeavingHalfEdges.FirstOrDefault();
+            }
+
+        }
 
         // by jolan
         public static void AssignNextAndPrev(IDotsHalfEdge newHalfEdge)
@@ -266,17 +306,24 @@ namespace DotsAndPolygons
         public enum GameMode
         {
             GameMode1,
-            GameMode2
+            GameMode2,
+            GameMode3
         }
 
         public static HashSet<IDotsHalfEdge> HalfEdges(this IDotsEdge dotsEdge) =>
             new HashSet<IDotsHalfEdge> {dotsEdge.LeftPointingHalfEdge, dotsEdge.RightPointingHalfEdge};
 
         /** returns true if adding edge created a face */
-        public static bool AddEdge(IDotsVertex a, IDotsVertex b, int currentPlayer,
+        public static (IDotsFace, IDotsFace) AddEdge(
+            IDotsVertex a,
+            IDotsVertex b,
+            int currentPlayer,
             HashSet<IDotsHalfEdge> m_halfEdges,
-            IEnumerable<IDotsVertex> allVertices, GameMode gameMode, [CanBeNull] DotsController mGameController = null,
-            [CanBeNull] TrapDecomRoot root = null
+            IEnumerable<IDotsVertex> allVertices,
+            GameMode gameMode,
+            [CanBeNull] DotsController mGameController = null,
+            [CanBeNull] TrapDecomRoot root = null,
+            List<IDotsVertex> newlyDisabled = null
         )
         {
             // Add edge for current player and check if new face is created
@@ -301,7 +348,7 @@ namespace DotsAndPolygons
                 leftPointing = incident;
             }
 
-            TrapDecomHelper.Insert(root, new DotsEdge(leftPointing, rightPointing));
+            if (root != null) TrapDecomHelper.Insert(root, new DotsEdge(leftPointing, rightPointing));
 
             AssignNextAndPrev(incident); // Also assigns twin
 
@@ -323,7 +370,7 @@ namespace DotsAndPolygons
             IDotsFace newFace = CreateFaceLoop(incident, gameMode, allVerticesNotInAFace, mGameController);
             IDotsFace secondNewFace = CreateFaceLoop(twin, gameMode, allVerticesNotInAFace, mGameController);
 
-            if (newFace == null && secondNewFace == null) return false;
+            if (newFace == null && secondNewFace == null) return (null, null);
 
             if (newFace != null)
             {
@@ -341,16 +388,16 @@ namespace DotsAndPolygons
                 }
 
                 Dictionary<IDotsFace, IDotsHalfEdge> innerFaces =
-                    UpdateVerticesInFace(allVertices, newFace, trapFacesInsideNewFace, root);
+                    UpdateVerticesInFace(allVertices, newFace, trapFacesInsideNewFace, root, newlyDisabled);
                 // remove new face if it happened to be inside the inner faces (this should never happen)
                 innerFaces.Remove(newFace);
 
-                print("Inner faces");
-                foreach (KeyValuePair<IDotsFace, IDotsHalfEdge> entry in innerFaces)
-                {
-                    print(
-                        $"Face area: {entry.Key.Area}, inner component edge: [{entry.Value.Origin.Coordinates}, {entry.Value.Destination.Coordinates}]");
-                }
+                // print("Inner faces");
+                // foreach (KeyValuePair<IDotsFace, IDotsHalfEdge> entry in innerFaces)
+                // {
+                //     print(
+                //         $"Face area: {entry.Key.Area}, inner component edge: [{entry.Value.Origin.Coordinates}, {entry.Value.Destination.Coordinates}]");
+                // }
 
                 newFace.InnerComponents = innerFaces.Values.ToList();
                 if (mGameController != null)
@@ -379,7 +426,7 @@ namespace DotsAndPolygons
                 }
 
                 Dictionary<IDotsFace, IDotsHalfEdge> innerFaces =
-                    UpdateVerticesInFace(allVertices, secondNewFace, trapFacesInsideNewFace, root);
+                    UpdateVerticesInFace(allVertices, secondNewFace, trapFacesInsideNewFace, root, newlyDisabled);
                 // remove new face if it happened to be inside the inner faces (this should never happen)
                 innerFaces.Remove(secondNewFace);
 
@@ -400,8 +447,7 @@ namespace DotsAndPolygons
                     mGameController.Faces.Add(secondNewFace);
                 }
             }
-
-            return true;
+            return (newFace, secondNewFace);
         }
 
         // Given three colinear vertices u, v and w, this method checks whether vertex v is on line segment (u,w)
@@ -428,7 +474,7 @@ namespace DotsAndPolygons
         {
             float slopes = (v.y - u.y) * (w.x - v.x) - (v.x - u.x) * (w.y - v.y);
 
-            if (Math.Abs(slopes) < TOLERANCE) return 0f;
+            if (Math.Abs(slopes) < BIETJE) return 0f;
             return slopes > 0 ? 1 : 2;
         }
 
@@ -447,20 +493,20 @@ namespace DotsAndPolygons
             float TD4 = TurnDirection(v2, u2, u1);
 
             // General check
-            if (Math.Abs(TD1 - TD2) > TOLERANCE && Math.Abs(TD3 - TD4) > TOLERANCE) return true;
+            if (Math.Abs(TD1 - TD2) > BIETJE && Math.Abs(TD3 - TD4) > BIETJE) return true;
 
             // Colinear check 
             // v1, u1 and v2 are colinear and v2 lies on segment v1u1 
-            if (Math.Abs(TD1) < TOLERANCE && OnSeg(v1, v2, u1)) return true;
+            if (Math.Abs(TD1) < BIETJE && OnSeg(v1, v2, u1)) return true;
 
             // v1, u1 and v2 are colinear and u2 lies on segment v1u1 
-            if (Math.Abs(TD2) < TOLERANCE && OnSeg(v1, u2, u1)) return true;
+            if (Math.Abs(TD2) < BIETJE && OnSeg(v1, u2, u1)) return true;
 
             // v2, u2 and v1 are colinear and v1 lies on segment v2u2 
-            if (Math.Abs(TD3) < TOLERANCE && OnSeg(v2, v1, u2)) return true;
+            if (Math.Abs(TD3) < BIETJE && OnSeg(v2, v1, u2)) return true;
 
             // v2, u2 and u1 are colinear and u1 lies on segment v2u2 
-            if (Math.Abs(TD4) < TOLERANCE && OnSeg(v2, u1, u2)) return true;
+            if (Math.Abs(TD4) < BIETJE && OnSeg(v2, u1, u2)) return true;
 
             // Not interSEGting
             return false;
@@ -469,10 +515,10 @@ namespace DotsAndPolygons
         public static bool InterSEGting(LineSegment s1, LineSegment s2)
         {
             bool result = InterSEGting(s1.Point1, s1.Point2, s2.Point1, s2.Point2);
-            if (result)
-            {
-                print(s1 + " intersects " + s2);
-            }
+            // if (result)
+            // {
+            //     print(s1 + " intersects " + s2);
+            // }
 
             return result;
         }
@@ -505,7 +551,7 @@ namespace DotsAndPolygons
                     // If vertex is colinear with line  
                     // segment 'iter-next', then check if it lies  
                     // on segment. If it does, return true, otherwise false 
-                    if (Math.Abs(TurnDirection(face[iter], vertex, face[next])) < TOLERANCE)
+                    if (Math.Abs(TurnDirection(face[iter], vertex, face[next])) < BIETJE)
                     {
                         return OnSeg(face[iter], vertex, face[next]);
                     }
@@ -524,7 +570,7 @@ namespace DotsAndPolygons
 
         // Given a newly created half edge hEdge, this method updates the inFace values of all vertices, returns any faces and their InnerComponents inside newly created face
         public static Dictionary<IDotsFace, IDotsHalfEdge> UpdateVerticesInFace(IEnumerable<IDotsVertex> allVertices,
-            IDotsFace newFace, IEnumerable<TrapFace> trapFacesInsideNewFace = null, ITrapDecomNode root = null)
+            IDotsFace newFace, IEnumerable<TrapFace> trapFacesInsideNewFace = null, ITrapDecomNode root = null, List<IDotsVertex> newlyDisabled = null)
         {
             // Initialize an empty list of vertices on the border of the new face
             var verticesOnBorder = new List<Vector2>();
@@ -562,14 +608,18 @@ namespace DotsAndPolygons
                     bool isInside = IsInside(verticesOnBorder, v.Coordinates); // excludes vertices on border
                     if (verticesOnBorder.Contains(v.Coordinates) && !LineCanBeDrawnFrom(v) || isInside)
                     {
-                        if (!v.OnHull) v.InFace = true;
+                        if (!v.OnHull)
+                        {
+                            v.InFace = true;
+                            newlyDisabled?.Add(v);
+                        }
                         if (isInside)
                             foreach (KeyValuePair<IDotsFace, IDotsHalfEdge> entry in v.GetNeighbouringFaces())
                                 if (!innerComponents.ContainsKey(entry.Key))
                                     innerComponents[entry.Key] = entry.Value;
                     }
                 }
-                else // gamemode 1
+                else // gamemode 1, 3
                 {
                     bool isInside = !verticesOnBorder.Contains(v.Coordinates) &&
                                     trapFacesInsideNewFace.Any(it => it == root.query(v));
@@ -593,24 +643,24 @@ namespace DotsAndPolygons
                 (it.Destination.Coordinates.y + it.Origin.Coordinates.y)
             ).Sum() > 0;
 
-        public static bool IsValidGM1(this List<IDotsHalfEdge> halfEdges)
+        public static bool IsValidGM1(this List<IDotsHalfEdge> halfEdges, bool debug = false)
         {
             if (halfEdges.Count <= 2)
             {
-                print(
+                if (debug) print(
                     $"face consisting of [{string.Join(", ", halfEdges)}] is not valid because halfEdges.count <= 2");
                 return false;
             }
 
             if (halfEdges.All(he => halfEdges.Contains(he.Twin)))
             {
-                print($"face consisting of [{string.Join(", ", halfEdges)}] is not valid because it's a path");
+                if (debug) print($"face consisting of [{string.Join(", ", halfEdges)}] is not valid because it's a path");
                 return false;
             }
 
             if (!halfEdges.IsClockwise())
             {
-                print(
+                if (debug) print(
                     $"face consisting of [{string.Join(", ", halfEdges)}] is not valid because it's not clockwise");
                 return false;
             }
@@ -619,7 +669,7 @@ namespace DotsAndPolygons
         }
 
         public static bool IsValidGM2(this List<IDotsHalfEdge> halfEdges,
-            IEnumerable<IDotsVertex> allVerticesNotInAFace)
+            IEnumerable<IDotsVertex> allVerticesNotInAFace, bool debug = false)
         {
             if (!halfEdges.IsValidGM1()) return false;
 
@@ -629,7 +679,7 @@ namespace DotsAndPolygons
                 IsInside(originCoordinates, v.Coordinates)
             ))
             {
-                print(
+                if (debug) print(
                     $"face consisting of [{string.Join(", ", halfEdges)}] is not valid because it has a vertex inside");
                 return false;
             }
@@ -637,7 +687,7 @@ namespace DotsAndPolygons
             // Check whether face would be simple or not
             if (originCoordinates.Any(it => originCoordinates.Count(a => a == it) > 1))
             {
-                print($"face consisting of [{string.Join(", ", halfEdges)}] is not valid because it is not simple");
+                if (debug) print($"face consisting of [{string.Join(", ", halfEdges)}] is not valid because it is not simple");
                 return false;
             }
 
@@ -654,8 +704,7 @@ namespace DotsAndPolygons
             while (counter < 10000)
             {
                 counter++;
-                print(
-                    $"checking faceloop... Starting at [{halfEdge.Origin.Coordinates}, {halfEdge.Destination.Coordinates}] CurrentHalfEdge: [{currentHalfEdge.Origin.Coordinates}, {currentHalfEdge.Destination.Coordinates}]");
+                // print($"checking faceloop... Starting at [{halfEdge.Origin.Coordinates}, {halfEdge.Destination.Coordinates}] CurrentHalfEdge: [{currentHalfEdge.Origin.Coordinates}, {currentHalfEdge.Destination.Coordinates}]");
                 if (halfEdge == currentHalfEdge)
                 {
                     visitedHalfEdges.Add(currentHalfEdge);
@@ -670,8 +719,7 @@ namespace DotsAndPolygons
                             return null;
                     }
 
-                    print(
-                        $"Face created! face consists of: {string.Join("\n", visitedHalfEdges.Select(it => $"[{it.Origin.Coordinates} -> {it.Destination.Coordinates}]"))}");
+                    // print($"Face created! face consists of: {string.Join("\n", visitedHalfEdges.Select(it => $"[{it.Origin.Coordinates} -> {it.Destination.Coordinates}]"))}");
 
                     IDotsFace face;
                     if (mGameController != null)
@@ -840,10 +888,50 @@ namespace DotsAndPolygons
             clipper.Execute(ClipType.ctUnion, polyTree, PolyFillType.pftEvenOdd, PolyFillType.pftEvenOdd);
             return polyTree;
         }
-        
+
         public static void ForEach<T>(this IEnumerable<T> iEnumerable, Action<T> action)
         {
             foreach (T x in iEnumerable) action(x);
+        }
+
+        public static bool EdgeIsPossible(IDotsVertex p1, IDotsVertex p2, IEnumerable<IDotsEdge> edges,
+            IEnumerable<IDotsFace> faces)
+        {
+            if (p2 == null)
+            {
+                return false;
+            }
+
+            if (p1 == p2)
+            {
+                return false;
+            }
+            // use isInside method to see of middle of line lies in a face
+
+            if (faces.Where(it => it?.OuterComponentHalfEdges != null).Any(face =>
+                IsInside(
+                    face.OuterComponentVertices.Select(it => it.Coordinates).ToList(),
+                    new LineSegment(p1.Coordinates, p2.Coordinates).Midpoint
+                )
+            ))
+            {
+                return false;
+            }
+
+            if (EdgeAlreadyExists(edges, p1, p2))
+            {
+                return false;
+            }
+
+            if (InterSEGtsAny(
+                new LineSegment(p1.Coordinates, p2.Coordinates),
+                edges.Select(edge => edge.Segment)
+            ))
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

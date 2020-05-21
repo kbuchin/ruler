@@ -20,6 +20,11 @@ namespace DotsAndPolygons
                 leftPointingHalfEdge.Origin.Coordinates);
         }
 
+        public DotsEdge(LineSegment segment)
+        {
+            Segment = segment;
+        }
+
         public override string ToString() => $"{Segment}, Player: {Player}";
     }
 }

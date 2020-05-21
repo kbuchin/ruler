@@ -18,7 +18,7 @@ namespace DotsAndPolygons
     public class DotsController2 : DotsController
     {
         
-        private bool _showTrapDecomLines = false;
+        public override GameMode CurrentGamemode => GameMode.GameMode2;
 
         public void Update()
         {
@@ -45,108 +45,33 @@ namespace DotsAndPolygons
             }
             else // User let go of mouse button
             {
-                if (SecondPoint == null)
-                {
-                    print("SecondPoint was null");
-                }
-                else if (FirstPoint == SecondPoint)
-                {
-                    print("FirstPoint was same as SecondPoint");
-                }
-                // use isInside method to see of middle of line lies in a face
-                else if (Faces.Where(it => it?.OuterComponentHalfEdges != null).Any(face =>
-                    IsInside(
-                        face.OuterComponentVertices.Select(it => it.Coordinates).ToList(),
-                        new LineSegment(FirstPoint.Coordinates, SecondPoint.Coordinates).Midpoint
-                    )
-                ))
-                {
-                    print($"Line between {FirstPoint} and {SecondPoint} lies inside face");
-                }
-                else if (EdgeAlreadyExists(Edges, FirstPoint, SecondPoint))
-                {
-                    print("edge between first and second point already exists");
-                }
-                else if (InterSEGtsAny(
-                    new LineSegment(FirstPoint.Coordinates, SecondPoint.Coordinates),
-                    Edges.Select(edge => edge.Segment)
-                ))
-                {
-                    print(
-                        $"Edge between first and second point intersects something ({FirstPoint.Coordinates.x}, {FirstPoint.Coordinates.y}), ({SecondPoint.Coordinates.x}, {SecondPoint.Coordinates.y})");
-                }
-                else
-                {
-                    AddVisualEdge(FirstPoint, SecondPoint);
-                    
-                    bool faceCreated = AddEdge(FirstPoint, SecondPoint, CurrentPlayer, HalfEdges, Vertices,
-                        GameMode.GameMode2, this, root);
-
-                    RemoveTrapDecomLines();
-                    ShowTrapDecomLines();
-
-                    if (!faceCreated)
-                    {
-                        CurrentPlayer = CurrentPlayer == 1 ? 2 : 1;
-                        currentPlayerText.text = $"Go Player {CurrentPlayer}!";
-                        currentPlayerText.gameObject.GetComponentInParent<Image>().color =
-                            CurrentPlayer == 2 ? Color.blue : Color.red;
-                    }
-
-                    CheckSolution();
-                }
-
-                FirstPoint = null;
-                SecondPoint = null;
-                p1Line.enabled = false;
-                p2Line.enabled = false;
+                TryToPlaceLineSegment();
             }
         }
 
-
-        private void RemoveTrapDecomLines()
+        private void TryToPlaceLineSegment()
         {
-            foreach (GameObject line in lines)
+            if(EdgeIsPossible(FirstPoint, SecondPoint, Edges, Faces))
             {
-                Destroy(line);
+                DoMove(FirstPoint, SecondPoint);
             }
 
-            lines.Clear();
+            FirstPoint = null;
+            SecondPoint = null;
+            p1Line.enabled = false;
+            p2Line.enabled = false;
         }
 
-        private void ShowTrapDecomLines()
-        {
-            if (!_showTrapDecomLines) return;
-            faces = ExtractFaces(root.LeftChild, new List<TrapFace>(), 0);
-
-            foreach (TrapFace face in faces)
-            {
-                GameObject upper = UnityTrapDecomLine.CreateUnityTrapDecomLine(face.Upper.Segment, this);
-                if (upper != null)
-                    lines.Add(upper);
-
-                GameObject downer = UnityTrapDecomLine.CreateUnityTrapDecomLine(face.Downer.Segment, this);
-                if (downer != null)
-                    lines.Add(downer);
-
-                GameObject left = UnityTrapDecomLine.CreateUnityTrapDecomLine(face.Left, this);
-                if (left != null)
-                    lines.Add(left);
-
-                GameObject right = UnityTrapDecomLine.CreateUnityTrapDecomLine(face.Right, this);
-                if (right != null)
-                    lines.Add(right);
-            }
-        }
-        
         public bool CheckArea() => Math.Abs(TotalAreaP1 + TotalAreaP2 - HullArea) < .001f;
 
-        public override void CheckSolution()
+        public override bool CheckSolutionOfGameState()
         {
             if (CheckHull() && CheckArea())
             {
                 FinishLevel();
+                return true;
             }
+            return false;
         }
         
         public override void InitLevel()
@@ -155,12 +80,12 @@ namespace DotsAndPolygons
             
             AddDotsInGeneralPosition();
 
-            faces.Add(frame);
-            LineSegment left = new LineSegment(new Vector2(-6, 3), new Vector2(-6, -3));
-            LineSegment upper = new LineSegment(new Vector2(-6, 3), new Vector2(6, 3));
-            LineSegment right = new LineSegment(new Vector2(6, 3), new Vector2(6, -3));
-            LineSegment lower = new LineSegment(new Vector2(6, -3), new Vector2(-6, -3));
-            root = new TrapDecomRoot(frame);
+            //faces.Add(frame);
+            //LineSegment left = new LineSegment(new Vector2(-6, 3), new Vector2(-6, -3));
+            //LineSegment upper = new LineSegment(new Vector2(-6, 3), new Vector2(6, 3));
+            //LineSegment right = new LineSegment(new Vector2(6, 3), new Vector2(6, -3));
+            //LineSegment lower = new LineSegment(new Vector2(6, -3), new Vector2(-6, -3));
+            //root = new TrapDecomRoot(frame);
         }
     }
 }

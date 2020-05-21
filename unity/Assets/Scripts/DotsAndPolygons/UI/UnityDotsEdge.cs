@@ -17,7 +17,7 @@ namespace DotsAndPolygons
         private void Awake()
         {
             _mGameController = FindObjectOfType<DotsController>();
-            Player = _mGameController.CurrentPlayer;
+            Player = _mGameController.CurrentPlayerValue;
         }
         
         public override string ToString() => $"{Segment}, Player: {Player}";

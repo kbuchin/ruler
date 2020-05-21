@@ -37,8 +37,8 @@ public class TrapDecomHelper
             FloatInterval interval = leftNeighOldFace.Right.YInterval.Intersect(newFace.Left.YInterval);
             int updater =
                 leftNeighOldFace.RightNeighBours.FindIndex(rightNeigh => rightNeigh.Equals(currentOldLeftFace));
-            if (updater != -1 && Math.Abs(leftNeighOldFace.Rightpoint.x - newFace.Leftpoint.x) < TOLERANCE &&
-                interval != null && Math.Abs(interval.Min - interval.Max) > TOLERANCE)
+            if (updater != -1 && Math.Abs(leftNeighOldFace.Rightpoint.x - newFace.Leftpoint.x) < BIETJE &&
+                interval != null && Math.Abs(interval.Min - interval.Max) > BIETJE)
             {
                 leftNeighOldFace.RightNeighBours[updater] = newFace;
                 newFace.LeftNeighbours.Add(leftNeighOldFace);
@@ -51,8 +51,8 @@ public class TrapDecomHelper
             FloatInterval interval = rightNeighOldFace.Left.YInterval.Intersect(newFace.Right.YInterval);
             int updater =
                 rightNeighOldFace.LeftNeighbours.FindIndex(leftNeigh => leftNeigh.Equals(currentOldRightFace));
-            if (updater != -1 && Math.Abs(rightNeighOldFace.Leftpoint.x - newFace.Rightpoint.x) < TOLERANCE &&
-                interval != null && Math.Abs(interval.Min - interval.Max) > TOLERANCE)
+            if (updater != -1 && Math.Abs(rightNeighOldFace.Leftpoint.x - newFace.Rightpoint.x) < BIETJE &&
+                interval != null && Math.Abs(interval.Min - interval.Max) > BIETJE)
             {
                 rightNeighOldFace.LeftNeighbours[updater] = newFace;
                 newFace.RightNeighBours.Add(rightNeighOldFace);
@@ -78,7 +78,7 @@ public class TrapDecomHelper
             diffVec = left - right;
 
         diffVec = diffVec.normalized;
-        diffVec.Scale(new Vector2(0.01f, 0.01f));
+        diffVec.Scale(new Vector2(HelperFunctions.BIETJE, HelperFunctions.BIETJE));
 
         if (isLeftPoint)
             return new DotsVertex(left + diffVec);
@@ -266,7 +266,7 @@ public class TrapDecomHelper
         }
         else
         {
-            var start = 0;
+            int start = 0;
             // leftface left of leftpoint of new line
             if (upperFaces[i_upper].Equals(lowerFaces[i_lower]))
             {
@@ -340,14 +340,12 @@ public class TrapDecomHelper
                 if (i_upper < upperFaces.Count)
                 {
                     ITrapDecomNode newlineNode = new TrapDecomLine(newline);
-
                     newlineNode.RightChild = upperFaces[i_upper];
                     newlineNode.LeftChild = lowerFaces[i_lower];
 
                     upperFaces[i_upper].AddParent(newlineNode);
                     lowerFaces[i_lower].AddParent(newlineNode);
-
-                    ((TrapFace) neighbours[neighbours.Count - 1]).Update(newlineNode);
+                    ((TrapFace)neighbours[neighbours.Count - 1]).Update(newlineNode);
                 }
             }
         }
@@ -359,7 +357,11 @@ public class TrapDecomHelper
     public static List<ITrapDecomNode> ExtractNeighbours(TrapFace start, TrapFace end, List<ITrapDecomNode> result,
         LineSegment newLine)
     {
-        if (start.Equals(end))
+        if(start == null || end == null)
+        {
+            return result;
+        }
+        if (Equals(start, end))
         {
             result.Add(end);
             return result;

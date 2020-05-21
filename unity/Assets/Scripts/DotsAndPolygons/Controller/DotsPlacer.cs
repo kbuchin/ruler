@@ -138,7 +138,7 @@ namespace DotsAndPolygons
             while (true)
             {
                 // PrintFace(dotsController, intermediate);
-                MonoBehaviour.print(intermediate.ToString(""));
+                //MonoBehaviour.print(intermediate.ToString(""));
                 if (!intermediate.Childs.Any())
                 {
                     if (intermediate.IsHole)

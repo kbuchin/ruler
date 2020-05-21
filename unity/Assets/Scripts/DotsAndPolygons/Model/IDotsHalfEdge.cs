@@ -42,5 +42,7 @@ namespace DotsAndPolygons
             string name = null);
 
         string ToString();
+
+        IDotsHalfEdge Clone();
     }
 }
