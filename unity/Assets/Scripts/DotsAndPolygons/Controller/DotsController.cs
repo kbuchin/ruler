@@ -12,6 +12,8 @@ using Util.Geometry.Polygon;
 
 namespace DotsAndPolygons
 {
+    using System.Collections;
+    using System.Threading;
     using static HelperFunctions;
 
     public abstract class DotsController : MonoBehaviour, IController
@@ -96,21 +98,42 @@ namespace DotsAndPolygons
             }
         }
 
+        private void MoveAiPlayerForThread()
+        {
+            (IDotsVertex a, IDotsVertex b) = (CurrentPlayer as AiPlayer)
+                    .NextMove(Edges, HalfEdges, Faces, Vertices);
+            
+            UnityMainThreadDispatcher.Instance().Enqueue(RunPostUpdate(DoMove,a,b));
+            
+        }
+
+        IEnumerator RunPostUpdate(Action<IDotsVertex, IDotsVertex> _method, IDotsVertex a, IDotsVertex b)
+        {
+            // If RunOnMainThread() is called in a secondary thread,
+            // this coroutine will start on the secondary thread
+            // then yield until the end of the frame on the main thread
+            yield return null;
+
+            _method(a,b);
+        }
+
         public void MoveForAiPlayer()
         {
             if (CurrentPlayer.PlayerType != PlayerType.Player)
             {
-                (IDotsVertex a, IDotsVertex b) = (CurrentPlayer as AiPlayer)
-                    .NextMove(Edges, HalfEdges, Faces, Vertices);
+                Thread InstanceCaller = new Thread(
+                    new ThreadStart(MoveAiPlayerForThread));
 
-                DoMove(a, b);
+                // Start the thread.
+                InstanceCaller.Start();
+                
             }
         }
 
         public void DoMove(IDotsVertex firstPoint, IDotsVertex secondPoint)
         {
             AddVisualEdge(firstPoint, secondPoint);
-
+            
             (IDotsFace face1, IDotsFace face2) = AddEdge(firstPoint, secondPoint, CurrentPlayerValue, HalfEdges, Vertices,
                 CurrentGamemode, this, root);
 
