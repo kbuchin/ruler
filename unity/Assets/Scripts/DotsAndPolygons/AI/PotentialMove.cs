@@ -19,6 +19,19 @@ namespace DotsAndPolygons
 
         public abstract float GetValue();
     }
+    
+    public sealed class ValueMove : PotentialMove
+    {
+        public float BestValue { get; set; }
+        public ValueMove(float bestValue, IDotsVertex A, IDotsVertex B) : base(A, B)
+        {
+            BestValue = bestValue;
+        }
+        public override float GetValue() => BestValue;
+
+        public override string ToString() => $"AreaMove(MaxArea = {BestValue}, A = {A}, B = {B})";
+    }
+    
 
     public sealed class AreaMove : PotentialMove
     {

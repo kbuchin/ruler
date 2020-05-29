@@ -16,7 +16,10 @@ namespace DotsAndPolygons
     public static class HelperFunctions
     {
         public const float BIETJE = .00001f;
-        public static void print(object message) => MonoBehaviour.print(message);
+        public static void print(object message, bool debug = false) // If you want print statements set debug = true
+        {
+            if (debug) MonoBehaviour.print(message);
+        }
 
         public static float GetAreaOfAllInnerComponents(this IDotsFace dotsFace)
         {
@@ -430,12 +433,12 @@ namespace DotsAndPolygons
                 // remove new face if it happened to be inside the inner faces (this should never happen)
                 innerFaces.Remove(secondNewFace);
 
-                print("Inner faces");
-                foreach (KeyValuePair<IDotsFace, IDotsHalfEdge> entry in innerFaces)
-                {
-                    print(
-                        $"Face area: {entry.Key.Area}, inner component edge: [{entry.Value.Origin.Coordinates}, {entry.Value.Destination.Coordinates}]");
-                }
+                // print("Inner faces");
+                // foreach (KeyValuePair<IDotsFace, IDotsHalfEdge> entry in innerFaces)
+                // {
+                //     print(
+                //         $"Face area: {entry.Key.Area}, inner component edge: [{entry.Value.Origin.Coordinates}, {entry.Value.Destination.Coordinates}]");
+                // }
 
                 secondNewFace.InnerComponents = innerFaces.Values.ToList();
                 if (mGameController != null)
@@ -847,7 +850,7 @@ namespace DotsAndPolygons
         {
             if (!collection.Any()) throw new Exception("Collection was empty");
             int randomPos = GenerateRandomInt(0, collection.Count());
-            MonoBehaviour.print($"Retrieving element at index {randomPos}");
+            print($"Retrieving element at index {randomPos}");
             return collection.ElementAt(randomPos);
         }
 

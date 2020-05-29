@@ -86,7 +86,7 @@ namespace DotsAndPolygons
 
         public void AddNewPoints(int amount)
         {
-            for (var i = 0; i < amount; i++) AddNewPoint();
+            for (var i = 0; i < amount - 1; i++) AddNewPoint();
         }
 
         public void PrintAvailableArea(DotsController dotsController, HashSet<GameObject> faces)

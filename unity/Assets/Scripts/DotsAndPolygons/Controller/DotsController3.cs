@@ -46,11 +46,11 @@ namespace DotsAndPolygons
             {
                 if (SecondPoint == null)
                 {
-                    print("SecondPoint was null");
+                    HelperFunctions.print("SecondPoint was null");
                 }
                 else if (FirstPoint == SecondPoint)
                 {
-                    print("FirstPoint was same as SecondPoint");
+                    HelperFunctions.print("FirstPoint was same as SecondPoint");
                 }
                 // use isInside method to see of middle of line lies in a face
                 else if (Faces.Where(it => it?.OuterComponentHalfEdges != null).Any(face =>
@@ -60,18 +60,18 @@ namespace DotsAndPolygons
                     )
                 ))
                 {
-                    print($"Line between {FirstPoint} and {SecondPoint} lies inside face");
+                    HelperFunctions.print($"Line between {FirstPoint} and {SecondPoint} lies inside face");
                 }
                 else if (EdgeAlreadyExists(Edges, FirstPoint, SecondPoint))
                 {
-                    print("edge between first and second point already exists");
+                    HelperFunctions.print("edge between first and second point already exists");
                 }
                 else if (InterSEGtsAny(
                     new LineSegment(FirstPoint.Coordinates, SecondPoint.Coordinates),
                     Edges.Select(edge => edge.Segment)
                 ))
                 {
-                    print(
+                    HelperFunctions.print(
                         $"Edge between first and second point intersects something ({FirstPoint.Coordinates.x}, {FirstPoint.Coordinates.y}), ({SecondPoint.Coordinates.x}, {SecondPoint.Coordinates.y})");
                 }
                 else

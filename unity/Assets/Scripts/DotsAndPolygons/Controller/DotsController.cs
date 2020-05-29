@@ -36,7 +36,7 @@ namespace DotsAndPolygons
         [SerializeField] public bool AiEnabled;
         [SerializeField] public bool p1Ai;
 
-        protected int numberOfDots = 20;
+        protected int numberOfDots = 6; // TODO
         private float minX = -8.0f;
         private float maxX = 8.0f;
         private float minY = -3.5f;
@@ -101,10 +101,9 @@ namespace DotsAndPolygons
         private void MoveAiPlayerForThread()
         {
             (IDotsVertex a, IDotsVertex b) = (CurrentPlayer as AiPlayer)
-                    .NextMove(Edges, HalfEdges, Faces, Vertices);
-            
-            UnityMainThreadDispatcher.Instance().Enqueue(RunPostUpdate(DoMove,a,b));
-            
+                .NextMove(Edges, HalfEdges, Faces, Vertices);
+
+            UnityMainThreadDispatcher.Instance().Enqueue(RunPostUpdate(DoMove, a, b));
         }
 
         IEnumerator RunPostUpdate(Action<IDotsVertex, IDotsVertex> _method, IDotsVertex a, IDotsVertex b)
@@ -114,7 +113,7 @@ namespace DotsAndPolygons
             // then yield until the end of the frame on the main thread
             yield return null;
 
-            _method(a,b);
+            _method(a, b);
         }
 
         public void MoveForAiPlayer()
@@ -126,15 +125,15 @@ namespace DotsAndPolygons
 
                 // Start the thread.
                 InstanceCaller.Start();
-                
             }
         }
 
         public void DoMove(IDotsVertex firstPoint, IDotsVertex secondPoint)
         {
             AddVisualEdge(firstPoint, secondPoint);
-            
-            (IDotsFace face1, IDotsFace face2) = AddEdge(firstPoint, secondPoint, CurrentPlayerValue, HalfEdges, Vertices,
+
+            (IDotsFace face1, IDotsFace face2) = AddEdge(firstPoint, secondPoint, CurrentPlayerValue, HalfEdges,
+                Vertices,
                 CurrentGamemode, this, root);
 
             RemoveTrapDecomLines();
@@ -145,7 +144,7 @@ namespace DotsAndPolygons
             {
                 SwitchPlayer();
             }
-            else if(!finished && CurrentPlayer.PlayerType != PlayerType.Player)
+            else if (!finished && CurrentPlayer.PlayerType != PlayerType.Player)
             {
                 MoveForAiPlayer();
             }
@@ -169,30 +168,12 @@ namespace DotsAndPolygons
         protected void Start()
         {
             // Assign players
-            // todo fix game mode parameter
-            switch (Settings.Player1)
-            {
-                case PlayerType.Player:
-                    Player1 = new DotsPlayer(PlayerNumber.Player1, PlayerType.Player, CurrentGamemode);
-                    break;
-                case PlayerType.GreedyAi:
-                    Player1 = new GreedyAi(PlayerNumber.Player1, CurrentGamemode);
-                    break;
-            }
-
-            switch (Settings.Player2)
-            {
-                case PlayerType.Player:
-                    Player2 = new DotsPlayer(PlayerNumber.Player2, PlayerType.Player, CurrentGamemode);
-                    break;
-                case PlayerType.GreedyAi:
-                    Player2 = new GreedyAi(PlayerNumber.Player2, CurrentGamemode);
-                    break;
-            }
-
+            Player1 = Settings.Player1.CreatePlayer(PlayerNumber.Player1, CurrentGamemode);
+            Player2 = Settings.Player2.CreatePlayer(PlayerNumber.Player2, CurrentGamemode);
+            
             CurrentPlayer = Player1;
-
-            print($"Starting game with Player1 as {Player1.PlayerType} and Player2 as {Player2.PlayerType}");
+            
+            HelperFunctions.print($"Starting game with Player1 as {Player1.PlayerType} and Player2 as {Player2.PlayerType}");
 
             // get unity objects
             Vertices = new HashSet<IDotsVertex>();
@@ -264,7 +245,7 @@ namespace DotsAndPolygons
                 if (dotsPlacer.Dots.Count > bestDots.Count) bestDots = dotsPlacer.Dots;
             }
 
-            print($"Number of placed dots: {bestDots.Count}");
+            HelperFunctions.print($"Number of placed dots: {bestDots.Count}");
 
             foreach (Vector2 dot in bestDots)
             {
@@ -393,8 +374,8 @@ namespace DotsAndPolygons
         // Check whether all points are contained, aka the outer hull is created, so the game ends
         public bool CheckHull()
         {
-            print($"Current hull: {Hull}");
-            print($"Current edges: {Edges}");
+            HelperFunctions.print($"Current hull: {Hull}");
+            HelperFunctions.print($"Current edges: {Edges}");
             IEnumerable<IDotsEdge> hullEdges = Edges.Where(edge => Hull.Any(hullEdge =>
                 hullEdge.Point1.Equals(edge.Segment.Point2) && hullEdge.Point2.Equals(edge.Segment.Point1)
                 || hullEdge.Equals(edge.Segment)));
@@ -408,7 +389,7 @@ namespace DotsAndPolygons
                 return new List<TrapFace>();
             }
 
-            print(current.GetType());
+            HelperFunctions.print(current.GetType());
             if (current.GetType() == typeof(TrapFace))
             {
                 return new List<TrapFace> {(TrapFace) current};

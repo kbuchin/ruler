@@ -25,8 +25,8 @@ namespace DotsAndPolygons.Tests
             };
 
             HashSet<LineSegment> hull = ConvexHullHelper.ComputeHull(vertices);
-            MonoBehaviour.print($"Hull size: {hull.Count}");
-            foreach (string s in hull.Select(it => it.ToString())) MonoBehaviour.print(s);
+            HelperFunctions.print($"Hull size: {hull.Count}");
+            foreach (string s in hull.Select(it => it.ToString())) HelperFunctions.print(s);
 
             Assert.True(
                 hull.Any(it => it.Equals(new LineSegment(a, b))) || hull.Any(it => it.Equals(new LineSegment(b, a)))
@@ -120,8 +120,8 @@ namespace DotsAndPolygons.Tests
             };
 
             HashSet<LineSegment> hull = ConvexHullHelper.ComputeHull(vertices);
-            MonoBehaviour.print($"Hull size: {hull.Count}");
-            foreach (string s in hull.Select(it => it.ToString())) MonoBehaviour.print(s);
+            HelperFunctions.print($"Hull size: {hull.Count}");
+            foreach (string s in hull.Select(it => it.ToString())) HelperFunctions.print(s);
 
             Assert.True(
                 hull.Any(it => it.Equals(new LineSegment(a, b))) || hull.Any(it => it.Equals(new LineSegment(b, a)))

@@ -29,7 +29,7 @@ namespace DotsAndPolygons
             {
                 for (int j = i + 1; j < end; j++)
                 {
-                    MonoBehaviour.print($"Calculating maximal area move, iteration {i}, {j}");
+                    // MonoBehaviour.print($"Calculating maximal area move, iteration {i}, {j}");
                     IDotsVertex a = vertices[i];
                     IDotsVertex b = vertices[j];
 
@@ -72,7 +72,7 @@ namespace DotsAndPolygons
                 {
                     for (int j = i + 1; j < end; j++)
                     {
-                        MonoBehaviour.print($"Calculating minimal move, iteration {i}, {j}");
+                        // MonoBehaviour.print($"Calculating minimal move, iteration {i}, {j}");
                         IDotsVertex a = vertices[i];
                         IDotsVertex b = vertices[j];
 
@@ -172,10 +172,10 @@ namespace DotsAndPolygons
         {
             IDotsVertex[] verticesArray = vertices.ToArray();
 
-            MonoBehaviour.print("Calculating next minimal move for greedy player");
+            HelperFunctions.print("Calculating next minimal move for greedy player");
             PotentialMove potentialMove = MinimalMove(0, verticesArray.Length, verticesArray, edges, halfEdges, faces);
 
-            MonoBehaviour.print($"PotentialMove: {potentialMove}");
+            HelperFunctions.print($"PotentialMove: {potentialMove}");
 
             return (potentialMove.A, potentialMove.B);
         }
