@@ -15,7 +15,7 @@ namespace DotsAndPolygons
 
     public static class HelperFunctions
     {
-        public const float BIETJE = .0001f;
+        public const float BIETJE = .00001f;
         public static void print(object message) => MonoBehaviour.print(message);
 
         public static float GetAreaOfAllInnerComponents(this IDotsFace dotsFace)

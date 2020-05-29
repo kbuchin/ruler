@@ -26,7 +26,7 @@ namespace DotsAndPolygons
         public HashSet<Vector2> Dots { get; } = new HashSet<Vector2>();
 
         // private readonly Paths _unavailableArea = new Paths();
-        private Paths _availableArea = new Paths();
+        private Paths _availableArea;
 
         public DotsPlacer(Rect bounds)
         {
@@ -34,11 +34,11 @@ namespace DotsAndPolygons
 
             // use bounding box to create the initial available area
             Path boundingBox = bounds.ToPathForClipper();
-            _clipper.Clear();
-            _clipper.AddPath(boundingBox, PolyType.ptClip, true);
-            _clipper.AddPath(boundingBox, PolyType.ptSubject, true);
-            _clipper.Execute(ClipType.ctUnion, _availableArea, PolyFillType.pftEvenOdd, PolyFillType.pftEvenOdd);
 
+            _availableArea = new Paths
+            {
+                boundingBox
+            };
 
             // generate first point
             float firstX = HelperFunctions.GenerateRandomFloat(bounds.xMin, bounds.xMax);
@@ -133,6 +133,7 @@ namespace DotsAndPolygons
             return new Vector2(randomX, randomY);
         }
 
+        // TODO can be non-recursive-like 
         private Vector2? GeneratePointFloat(PolyNode intermediate)
         {
             while (true)
@@ -166,8 +167,6 @@ namespace DotsAndPolygons
                     area = area < .01f ? 0f : area;
 
                     int areaInt = Mathf.CeilToInt(area * 100f);
-
-                    // MonoBehaviour.print($"MAG WELLUS: {area}|||||{areaInt}");
 
                     for (var i = 0; i < areaInt; i++) largeSet.Add(index);
                 }

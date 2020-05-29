@@ -28,7 +28,7 @@ namespace DotsAndPolygons
 
         private void OnMouseDown()
         {
-            if (InFace) return;
+            if (InFace || mController.CurrentPlayer.PlayerType != PlayerType.Player) return;
             mController.EnableDrawingLine();
             mController.FirstPoint = this;
             mController.SetDrawingLinePosition(0, Coordinates);
