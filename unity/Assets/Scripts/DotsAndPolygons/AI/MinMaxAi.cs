@@ -20,7 +20,7 @@ namespace DotsAndPolygons
 
         [CanBeNull]
         public ValueMove MinMaxMove(PlayerNumber player, IDotsVertex[] vertices, HashSet<IDotsEdge> edges,
-            HashSet<IDotsHalfEdge> halfEdges, HashSet<IDotsFace> dotsFaces, int currentDepth = 0)
+            HashSet<IDotsHalfEdge> halfEdges, HashSet<IDotsFace> dotsFaces, float alfa = float.MinValue, float beta = float.MaxValue, int currentDepth = 0)
         {
             float value = dotsFaces.Sum(x => x.Player == Convert.ToInt32(this.PlayerNumber) ? x.AreaMinusInner : -x.AreaMinusInner);
             if (currentDepth >= MaxDepth)
@@ -57,24 +57,38 @@ namespace DotsAndPolygons
                         {
                             //gameStateMove.BestValue += faceArea;
                             ValueMove deeperMoveSamePlayer = MinMaxMove(nextPlayer, vertices, edges, halfEdges,
-                                    dotsFaces, currentDepth + 1);
+                                    dotsFaces, alfa,beta, currentDepth + 1);
                             if (gameStateMove.BestValue < deeperMoveSamePlayer.BestValue)
                             {
                                 gameStateMove.A = a;
                                 gameStateMove.B = b;
                                 gameStateMove.BestValue = deeperMoveSamePlayer.BestValue;
+                                alfa = Math.Max(alfa, gameStateMove.BestValue);
+                                if(alfa >= beta)
+                                {
+                                    CleanUp(halfEdges, a, b, face1, face2, disabled, dotsFaces);
+                                    edges.Remove(newEdge);
+                                    goto EndLoop;
+                                }
                             }
                         }
                         else
                         {
                             //gameStateMove.BestValue -= faceArea;
                             ValueMove deeperMoveSamePlayer = MinMaxMove(nextPlayer, vertices, edges, halfEdges,
-                                    dotsFaces, currentDepth + 1);
+                                    dotsFaces, alfa, beta, currentDepth + 1);
                             if (gameStateMove.BestValue > deeperMoveSamePlayer.BestValue)
                             {
                                 gameStateMove.A = a;
                                 gameStateMove.B = b;
                                 gameStateMove.BestValue = deeperMoveSamePlayer.BestValue;
+                                beta = Math.Min(beta, gameStateMove.BestValue);
+                                if (beta <= alfa)
+                                {
+                                    CleanUp(halfEdges, a, b, face1, face2, disabled, dotsFaces);
+                                    edges.Remove(newEdge);
+                                    goto EndLoop;
+                                }
                             }
                         }
                         
@@ -83,7 +97,7 @@ namespace DotsAndPolygons
                     }                
                 }
             }
-            
+            EndLoop:;
             if(!movePossible)
             {
                 HelperFunctions.print("print move: " + value + " ");
