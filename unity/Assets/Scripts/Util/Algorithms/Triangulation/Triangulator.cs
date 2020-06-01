@@ -181,7 +181,7 @@
             var nextVertex = vertices[MathUtil.PositiveMod(index + 1, vertices.Count)];
 
             //Create triangle with diagonal
-            Debug.Assert(leftVertex != prevVertex && leftVertex != nextVertex && prevVertex != nextVertex);
+            //Debug.Assert(leftVertex != prevVertex && leftVertex != nextVertex && prevVertex != nextVertex);
 
             var triangle = new Triangle(prevVertex, leftVertex, nextVertex);
 

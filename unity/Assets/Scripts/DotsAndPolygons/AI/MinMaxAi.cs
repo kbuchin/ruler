@@ -4,13 +4,14 @@ using System.Linq;
 using JetBrains.Annotations;
 using UnityEngine;
 using Util.Geometry;
+using Util.Geometry.DCEL;
 using Random = System.Random;
 
 namespace DotsAndPolygons
 {
     public class MinMaxAi : AiPlayer
     {
-        private int MaxDepth = 2;
+        private int MaxDepth = 3;
 
         public MinMaxAi(PlayerNumber player, HelperFunctions.GameMode mode) : base(player,
             PlayerType.MinMaxAi, mode)
@@ -21,88 +22,73 @@ namespace DotsAndPolygons
         public ValueMove MinMaxMove(PlayerNumber player, IDotsVertex[] vertices, HashSet<IDotsEdge> edges,
             HashSet<IDotsHalfEdge> halfEdges, HashSet<IDotsFace> dotsFaces, int currentDepth = 0)
         {
-            var bestValueMove = new ValueMove(float.MinValue, null, null);
-
-            // first maximize area if able to create a face
-            // then run MinMaxMove again for same player
-            // does not increase depth
-            // first calculate possible max area
+            float value = dotsFaces.Sum(x => x.Player == Convert.ToInt32(this.PlayerNumber) ? x.AreaMinusInner : -x.AreaMinusInner);
+            if (currentDepth >= MaxDepth)
+            {
+                HelperFunctions.print("print move: " + value);
+                return new ValueMove(value, null, null);
+            }
+            bool movePossible = false;
+            var gameStateMove = new ValueMove(0.0f, null, null);
+            gameStateMove.BestValue = player.Equals(this.PlayerNumber) ? float.MinValue : float.MaxValue;
             for (int i = 0; i < vertices.Length - 1; i++)
             {
                 for (int j = i + 1; j < vertices.Length; j++)
                 {
-                    // MonoBehaviour.print($"Calculating maximal area move, iteration {i}, {j}");
                     IDotsVertex a = vertices[i];
                     IDotsVertex b = vertices[j];
-
                     if (HelperFunctions.EdgeIsPossible(a, b, edges, dotsFaces))
                     {
+                        movePossible = true;
                         List<IDotsVertex> disabled = new List<IDotsVertex>();
                         (IDotsFace face1, IDotsFace face2) = HelperFunctions.AddEdge(a, b,
-                            Convert.ToInt32(PlayerNumber),
+                            Convert.ToInt32(player),
                             halfEdges, vertices, GameMode, newlyDisabled: disabled);
-
                         if (face1 != null) dotsFaces.Add(face1);
                         if (face2 != null) dotsFaces.Add(face2);
+                        float faceArea = (face1?.AreaMinusInner ?? 0.0f) + (face2?.AreaMinusInner ?? 0.0f);
+                        PlayerNumber nextPlayer = faceArea > 0.0f ? player : player.Switch();  
 
                         var newEdge = new DotsEdge(new LineSegment(a.Coordinates, b.Coordinates));
                         edges.Add(newEdge);
+                        
 
-                        float newValue;
-
-                        if (face1 != null || face2 != null)
+                        if (player.Equals(this.PlayerNumber))
                         {
-                            float faceArea = (face1?.AreaMinusInner ?? 0.0f) + (face2?.AreaMinusInner ?? 0.0f);
-                            if (player == PlayerNumber)
-                                newValue = faceArea;
-                            else
-                                newValue = -faceArea;
-
-                            // GO DEEPER
-                            if (currentDepth < MaxDepth)
+                            //gameStateMove.BestValue += faceArea;
+                            ValueMove deeperMoveSamePlayer = MinMaxMove(nextPlayer, vertices, edges, halfEdges,
+                                    dotsFaces, currentDepth + 1);
+                            if (gameStateMove.BestValue < deeperMoveSamePlayer.BestValue)
                             {
-                                ValueMove deeperMoveSamePlayer = MinMaxMove(player, vertices, edges, halfEdges,
-                                    dotsFaces,
-                                    currentDepth);
-                                if (deeperMoveSamePlayer != null)
-                                {
-                                    newValue += deeperMoveSamePlayer.BestValue;
-                                }
+                                gameStateMove.A = a;
+                                gameStateMove.B = b;
+                                gameStateMove.BestValue = deeperMoveSamePlayer.BestValue;
                             }
                         }
                         else
                         {
-                            // GO DEEPER OTHER PLAYER
-                            if (currentDepth < MaxDepth)
+                            //gameStateMove.BestValue -= faceArea;
+                            ValueMove deeperMoveSamePlayer = MinMaxMove(nextPlayer, vertices, edges, halfEdges,
+                                    dotsFaces, currentDepth + 1);
+                            if (gameStateMove.BestValue > deeperMoveSamePlayer.BestValue)
                             {
-                                ValueMove deeperMoveOtherPlayer = MinMaxMove(player.Switch(), vertices, edges,
-                                    halfEdges,
-                                    dotsFaces, ++currentDepth);
-                                newValue = deeperMoveOtherPlayer?.BestValue ?? bestValueMove.BestValue;
-                            }
-                            else
-                            {
-                                newValue = bestValueMove.BestValue;
+                                gameStateMove.A = a;
+                                gameStateMove.B = b;
+                                gameStateMove.BestValue = deeperMoveSamePlayer.BestValue;
                             }
                         }
-
-                        if (bestValueMove.BestValue + newValue > bestValueMove.BestValue || bestValueMove.A == null || bestValueMove.B == null)
-                        {
-                            bestValueMove.BestValue += newValue;
-                            bestValueMove.A = a;
-                            bestValueMove.B = b;
-                        }
-
-
+                        
                         CleanUp(halfEdges, a, b, face1, face2, disabled, dotsFaces);
                         edges.Remove(newEdge);
-                    }
+                    }                
                 }
             }
-
-            if (bestValueMove.A == null || bestValueMove.B == null) return null;
-
-            return bestValueMove;
+            
+            if(!movePossible)
+            {
+                HelperFunctions.print("print move: " + value + " ");
+            }
+            return movePossible ? gameStateMove : new ValueMove(value, null, null);
         }
 
 

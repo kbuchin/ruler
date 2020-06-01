@@ -29,7 +29,7 @@ namespace DotsAndPolygons
         }
         public override float GetValue() => BestValue;
 
-        public override string ToString() => $"AreaMove(MaxArea = {BestValue}, A = {A}, B = {B})";
+        public override string ToString() => $"ValueMove(Value = {BestValue}, A = {A}, B = {B})";
     }
     
 

@@ -15,7 +15,7 @@ namespace DotsAndPolygons
 
     public static class HelperFunctions
     {
-        public const float BIETJE = .00001f;
+        public const float BIETJE = .0001f;
         public static void print(object message, bool debug = false) // If you want print statements set debug = true
         {
             if (debug) MonoBehaviour.print(message);
@@ -377,6 +377,7 @@ namespace DotsAndPolygons
 
             if (newFace != null)
             {
+                newFace.Player = currentPlayer;
                 // when in gamemode 1, find all newly created trap faces that lie inside the new dotsFace
                 List<TrapFace> trapFacesInsideNewFace = null;
                 if (gameMode == GameMode.GameMode1 && root != null)
@@ -415,6 +416,7 @@ namespace DotsAndPolygons
 
             if (secondNewFace != null)
             {
+                secondNewFace.Player = currentPlayer;
                 // when in gamemode 1, find all newly created trap faces that lie inside the new dotsFace
                 List<TrapFace> trapFacesInsideNewFace = null;
                 if (gameMode == GameMode.GameMode1 && root != null)
