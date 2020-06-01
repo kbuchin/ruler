@@ -11,7 +11,7 @@ namespace DotsAndPolygons
 {
     public class MinMaxAi : AiPlayer
     {
-        private int MaxDepth = 3;
+        private int MaxDepth = 4;
 
         public MinMaxAi(PlayerNumber player, HelperFunctions.GameMode mode) : base(player,
             PlayerType.MinMaxAi, mode)
@@ -47,8 +47,8 @@ namespace DotsAndPolygons
                         if (face1 != null) dotsFaces.Add(face1);
                         if (face2 != null) dotsFaces.Add(face2);
                         float faceArea = (face1?.AreaMinusInner ?? 0.0f) + (face2?.AreaMinusInner ?? 0.0f);
-                        PlayerNumber nextPlayer = faceArea > 0.0f ? player : player.Switch();  
-
+                        PlayerNumber nextPlayer = faceArea > 0.0f ? player : player.Switch();
+                        int newDepth = currentDepth + 1; //player != nextPlayer ? currentDepth + 1 : currentDepth;
                         var newEdge = new DotsEdge(new LineSegment(a.Coordinates, b.Coordinates));
                         edges.Add(newEdge);
                         
@@ -57,7 +57,7 @@ namespace DotsAndPolygons
                         {
                             //gameStateMove.BestValue += faceArea;
                             ValueMove deeperMoveSamePlayer = MinMaxMove(nextPlayer, vertices, edges, halfEdges,
-                                    dotsFaces, alfa,beta, currentDepth + 1);
+                                    dotsFaces, alfa,beta, newDepth);
                             if (gameStateMove.BestValue < deeperMoveSamePlayer.BestValue)
                             {
                                 gameStateMove.A = a;
@@ -76,7 +76,7 @@ namespace DotsAndPolygons
                         {
                             //gameStateMove.BestValue -= faceArea;
                             ValueMove deeperMoveSamePlayer = MinMaxMove(nextPlayer, vertices, edges, halfEdges,
-                                    dotsFaces, alfa, beta, currentDepth + 1);
+                                    dotsFaces, alfa, beta, newDepth);
                             if (gameStateMove.BestValue > deeperMoveSamePlayer.BestValue)
                             {
                                 gameStateMove.A = a;
