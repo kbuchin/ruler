@@ -166,14 +166,14 @@ namespace DotsAndPolygons
             halfEdges.Remove(toRemove.Twin);
         }
 
-        public override (DotsVertex, DotsVertex) NextMove(HashSet<DotsEdge> edges,
+        public override (DotsVertex, DotsVertex) NextMove(
+            HashSet<DotsEdge> edges,
             HashSet<DotsHalfEdge> halfEdges,
-            HashSet<DotsFace> faces, IEnumerable<DotsVertex> vertices)
+            HashSet<DotsFace> faces, 
+            HashSet<DotsVertex> vertices)
         {
-            DotsVertex[] verticesArray = vertices.ToArray();
-
             HelperFunctions.print("Calculating next minimal move for greedy player");
-            PotentialMove potentialMove = MinimalMove(0, verticesArray.Length, verticesArray, edges, halfEdges, faces);
+            PotentialMove potentialMove = MinimalMove(0, vertices.Count, vertices.ToArray(), edges, halfEdges, faces);
 
             HelperFunctions.print($"PotentialMove: {potentialMove}");
 

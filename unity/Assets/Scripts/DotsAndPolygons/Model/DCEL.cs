@@ -36,6 +36,13 @@ namespace DotsAndPolygons
                 stream.Position = 0;
                 var returner = (Dcel) b.Deserialize(stream);
                 stream.Close();
+                
+                // set references to og vertices
+                for (var i = 0; i < returner.Vertices.Length; i++)
+                {
+                    returner.Vertices[i].Original = Vertices[i];
+                }
+
                 return returner;
             }
         }

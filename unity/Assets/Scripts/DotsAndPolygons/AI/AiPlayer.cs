@@ -12,6 +12,6 @@ namespace DotsAndPolygons
             HashSet<DotsEdge> dotsEdges,
             HashSet<DotsHalfEdge> dotsHalfEdges,
             HashSet<DotsFace> faces, 
-            IEnumerable<DotsVertex> vertices);
+            HashSet<DotsVertex> vertices);
     }
 }

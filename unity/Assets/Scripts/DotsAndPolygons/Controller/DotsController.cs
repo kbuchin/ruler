@@ -100,32 +100,34 @@ namespace DotsAndPolygons
 
         private void MoveAiPlayerForThread()
         {
-            (DotsVertex a, DotsVertex b) = (CurrentPlayer as AiPlayer)
-                .NextMove(Edges.Select(x => x.DotsEdge).ToHashSet(), HalfEdges,
-                    Faces.Select(x => x.DotsFace).ToHashSet(), Vertices.Select(x => x.dotsVertex));
+            (DotsVertex a, DotsVertex b) = (CurrentPlayer as AiPlayer).NextMove(
+                Edges.Select(x => x.DotsEdge).ToHashSet(),
+                HalfEdges,
+                Faces.Select(x => x.DotsFace).ToHashSet(),
+                Vertices.Select(x => x.dotsVertex).ToHashSet()
+            );
 
             UnityMainThreadDispatcher.Instance().Enqueue(RunPostUpdate(DoMove, a, b));
         }
 
-        IEnumerator RunPostUpdate(Action<DotsVertex, DotsVertex> _method, DotsVertex a, DotsVertex b)
+        private IEnumerator RunPostUpdate(Action<DotsVertex, DotsVertex> method, DotsVertex a, DotsVertex b)
         {
             // If RunOnMainThread() is called in a secondary thread,
             // this coroutine will start on the secondary thread
             // then yield until the end of the frame on the main thread
             yield return null;
 
-            _method(a, b);
+            method(a, b);
         }
 
         public void MoveForAiPlayer()
         {
             if (CurrentPlayer.PlayerType != PlayerType.Player)
             {
-                Thread InstanceCaller = new Thread(
-                    new ThreadStart(MoveAiPlayerForThread));
+                Thread instanceCaller = new Thread(new ThreadStart(MoveAiPlayerForThread));
 
                 // Start the thread.
-                InstanceCaller.Start();
+                instanceCaller.Start();
             }
         }
 

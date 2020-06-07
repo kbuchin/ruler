@@ -8,13 +8,14 @@ using Util.Geometry;
 namespace DotsAndPolygons
 {
     [Serializable]
-    public class SerializableSegment
+    public class SerializableLineSegment
     {
         private SerializableVector2 point1;
         private SerializableVector2 point2;
 
-        public SerializableSegment(LineSegment segment)
+        public SerializableLineSegment(LineSegment segment)
         {
+            if (segment == null) return;
             point1 = new SerializableVector2(segment.Point1);
             point2 = new SerializableVector2(segment.Point2);
         }

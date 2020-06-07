@@ -6,17 +6,14 @@ namespace DotsAndPolygons
     [Serializable]
     public class DotsVertex
     {
+        // Only used to get the original DotsVertex back after cloning using Serialization
+        [NonSerialized] public DotsVertex Original;
+        
         private SerializableVector2 serializableVector;
         public Vector2 Coordinates
         {
-            get
-            {
-                return serializableVector.Vector2;
-            }
-            set
-            {
-                serializableVector = new SerializableVector2(value);
-            }
+            get => serializableVector.Vector2;
+            set => serializableVector = new SerializableVector2(value);
         }
         public DotsHalfEdge IncidentEdge { get; set; } = null;
         public bool InFace { get; set; } = false;

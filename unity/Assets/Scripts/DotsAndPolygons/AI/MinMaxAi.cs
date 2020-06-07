@@ -11,7 +11,7 @@ namespace DotsAndPolygons
 {
     public class MinMaxAi : AiPlayer
     {
-        private int MaxDepth = 4;
+        private int MaxDepth = 3;
         public float TotalArea { get; set; }
 
         public MinMaxAi(PlayerNumber player, HelperFunctions.GameMode mode) : base(player,
@@ -19,15 +19,18 @@ namespace DotsAndPolygons
         {
         }
 
-        public ValueMove MinMaxMove(PlayerNumber player, Dcel dCEL, 
-            float alfa = float.MinValue, float beta = float.MaxValue, int currentDepth = 0, float otherPlayerArea = 0.0f)
+        public ValueMove MinMaxMove(PlayerNumber player, Dcel dCEL,
+            float alfa = float.MinValue, float beta = float.MaxValue, int currentDepth = 0,
+            float otherPlayerArea = 0.0f)
         {
-            float value = dCEL.DotsFaces.Sum(x => x.Player == Convert.ToInt32(this.PlayerNumber) ? x.AreaMinusInner : -x.AreaMinusInner);
+            float value = dCEL.DotsFaces.Sum(x =>
+                x.Player == Convert.ToInt32(this.PlayerNumber) ? x.AreaMinusInner : -x.AreaMinusInner);
             if (currentDepth >= MaxDepth || otherPlayerArea > TotalArea / 2f)
             {
                 HelperFunctions.print("print move: " + value);
                 return new ValueMove(value, null, null);
             }
+
             bool movePossible = false;
             var gameStateMove = new ValueMove(0.0f, null, null);
             gameStateMove.BestValue = player.Equals(this.PlayerNumber) ? float.MinValue : float.MaxValue;
@@ -47,24 +50,25 @@ namespace DotsAndPolygons
                         if (face1 != null) dCEL.DotsFaces.Add(face1);
                         if (face2 != null) dCEL.DotsFaces.Add(face2);
                         float faceArea = (face1?.AreaMinusInner ?? 0.0f) + (face2?.AreaMinusInner ?? 0.0f);
-                        
+
                         PlayerNumber nextPlayer = faceArea > 0.0f ? player : player.Switch();
                         int newDepth = currentDepth + 1; //player != nextPlayer ? currentDepth + 1 : currentDepth;
                         var newEdge = new DotsEdge(new LineSegment(a.Coordinates, b.Coordinates));
                         dCEL.Edges.Add(newEdge);
-                        
+
 
                         if (player.Equals(this.PlayerNumber))
                         {
                             //gameStateMove.BestValue += faceArea;
-                            ValueMove deeperMoveSamePlayer = MinMaxMove(nextPlayer, dCEL, alfa, beta, newDepth, otherPlayerArea);
+                            ValueMove deeperMoveSamePlayer =
+                                MinMaxMove(nextPlayer, dCEL, alfa, beta, newDepth, otherPlayerArea);
                             if (gameStateMove.BestValue < deeperMoveSamePlayer.BestValue)
                             {
                                 gameStateMove.A = a;
                                 gameStateMove.B = b;
                                 gameStateMove.BestValue = deeperMoveSamePlayer.BestValue;
                                 alfa = Math.Max(alfa, gameStateMove.BestValue);
-                                if(alfa >= beta)
+                                if (alfa >= beta)
                                 {
                                     CleanUp(dCEL.HalfEdges, a, b, face1, face2, disabled, dCEL.DotsFaces);
                                     dCEL.Edges.Remove(newEdge);
@@ -76,7 +80,8 @@ namespace DotsAndPolygons
                         {
                             //gameStateMove.BestValue -= faceArea;
                             otherPlayerArea += faceArea;
-                            ValueMove deeperMoveSamePlayer = MinMaxMove(nextPlayer, dCEL, alfa, beta, newDepth, otherPlayerArea);
+                            ValueMove deeperMoveSamePlayer =
+                                MinMaxMove(nextPlayer, dCEL, alfa, beta, newDepth, otherPlayerArea);
                             if (gameStateMove.BestValue > deeperMoveSamePlayer.BestValue)
                             {
                                 gameStateMove.A = a;
@@ -92,17 +97,19 @@ namespace DotsAndPolygons
                                 }
                             }
                         }
-                        
+
                         CleanUp(dCEL.HalfEdges, a, b, face1, face2, disabled, dCEL.DotsFaces);
                         dCEL.Edges.Remove(newEdge);
-                    }                
+                    }
                 }
             }
-            EndLoop:;
-            if(!movePossible)
+
+            EndLoop: ;
+            if (!movePossible)
             {
                 HelperFunctions.print("print move: " + value + " ");
             }
+
             return movePossible ? gameStateMove : new ValueMove(value, null, null);
         }
 
@@ -122,30 +129,20 @@ namespace DotsAndPolygons
             halfEdges.Remove(toRemove?.Twin);
         }
 
-        public override (DotsVertex, DotsVertex) NextMove(HashSet<DotsEdge> edges,
+        public override (DotsVertex, DotsVertex) NextMove(
+            HashSet<DotsEdge> edges,
             HashSet<DotsHalfEdge> halfEdges,
-            HashSet<DotsFace> faces, IEnumerable<DotsVertex> vertices)
+            HashSet<DotsFace> faces, 
+            HashSet<DotsVertex> vertices)
         {
-            DotsVertex[] verticesArray = vertices.ToArray();
-            //IDotsVertex[] clonedVerticesArray = verticesArray.Select(x => (DotsVertex) x.Clone()).ToArray();
-
-            //HashSet<IDotsEdge> clonedEdges = new HashSet<IDotsEdge>();
-            //edges.ForEach(x => clonedEdges.Add((DotsEdge) x.Clone()));
-
-            //HashSet<IDotsHalfEdge> clonedHalfEdges = new HashSet<IDotsHalfEdge>();
-            //halfEdges.ForEach(x => clonedHalfEdges.Add((DotsHalfEdge) x.Clone()));
-
-            //HashSet<IDotsFace> clonedFaces = new HashSet<IDotsFace>();
-            //faces.ForEach(x => clonedFaces.Add((DotsFace) x.Clone()));
-
             HelperFunctions.print("Calculating next minimal move for MinMaxAI player");
-            Dcel dCEL = new Dcel(verticesArray, edges, halfEdges, faces);
-            //DCEL dCEL1 = dCEL.Clone();
-            PotentialMove potentialMove = MinMaxMove(PlayerNumber, dCEL);
+            Dcel dCEL = new Dcel(vertices.ToArray(), edges, halfEdges, faces);
+            Dcel dCEL1 = dCEL.Clone();
+            PotentialMove potentialMove = MinMaxMove(PlayerNumber, dCEL1);
 
             HelperFunctions.print($"PotentialMove: {potentialMove}", debug: true);
 
-            return (potentialMove.A, potentialMove.B);
+            return (potentialMove.A.Original, potentialMove.B.Original);
         }
     }
 }

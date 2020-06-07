@@ -6,7 +6,12 @@ namespace DotsAndPolygons
     [Serializable]
     public class DotsEdge
     {
-        public LineSegment Segment { get; set; }
+        private SerializableLineSegment SerializableLineSegment { get; set; }
+        public LineSegment Segment
+        {
+            get => SerializableLineSegment.LineSegment;
+            set => SerializableLineSegment = new SerializableLineSegment(value);
+        }
 
         public DotsHalfEdge RightPointingHalfEdge { get; set; } = null;
         public DotsHalfEdge LeftPointingHalfEdge { get; set; } = null;
