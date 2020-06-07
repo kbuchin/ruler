@@ -51,7 +51,7 @@ namespace DotsAndPolygons
 
         private void TryToPlaceLineSegment()
         {
-            if(EdgeIsPossible(FirstPoint?.dotsVertex, SecondPoint?.dotsVertex, Edges, Faces.Select(x => x.DotsFace).ToHashSet()))
+            if(EdgeIsPossible(FirstPoint?.dotsVertex, SecondPoint?.dotsVertex, Edges.Select(x => x.DotsEdge), Faces.Select(x => x.DotsFace).ToHashSet()))
             {
                 DoMove(FirstPoint?.dotsVertex, SecondPoint?.dotsVertex);
             }

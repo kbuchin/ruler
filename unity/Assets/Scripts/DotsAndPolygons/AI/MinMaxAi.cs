@@ -19,7 +19,7 @@ namespace DotsAndPolygons
         {
         }
 
-        public ValueMove MinMaxMove(PlayerNumber player, DCEL dCEL, 
+        public ValueMove MinMaxMove(PlayerNumber player, Dcel dCEL, 
             float alfa = float.MinValue, float beta = float.MaxValue, int currentDepth = 0, float otherPlayerArea = 0.0f)
         {
             float value = dCEL.DotsFaces.Sum(x => x.Player == Convert.ToInt32(this.PlayerNumber) ? x.AreaMinusInner : -x.AreaMinusInner);
@@ -139,7 +139,7 @@ namespace DotsAndPolygons
             //faces.ForEach(x => clonedFaces.Add((DotsFace) x.Clone()));
 
             HelperFunctions.print("Calculating next minimal move for MinMaxAI player");
-            DCEL dCEL = new DCEL(verticesArray, edges, halfEdges, faces);
+            Dcel dCEL = new Dcel(verticesArray, edges, halfEdges, faces);
             //DCEL dCEL1 = dCEL.Clone();
             PotentialMove potentialMove = MinMaxMove(PlayerNumber, dCEL);
 

@@ -55,7 +55,7 @@ namespace DotsAndPolygons
 
 
         public HashSet<UnityDotsVertex> Vertices { get; set; } = new HashSet<UnityDotsVertex>();
-        protected HashSet<UnityDotsHalfEdge> HalfEdges { get; set; } = new HashSet<UnityDotsHalfEdge>();
+        protected HashSet<DotsHalfEdge> HalfEdges { get; set; } = new HashSet<DotsHalfEdge>();
         protected HashSet<UnityDotsEdge> Edges { get; set; } = new HashSet<UnityDotsEdge>();
         public HashSet<UnityDotsFace> Faces { get; set; } = new HashSet<UnityDotsFace>();
         public DotsPlayer CurrentPlayer { get; set; }
@@ -101,7 +101,8 @@ namespace DotsAndPolygons
         private void MoveAiPlayerForThread()
         {
             (DotsVertex a, DotsVertex b) = (CurrentPlayer as AiPlayer)
-                .NextMove(Edges, HalfEdges.Select(x => x.DotsHalfEdge).ToHashSet(), Faces.Select(x => x.DotsFace).ToHashSet(), Vertices.Select(x => x.dotsVertex));
+                .NextMove(Edges.Select(x => x.DotsEdge).ToHashSet(), HalfEdges,
+                    Faces.Select(x => x.DotsFace).ToHashSet(), Vertices.Select(x => x.dotsVertex));
 
             UnityMainThreadDispatcher.Instance().Enqueue(RunPostUpdate(DoMove, a, b));
         }
@@ -132,9 +133,16 @@ namespace DotsAndPolygons
         {
             AddVisualEdge(firstPoint, secondPoint);
 
-            (DotsFace face1, DotsFace face2) = AddEdge(firstPoint, secondPoint, CurrentPlayerValue, HalfEdges.Select(x => x.DotsHalfEdge).ToHashSet(),
+            (DotsFace face1, DotsFace face2) = AddEdge(
+                firstPoint,
+                secondPoint,
+                CurrentPlayerValue,
+                HalfEdges,
                 Vertices.Select(x => x.dotsVertex),
-                CurrentGamemode, this, root);
+                CurrentGamemode,
+                this,
+                root
+            );
 
             RemoveTrapDecomLines();
             ShowTrapDecomLines();
@@ -170,14 +178,15 @@ namespace DotsAndPolygons
             // Assign players
             Player1 = Settings.Player1.CreatePlayer(PlayerNumber.Player1, CurrentGamemode);
             Player2 = Settings.Player2.CreatePlayer(PlayerNumber.Player2, CurrentGamemode);
-            
+
             CurrentPlayer = Player1;
-            
-            HelperFunctions.print($"Starting game with Player1 as {Player1.PlayerType} and Player2 as {Player2.PlayerType}");
+
+            HelperFunctions.print(
+                $"Starting game with Player1 as {Player1.PlayerType} and Player2 as {Player2.PlayerType}");
 
             // get unity objects
             Vertices = new HashSet<UnityDotsVertex>();
-            HalfEdges = new HashSet<UnityDotsHalfEdge>();
+            HalfEdges = new HashSet<DotsHalfEdge>();
             Edges = new HashSet<UnityDotsEdge>();
             Faces = new HashSet<UnityDotsFace>();
             // disable advance button
@@ -186,20 +195,21 @@ namespace DotsAndPolygons
             InstantObjects = new List<GameObject>();
             InitLevel();
 
-            
 
             Hull = ConvexHullHelper.ComputeHull(Vertices.Select(x => x.dotsVertex).ToList());
             HullArea = Triangulator.Triangulate(
                 new Polygon2D(Hull.Select(it => it.Point1))
             ).Area;
-            if(Player1.PlayerType == PlayerType.MinMaxAi)
+            if (Player1.PlayerType == PlayerType.MinMaxAi)
             {
-                ((MinMaxAi)Player1).TotalArea = HullArea;
+                ((MinMaxAi) Player1).TotalArea = HullArea;
             }
+
             if (Player2.PlayerType == PlayerType.MinMaxAi)
             {
-                ((MinMaxAi)Player2).TotalArea = HullArea;
+                ((MinMaxAi) Player2).TotalArea = HullArea;
             }
+
             UpdateVisualArea();
             if (Player1.PlayerType != PlayerType.Player)
             {
@@ -340,7 +350,7 @@ namespace DotsAndPolygons
             InstantObjects.Add(edgeMesh);
 
             var edge = edgeMesh.GetComponent<UnityDotsEdge>();
-            edge.Segment = segment;
+            edge.DotsEdge.Segment = segment;
             Edges.Add(edge);
 
             var edgeMeshScript = edgeMesh.GetComponent<ReshapingMesh>();
@@ -385,8 +395,9 @@ namespace DotsAndPolygons
             HelperFunctions.print($"Current hull: {Hull}");
             HelperFunctions.print($"Current edges: {Edges}");
             IEnumerable<UnityDotsEdge> hullEdges = Edges.Where(edge => Hull.Any(hullEdge =>
-                hullEdge.Point1.Equals(edge.Segment.Point2) && hullEdge.Point2.Equals(edge.Segment.Point1)
-                || hullEdge.Equals(edge.Segment)));
+                hullEdge.Point1.Equals(edge.DotsEdge.Segment.Point2) &&
+                hullEdge.Point2.Equals(edge.DotsEdge.Segment.Point1)
+                || hullEdge.Equals(edge.DotsEdge.Segment)));
             return Hull.Count == hullEdges.Count();
         }
 

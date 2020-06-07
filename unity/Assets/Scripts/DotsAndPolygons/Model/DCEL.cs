@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace DotsAndPolygons
 {
     [Serializable]
-    public class DCEL
+    public class Dcel
     {
         public DotsVertex[] Vertices { get; set; }
 
@@ -19,7 +19,7 @@ namespace DotsAndPolygons
 
         public HashSet<DotsFace> DotsFaces { get; set; }
 
-        public DCEL(DotsVertex[] vertices, HashSet<DotsEdge> edges, HashSet<DotsHalfEdge> halfEdges, HashSet<DotsFace> dotsFaces)
+        public Dcel(DotsVertex[] vertices, HashSet<DotsEdge> edges, HashSet<DotsHalfEdge> halfEdges, HashSet<DotsFace> dotsFaces)
         {
             Vertices = vertices;
             Edges = edges;
@@ -27,14 +27,14 @@ namespace DotsAndPolygons
             DotsFaces = dotsFaces;
         }
 
-        public DCEL Clone()
+        public Dcel Clone()
         {
-            using(MemoryStream stream = new MemoryStream())
+            using(var stream = new MemoryStream())
             {
-                BinaryFormatter b = new BinaryFormatter();
+                var b = new BinaryFormatter();
                 b.Serialize(stream, this);
                 stream.Position = 0;
-                var returner = (DCEL) b.Deserialize(stream);
+                var returner = (Dcel) b.Deserialize(stream);
                 stream.Close();
                 return returner;
             }

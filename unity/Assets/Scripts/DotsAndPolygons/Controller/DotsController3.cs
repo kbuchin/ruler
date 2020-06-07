@@ -62,13 +62,13 @@ namespace DotsAndPolygons
                 {
                     HelperFunctions.print($"Line between {FirstPoint} and {SecondPoint} lies inside face");
                 }
-                else if (EdgeAlreadyExists(Edges, FirstPoint?.dotsVertex, SecondPoint?.dotsVertex))
+                else if (EdgeAlreadyExists(Edges.Select(x => x.DotsEdge), FirstPoint?.dotsVertex, SecondPoint?.dotsVertex))
                 {
                     HelperFunctions.print("edge between first and second point already exists");
                 }
                 else if (InterSEGtsAny(
                     new LineSegment(FirstPoint.dotsVertex.Coordinates, SecondPoint.dotsVertex.Coordinates),
-                    Edges.Select(edge => edge.Segment)
+                    Edges.Select(edge => edge.DotsEdge.Segment)
                 ))
                 {
                     HelperFunctions.print(
