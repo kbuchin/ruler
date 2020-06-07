@@ -11,7 +11,7 @@ namespace DotsAndPolygons
             LeftChild = frame;
             frame.AddParent(this);
         }
-        public ITrapDecomNode query(IDotsVertex queryPoint) => LeftChild.query(queryPoint);
+        public ITrapDecomNode query(DotsVertex queryPoint) => LeftChild.query(queryPoint);
 
         public List<TrapFace> FindAllFaces() => LeftChild.FindAllFaces();
 

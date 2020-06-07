@@ -6,9 +6,9 @@ namespace DotsAndPolygons
 {
     public class TrapDecomLine : ITrapDecomNode
     {
-        private IDotsVertex LeftPoint;
+        private DotsVertex LeftPoint;
 
-        private IDotsVertex RightPoint;
+        private DotsVertex RightPoint;
 
         //Below the line
         public ITrapDecomNode LeftChild { get; set; }
@@ -40,7 +40,7 @@ namespace DotsAndPolygons
             );
         }
 
-        public ITrapDecomNode query(IDotsVertex queryPoint)
+        public ITrapDecomNode query(DotsVertex queryPoint)
         {
             return ConvexHullHelper.makesRightTurn(LeftPoint, RightPoint, queryPoint)
                 ? LeftChild.query(queryPoint)

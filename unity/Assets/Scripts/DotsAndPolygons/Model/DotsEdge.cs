@@ -1,18 +1,20 @@
-﻿using Util.Geometry;
+﻿using System;
+using Util.Geometry;
 
 namespace DotsAndPolygons
 {
-    public class DotsEdge : IDotsEdge
+    [Serializable]
+    public class DotsEdge
     {
         public LineSegment Segment { get; set; }
 
-        public IDotsHalfEdge RightPointingHalfEdge { get; set; } = null;
-        public IDotsHalfEdge LeftPointingHalfEdge { get; set; } = null;
+        public DotsHalfEdge RightPointingHalfEdge { get; set; } = null;
+        public DotsHalfEdge LeftPointingHalfEdge { get; set; } = null;
 
         public int Player { get; set; }
 
 
-        public DotsEdge(IDotsHalfEdge leftPointingHalfEdge, IDotsHalfEdge rightPointingHalfEdge)
+        public DotsEdge(DotsHalfEdge leftPointingHalfEdge, DotsHalfEdge rightPointingHalfEdge)
         {
             LeftPointingHalfEdge = leftPointingHalfEdge;
             RightPointingHalfEdge = rightPointingHalfEdge;
@@ -26,5 +28,7 @@ namespace DotsAndPolygons
         }
 
         public override string ToString() => $"{Segment}, Player: {Player}";
+
+        public DotsEdge Clone() => new DotsEdge(this.Segment);
     }
 }

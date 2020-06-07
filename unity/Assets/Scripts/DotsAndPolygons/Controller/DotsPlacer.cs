@@ -309,51 +309,50 @@ namespace DotsAndPolygons
 
         private void PrintFace(DotsController dotsController, Path path, bool isHole, HashSet<GameObject> faces)
         {
-            for (var j = 0; j < path.Count; j++)
-            {
-                IntPoint point1 = path[j];
-                IntPoint point2 = path[(j + 1) % path.Count];
-                var seg = new LineSegment(
-                    new Vector2(point1.X.toFloatForClipper(), point1.Y.toFloatForClipper()),
-                    new Vector2(point2.X.toFloatForClipper(), point2.Y.toFloatForClipper())
-                );
-                UnityTrapDecomLine.CreateUnityTrapDecomLine(seg, dotsController);
-            }
+            //for (var j = 0; j < path.Count; j++)
+            //{
+            //    IntPoint point1 = path[j];
+            //    IntPoint point2 = path[(j + 1) % path.Count];
+            //    var seg = new LineSegment(
+            //        new Vector2(point1.X.toFloatForClipper(), point1.Y.toFloatForClipper()),
+            //        new Vector2(point2.X.toFloatForClipper(), point2.Y.toFloatForClipper())
+            //    );
+            //    UnityTrapDecomLine.CreateUnityTrapDecomLine(seg, dotsController);
+            //}
 
-            GameObject faceObject = Object.Instantiate(
-                dotsController.facePrefab,
-                new Vector3(0, 0, 0),
-                Quaternion.identity);
-            faceObject.transform.parent = dotsController.transform;
-            dotsController.InstantObjects.Add(faceObject);
-            var face = faceObject.gameObject.GetComponent<UnityDotsFace>();
+            //GameObject faceObject = Object.Instantiate(
+            //    dotsController.facePrefab,
+            //    new Vector3(0, 0, 0),
+            //    Quaternion.identity);
+            //faceObject.transform.parent = dotsController.transform;
+            //dotsController.InstantObjects.Add(faceObject);
+            //var face = faceObject.gameObject.GetComponent<UnityDotsFace>();
 
-            List<DotsVertex> vertices = path
-                .Select(it =>
-                    new DotsVertex(
-                        new Vector2(
-                            it.X.toFloatForClipper(),
-                            it.Y.toFloatForClipper())
-                    )
-                ).ToList();
+            //List<DotsVertex> vertices = path
+            //    .Select(it =>
+            //        new DotsVertex(
+            //            new Vector2(
+            //                it.X.toFloatForClipper(),
+            //                it.Y.toFloatForClipper())
+            //        )
+            //    ).ToList();
 
-            List<DotsHalfEdge> halfEdges = vertices.Select(vertex =>
-                new DotsHalfEdge
-                {
-                    GameController = dotsController,
-                    Player = isHole ? 1 : 2,
-                    Origin = vertex
-                }).ToList();
-            for (var i = 0; i < halfEdges.Count; i++)
-            {
-                halfEdges[i].Next = halfEdges[(i + 1) % halfEdges.Count];
-            }
+            //List<DotsHalfEdge> halfEdges = vertices.Select(vertex =>
+            //    new DotsHalfEdge
+            //    {
+            //        Player = isHole ? 1 : 2,
+            //        Origin = vertex
+            //    }).ToList();
+            //for (var i = 0; i < halfEdges.Count; i++)
+            //{
+            //    halfEdges[i].Next = halfEdges[(i + 1) % halfEdges.Count];
+            //}
 
-            face.Player = isHole ? 1 : 2;
+            //face.DotsFace.Player = isHole ? 1 : 2;
 
-            face.Constructor(halfEdges.First());
+            //face.Constructor(halfEdges.First());
 
-            faces.Add(faceObject);
+            //faces.Add(faceObject);
         }
     }
 }

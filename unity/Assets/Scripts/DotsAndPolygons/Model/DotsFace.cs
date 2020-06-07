@@ -8,16 +8,17 @@ using Util.Geometry.Triangulation;
 
 namespace DotsAndPolygons
 {
-    public class DotsFace : IDotsFace
+    [Serializable]
+    public class DotsFace
     {
-        public IDotsHalfEdge OuterComponent { get; set; }
+        public DotsHalfEdge OuterComponent { get; set; }
 
-        public IEnumerable<IDotsHalfEdge> OuterComponentHalfEdges
+        public IEnumerable<DotsHalfEdge> OuterComponentHalfEdges
         {
             get
             {
-                var visitedHalfEdges = new List<IDotsHalfEdge>();
-                IDotsHalfEdge currentHalfEdge = OuterComponent.Next;
+                var visitedHalfEdges = new List<DotsHalfEdge>();
+                DotsHalfEdge currentHalfEdge = OuterComponent.Next;
                 int count = 0;
                 while (count < 10000)
                 {
@@ -39,19 +40,29 @@ namespace DotsAndPolygons
             }
         }
 
-        public IEnumerable<IDotsVertex> OuterComponentVertices => OuterComponentHalfEdges.Select(edge => edge.Origin);
+        public DotsFace(DotsHalfEdge outerComponent, List<DotsHalfEdge> innerComponents = null)
+        {
+            this.OuterComponent = outerComponent;
+            this.InnerComponents = innerComponents;
+        }
 
-        public List<IDotsHalfEdge> InnerComponents { get; set; }
+        public DotsFace()
+        {
+        }
+
+        public IEnumerable<DotsVertex> OuterComponentVertices => OuterComponentHalfEdges.Select(edge => edge.Origin);
+
+        public List<DotsHalfEdge> InnerComponents { get; set; }
         public int Player { get; set; }
         public float Area { get; set; }
 
         public float AreaMinusInner => Area - this.GetAreaOfAllInnerComponents();
 
-        public void Constructor(IDotsHalfEdge outerComponent, List<IDotsHalfEdge> innerComponents = null,
+        public void Constructor(DotsHalfEdge outerComponent, List<DotsHalfEdge> innerComponents = null,
             List<Vector2> testVertices = null)
         {
             OuterComponent = outerComponent;
-            InnerComponents = innerComponents ?? new List<IDotsHalfEdge>();
+            InnerComponents = innerComponents ?? new List<DotsHalfEdge>();
 
             List<Vector2> vertices =
                 testVertices ?? OuterComponentVertices.Select(vertex => vertex.Coordinates).ToList();
@@ -62,5 +73,7 @@ namespace DotsAndPolygons
 
         public override string ToString() =>
             $"Player: {Player}, Face: {string.Join(", ", OuterComponentVertices.Select(it => it.ToString()))}";
+
+        public DotsFace Clone() => new DotsFace(this.OuterComponent, this.InnerComponents);
     }
 }

@@ -53,30 +53,30 @@ namespace DotsAndPolygons
                     HelperFunctions.print("FirstPoint was same as SecondPoint");
                 }
                 // use isInside method to see of middle of line lies in a face
-                else if (Faces.Where(it => it?.OuterComponentHalfEdges != null).Any(face =>
+                else if (Faces.Where(it => it?.DotsFace?.OuterComponentHalfEdges != null).Any(face =>
                     IsInside(
-                        face.OuterComponentVertices.Select(it => it.Coordinates).ToList(),
-                        new LineSegment(FirstPoint.Coordinates, SecondPoint.Coordinates).Midpoint
+                        face.DotsFace.OuterComponentVertices.Select(it => it.Coordinates).ToList(),
+                        new LineSegment(FirstPoint.dotsVertex.Coordinates, SecondPoint.dotsVertex.Coordinates).Midpoint
                     )
                 ))
                 {
                     HelperFunctions.print($"Line between {FirstPoint} and {SecondPoint} lies inside face");
                 }
-                else if (EdgeAlreadyExists(Edges, FirstPoint, SecondPoint))
+                else if (EdgeAlreadyExists(Edges, FirstPoint?.dotsVertex, SecondPoint?.dotsVertex))
                 {
                     HelperFunctions.print("edge between first and second point already exists");
                 }
                 else if (InterSEGtsAny(
-                    new LineSegment(FirstPoint.Coordinates, SecondPoint.Coordinates),
+                    new LineSegment(FirstPoint.dotsVertex.Coordinates, SecondPoint.dotsVertex.Coordinates),
                     Edges.Select(edge => edge.Segment)
                 ))
                 {
                     HelperFunctions.print(
-                        $"Edge between first and second point intersects something ({FirstPoint.Coordinates.x}, {FirstPoint.Coordinates.y}), ({SecondPoint.Coordinates.x}, {SecondPoint.Coordinates.y})");
+                        $"Edge between first and second point intersects something ({FirstPoint.dotsVertex.Coordinates.x}, {FirstPoint.dotsVertex.Coordinates.y}), ({SecondPoint.dotsVertex.Coordinates.x}, {SecondPoint.dotsVertex.Coordinates.y})");
                 }
                 else
                 {
-                    DoMove(FirstPoint, SecondPoint);
+                    DoMove(FirstPoint.dotsVertex, SecondPoint.dotsVertex);
                 }
 
                 FirstPoint = null;
@@ -102,9 +102,9 @@ namespace DotsAndPolygons
         {
             base.InitLevel();
 
-            IEnumerable<IDotsVertex> dots = GetVerticesInConvexPosition(numberOfDots, false, radius: 3.3f);
+            IEnumerable<DotsVertex> dots = GetVerticesInConvexPosition(numberOfDots, false, radius: 3.3f);
 
-            foreach (IDotsVertex dotsVertex in dots)
+            foreach (DotsVertex dotsVertex in dots)
             {
                 GameObject dot = Instantiate(
                     dotPrefab,

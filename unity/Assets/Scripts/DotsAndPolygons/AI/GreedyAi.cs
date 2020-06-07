@@ -11,16 +11,16 @@ namespace DotsAndPolygons
     {
         public GreedyAi(PlayerNumber player, HelperFunctions.GameMode mode) : base(player, PlayerType.GreedyAi, mode) {}
 
-        public PotentialMove MinimalMove(int start, int length, IDotsVertex[] vertices, HashSet<IDotsEdge> edges,
-            HashSet<IDotsHalfEdge> halfEdges, HashSet<IDotsFace> dotsFaces)
+        public PotentialMove MinimalMove(int start, int length, DotsVertex[] vertices, HashSet<DotsEdge> edges,
+            HashSet<DotsHalfEdge> halfEdges, HashSet<DotsFace> dotsFaces)
         {
             int end = start + length;
             float minimalWeight = float.MaxValue;
             float maximalArea = 0.0f;
-            IDotsVertex minA = null;
-            IDotsVertex minB = null;
-            IDotsVertex maxAreaA = null;
-            IDotsVertex maxAreaB = null;
+            DotsVertex minA = null;
+            DotsVertex minB = null;
+            DotsVertex maxAreaA = null;
+            DotsVertex maxAreaB = null;
             // bool claimPossible = false;
             PotentialMove result;
 
@@ -30,13 +30,13 @@ namespace DotsAndPolygons
                 for (int j = i + 1; j < end; j++)
                 {
                     // MonoBehaviour.print($"Calculating maximal area move, iteration {i}, {j}");
-                    IDotsVertex a = vertices[i];
-                    IDotsVertex b = vertices[j];
+                    DotsVertex a = vertices[i];
+                    DotsVertex b = vertices[j];
 
                     if (HelperFunctions.EdgeIsPossible(a, b, edges, dotsFaces))
                     {
-                        List<IDotsVertex> disabled = new List<IDotsVertex>();
-                        (IDotsFace face1, IDotsFace face2) = HelperFunctions.AddEdge(a, b,
+                        List<DotsVertex> disabled = new List<DotsVertex>();
+                        (DotsFace face1, DotsFace face2) = HelperFunctions.AddEdge(a, b,
                             Convert.ToInt32(PlayerNumber),
                             halfEdges, vertices, GameMode, newlyDisabled: disabled);
 
@@ -73,13 +73,13 @@ namespace DotsAndPolygons
                     for (int j = i + 1; j < end; j++)
                     {
                         // MonoBehaviour.print($"Calculating minimal move, iteration {i}, {j}");
-                        IDotsVertex a = vertices[i];
-                        IDotsVertex b = vertices[j];
+                        DotsVertex a = vertices[i];
+                        DotsVertex b = vertices[j];
 
                         if (HelperFunctions.EdgeIsPossible(a, b, edges, dotsFaces))
                         {
-                            List<IDotsVertex> disabled = new List<IDotsVertex>();
-                            (IDotsFace face1, IDotsFace face2) = HelperFunctions.AddEdge(a, b,
+                            List<DotsVertex> disabled = new List<DotsVertex>();
+                            (DotsFace face1, DotsFace face2) = HelperFunctions.AddEdge(a, b,
                                 Convert.ToInt32(PlayerNumber),
                                 halfEdges, vertices, GameMode, newlyDisabled: disabled);
 
@@ -115,22 +115,22 @@ namespace DotsAndPolygons
             return result;
         }
 
-        private float CalculateWeight(IDotsVertex dotsVertex1, IDotsVertex dotsVertex2, IDotsVertex[] dots,
-            IEnumerable<IDotsEdge> edges, HashSet<IDotsHalfEdge> halfEdges, HashSet<IDotsFace> dotsFaces)
+        private float CalculateWeight(DotsVertex dotsVertex1, DotsVertex dotsVertex2, DotsVertex[] dots,
+            IEnumerable<DotsEdge> edges, HashSet<DotsHalfEdge> halfEdges, HashSet<DotsFace> dotsFaces)
         {
             float maximalArea = 0.0f;
 
-            foreach (IDotsVertex a in dots)
+            foreach (DotsVertex a in dots)
             {
-                var dotsVertices = new List<IDotsVertex> {dotsVertex1, dotsVertex2};
-                foreach (IDotsVertex b in dotsVertices)
+                var dotsVertices = new List<DotsVertex> {dotsVertex1, dotsVertex2};
+                foreach (DotsVertex b in dotsVertices)
                 {
                     if (a.Equals(dotsVertex1) || a.Equals(dotsVertex2)) continue;
 
                     if (HelperFunctions.EdgeIsPossible(a, b, edges, dotsFaces))
                     {
-                        List<IDotsVertex> disabled = new List<IDotsVertex>();
-                        (IDotsFace face1, IDotsFace face2) = HelperFunctions.AddEdge(
+                        List<DotsVertex> disabled = new List<DotsVertex>();
+                        (DotsFace face1, DotsFace face2) = HelperFunctions.AddEdge(
                             a,
                             b,
                             Convert.ToInt32(PlayerNumber),
@@ -153,10 +153,10 @@ namespace DotsAndPolygons
             return maximalArea;
         }
 
-        private static void CleanUp(HashSet<IDotsHalfEdge> halfEdges, IDotsVertex a, IDotsVertex b,
-            IDotsFace created1, IDotsFace created2, List<IDotsVertex> disabled)
+        private static void CleanUp(HashSet<DotsHalfEdge> halfEdges, DotsVertex a, DotsVertex b,
+            DotsFace created1, DotsFace created2, List<DotsVertex> disabled)
         {
-            IDotsHalfEdge toRemove = a.LeavingHalfEdges()
+            DotsHalfEdge toRemove = a.LeavingHalfEdges()
                 .FirstOrDefault(it => it.Destination.Equals(b));
             disabled.ForEach(it => it.InFace = false);
             created1?.OuterComponentHalfEdges.ForEach(it => it.IncidentFace = null);
@@ -166,11 +166,11 @@ namespace DotsAndPolygons
             halfEdges.Remove(toRemove.Twin);
         }
 
-        public override (IDotsVertex, IDotsVertex) NextMove(HashSet<IDotsEdge> edges,
-            HashSet<IDotsHalfEdge> halfEdges,
-            HashSet<IDotsFace> faces, IEnumerable<IDotsVertex> vertices)
+        public override (DotsVertex, DotsVertex) NextMove(HashSet<DotsEdge> edges,
+            HashSet<DotsHalfEdge> halfEdges,
+            HashSet<DotsFace> faces, IEnumerable<DotsVertex> vertices)
         {
-            IDotsVertex[] verticesArray = vertices.ToArray();
+            DotsVertex[] verticesArray = vertices.ToArray();
 
             HelperFunctions.print("Calculating next minimal move for greedy player");
             PotentialMove potentialMove = MinimalMove(0, verticesArray.Length, verticesArray, edges, halfEdges, faces);

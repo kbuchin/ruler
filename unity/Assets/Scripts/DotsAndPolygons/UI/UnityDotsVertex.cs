@@ -3,42 +3,36 @@ namespace DotsAndPolygons
     using UnityEngine;
 
     // Vertex
-    public class UnityDotsVertex : MonoBehaviour, IDotsVertex
+    public class UnityDotsVertex : MonoBehaviour
     {
-        // Coordinates of this vertex in the game
-        public Vector2 Coordinates { get; set; }
-
-        // Some half-edge leaving this vertex
-        public IDotsHalfEdge IncidentEdge { get; set; }
+        public DotsVertex dotsVertex { get; set; }
 
         // Reference to the main game class
         public DotsController mController;
 
-        public bool InFace { get; set; } = false;
-
-        public bool OnHull { get; set; } = false;
-
         private void Awake()
         {
             Vector3 position = transform.position;
-            Coordinates = new Vector2(position.x, position.y);
+            
+            Vector2 coordinates = new Vector2(position.x, position.y);
+            dotsVertex = new DotsVertex(coordinates);
             mController = FindObjectOfType<DotsController>();
             mController.Vertices.Add(this);
         }
 
         private void OnMouseDown()
         {
-            if (InFace || mController.CurrentPlayer.PlayerType != PlayerType.Player) return;
+            if (dotsVertex.InFace || mController.CurrentPlayer.PlayerType != PlayerType.Player) return;
             mController.EnableDrawingLine();
             mController.FirstPoint = this;
-            mController.SetDrawingLinePosition(0, Coordinates);
+            mController.SetDrawingLinePosition(0, dotsVertex.Coordinates);
         }
 
         public void OnMouseEnter()
         {
             if (mController.FirstPoint == null) return;
             mController.SecondPoint = this;
-            mController.SetDrawingLinePosition(1, Coordinates);
+            mController.SetDrawingLinePosition(1, dotsVertex.Coordinates);
         }
 
         public void OnMouseExit()
@@ -51,8 +45,7 @@ namespace DotsAndPolygons
         }
 
         public override string ToString() =>
-            $"Coordinates: {Coordinates}, IncidentEdge: {IncidentEdge?.ToString()}, InFace: {InFace}";
+            $"Coordinates: {dotsVertex.Coordinates}, IncidentEdge: {dotsVertex.IncidentEdge?.ToString()}, InFace: {dotsVertex.InFace}";
 
-        public IDotsVertex Clone() => new DotsVertex(Coordinates, IncidentEdge, InFace, OnHull);
     }
 }

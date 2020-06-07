@@ -10,7 +10,7 @@ namespace DotsAndPolygons.Tests
 
     public class FaceLoop
     {
-        private static HashSet<IDotsHalfEdge> GetFullTriangle()
+        private static HashSet<DotsHalfEdge> GetFullTriangle()
         {
             var a = new DotsVertex
             (
@@ -25,8 +25,8 @@ namespace DotsAndPolygons.Tests
                 new Vector2(0, 1)
             );
 
-            var allHalfEdges = new HashSet<IDotsHalfEdge>();
-            var allVertices = new HashSet<IDotsVertex> {a, b, c};
+            var allHalfEdges = new HashSet<DotsHalfEdge>();
+            var allVertices = new HashSet<DotsVertex> {a, b, c};
 
             AddEdge(a, b, 1, allHalfEdges, allVertices, GameMode.GameMode2);
             AddEdge(b, c, 1, allHalfEdges, allVertices, GameMode.GameMode2);
@@ -35,7 +35,7 @@ namespace DotsAndPolygons.Tests
             return allHalfEdges;
         }
 
-        private static IDotsHalfEdge GetFullTriangleAB()
+        private static DotsHalfEdge GetFullTriangleAB()
         {
             var a = new DotsVertex
             (
@@ -50,8 +50,8 @@ namespace DotsAndPolygons.Tests
                 new Vector2(0, 1)
             );
 
-            var allHalfEdges = new HashSet<IDotsHalfEdge>();
-            var allVertices = new HashSet<IDotsVertex> {a, b, c};
+            var allHalfEdges = new HashSet<DotsHalfEdge>();
+            var allVertices = new HashSet<DotsVertex> {a, b, c};
 
             AddEdge(a, b, 1, allHalfEdges, allVertices, GameMode.GameMode2);
             AddEdge(b, c, 1, allHalfEdges, allVertices, GameMode.GameMode2);
@@ -69,15 +69,15 @@ namespace DotsAndPolygons.Tests
         [Test]
         public void FaceLoop2()
         {
-            HashSet<IDotsHalfEdge> edges = GetFullTriangle();
+            HashSet<DotsHalfEdge> edges = GetFullTriangle();
 
-            IDotsHalfEdge ab = edges.First(it =>
+            DotsHalfEdge ab = edges.First(it =>
                 Math.Abs(it.Origin.Coordinates[0]) < BIETJE &&
                 Math.Abs(it.Origin.Coordinates[1]) < BIETJE);
 
 
             Assert.True(ab.IncidentFace == null ^ ab.Twin.IncidentFace == null); // Calculate face
-            IDotsVertex a = ab.Origin;
+            DotsVertex a = ab.Origin;
 
             var alpha = new DotsVertex
             (
@@ -100,16 +100,16 @@ namespace DotsAndPolygons.Tests
         [Test]
         public void FaceLoop3()
         {
-            IDotsHalfEdge ab = GetFullTriangleAB();
+            DotsHalfEdge ab = GetFullTriangleAB();
             Assert.True(ab.IncidentFace == null ^ ab.Twin.IncidentFace == null); // Calculate face
-            IDotsVertex a = ab.Origin;
+            DotsVertex a = ab.Origin;
 
             var alpha = new DotsVertex
             (
                 new Vector2(-1, 0)
             );
 
-            var edges = new HashSet<IDotsHalfEdge>();
+            var edges = new HashSet<DotsHalfEdge>();
             AddEdge(a, alpha, 1, edges, new List<DotsVertex>(), GameMode.GameMode2);
 
             Assert.AreEqual(

@@ -6,12 +6,12 @@
 
     public static class ConvexHullHelper
     {
-        public static HashSet<LineSegment> ComputeHull(IEnumerable<IDotsVertex> dotsVertices)
+        public static HashSet<LineSegment> ComputeHull(IEnumerable<DotsVertex> dotsVertices)
         {
-            IDotsVertex[] sortedAsc = dotsVertices.OrderBy(vertex => vertex.Coordinates.x).ToArray();
-            IDotsVertex[] sortedDesc = dotsVertices.OrderByDescending(vertex => vertex.Coordinates.x).ToArray();
-            var lUppper = new List<IDotsVertex>();
-            var lLower = new List<IDotsVertex>();
+            DotsVertex[] sortedAsc = dotsVertices.OrderBy(vertex => vertex.Coordinates.x).ToArray();
+            DotsVertex[] sortedDesc = dotsVertices.OrderByDescending(vertex => vertex.Coordinates.x).ToArray();
+            var lUppper = new List<DotsVertex>();
+            var lLower = new List<DotsVertex>();
             lUppper.Add(sortedAsc[0]);
             lUppper.Add(sortedAsc[1]);
             lLower.Add(sortedDesc[0]);
@@ -43,13 +43,13 @@
             return CreateHullSet(lUppper);
         }
 
-        private static HashSet<LineSegment> CreateHullSet(List<IDotsVertex> hull)
+        private static HashSet<LineSegment> CreateHullSet(List<DotsVertex> hull)
         {
-            foreach (IDotsVertex dotsVertex in hull)
+            foreach (DotsVertex dotsVertex in hull)
             {
                 dotsVertex.OnHull = true;
             }
-            IDotsVertex[] convexHull = hull.ToArray();
+            DotsVertex[] convexHull = hull.ToArray();
             var returner = new HashSet<LineSegment>();
             for (var i = 0; i < convexHull.Length; i++)
             {
@@ -61,7 +61,7 @@
             return returner;
         }
 
-        private static float calculateCrossProduct(IDotsVertex vertex1, IDotsVertex vertex2, IDotsVertex vertex3)
+        private static float calculateCrossProduct(DotsVertex vertex1, DotsVertex vertex2, DotsVertex vertex3)
         {
             float bX = vertex2.Coordinates.x;
             float bY = vertex2.Coordinates.y;
@@ -78,7 +78,7 @@
             return returner;
         }
 
-        public static bool makesRightTurn(IDotsVertex vertex1, IDotsVertex vertex2, IDotsVertex vertex3)
+        public static bool makesRightTurn(DotsVertex vertex1, DotsVertex vertex2, DotsVertex vertex3)
         {
             return calculateCrossProduct(vertex1, vertex2, vertex3) < 0;
         }

@@ -43,9 +43,9 @@ namespace DotsAndPolygons
             }
             else // User let go of mouse button
             {
-                if (EdgeIsPossible(FirstPoint, SecondPoint, Edges, Faces))
+                if (EdgeIsPossible(FirstPoint?.dotsVertex, SecondPoint?.dotsVertex, Edges, Faces.Select(x => x.DotsFace).ToHashSet()))
                 {
-                    DoMove(FirstPoint, SecondPoint);
+                    DoMove(FirstPoint?.dotsVertex, SecondPoint?.dotsVertex);
                 }
 
                 FirstPoint = null;

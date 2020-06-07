@@ -10,12 +10,12 @@ namespace DotsAndPolygons.Tests.SoCG
 
     public class WinningStrategy
     {
-        private static IEnumerable<IDotsVertex> GetVerticesInConvexPosition(int amount, Vector2? center = null,
+        private static IEnumerable<DotsVertex> GetVerticesInConvexPosition(int amount, Vector2? center = null,
             float radius = 1f)
         {
             Vector2 _center = center ?? Vector2.zero;
             var angleBetweenVertices = 2f * Mathf.PI / amount;
-            var vertices = new List<IDotsVertex>();
+            var vertices = new List<DotsVertex>();
 
             for (var i = 0; i < amount; i++)
             {
@@ -27,16 +27,16 @@ namespace DotsAndPolygons.Tests.SoCG
             return vertices;
         }
 
-        private static Tuple<IDotsVertex, IDotsVertex> FindAMiddleLine(
-            IEnumerable<IDotsVertex> vertices)
+        private static Tuple<DotsVertex, DotsVertex> FindAMiddleLine(
+            IEnumerable<DotsVertex> vertices)
         {
-            IDotsVertex vertexA = vertices.First();
+            DotsVertex vertexA = vertices.First();
 
-            IDotsVertex vertexB = vertices.OrderBy(
+            DotsVertex vertexB = vertices.OrderBy(
                 it => Mathf.Abs(Distance(vertexA.Coordinates, it.Coordinates))
             ).Last();
             
-            return new Tuple<IDotsVertex, IDotsVertex>(vertexA, vertexB);
+            return new Tuple<DotsVertex, DotsVertex>(vertexA, vertexB);
         }
 
 
@@ -44,7 +44,7 @@ namespace DotsAndPolygons.Tests.SoCG
         public void TestVerticesInConvexPos()
         {
             var vertices = GetVerticesInConvexPosition(4, new Vector2(0, 0), 2);
-            var segments = new List<IDotsEdge>();
+            var segments = new List<DotsEdge>();
 
             var middleVertices = FindAMiddleLine(vertices);
 

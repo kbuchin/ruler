@@ -4,7 +4,7 @@ namespace DotsAndPolygons
 {
     public interface ITrapDecomNode
     {
-        ITrapDecomNode query(IDotsVertex queryPoint);
+        ITrapDecomNode query(DotsVertex queryPoint);
 
         ITrapDecomNode LeftChild { get; set; }
 

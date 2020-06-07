@@ -3,23 +3,19 @@ namespace DotsAndPolygons
     using UnityEngine;
     using Util.Geometry;
 
-    public class UnityDotsEdge : MonoBehaviour, IDotsEdge
+    public class UnityDotsEdge : MonoBehaviour
     {
-        public LineSegment Segment { get; set; }
-
-        public IDotsHalfEdge RightPointingHalfEdge { get; set; } = null;
-        public IDotsHalfEdge LeftPointingHalfEdge { get; set; } = null;
+        DotsEdge DotsEdge { get; set; }
         
         private DotsController _mGameController;
-
-        public int Player { get; set; }
 
         private void Awake()
         {
             _mGameController = FindObjectOfType<DotsController>();
-            Player = _mGameController.CurrentPlayerValue;
+            DotsEdge = new DotsEdge(null);
+            DotsEdge.Player = _mGameController.CurrentPlayerValue;
         }
         
-        public override string ToString() => $"{Segment}, Player: {Player}";
+        public override string ToString() => $"{this.DotsEdge.Segment}, Player: {this.DotsEdge.Player}";
     }
 }

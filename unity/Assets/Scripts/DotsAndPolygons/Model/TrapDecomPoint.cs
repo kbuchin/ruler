@@ -17,7 +17,7 @@ namespace DotsAndPolygons
 
         public ITrapDecomNode RightChild { get; set; }
 
-        public ITrapDecomNode query(IDotsVertex queryPoint)
+        public ITrapDecomNode query(DotsVertex queryPoint)
         {
             return queryPoint.Coordinates.x < splitPoint.x ? LeftChild.query(queryPoint) : RightChild.query(queryPoint);
         }

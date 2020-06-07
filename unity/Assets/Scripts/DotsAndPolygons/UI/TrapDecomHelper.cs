@@ -114,7 +114,7 @@ public class TrapDecomHelper
     }
 
     private static TrapFace ExtractFace(Vector2 orientationHelper1, Vector2 orientationHelper2, LineSegment upperline,
-        LineSegment lowerline, IDotsEdge upperDotsEdge, IDotsEdge lowerDotsEdge)
+        LineSegment lowerline, DotsEdge upperDotsEdge, DotsEdge lowerDotsEdge)
     {
         var leftLowerPoint = new Vector2(orientationHelper1.x, lowerline.Y(orientationHelper1.x));
         var leftUpperPoint = new Vector2(orientationHelper1.x, upperline.Y(orientationHelper1.x));
@@ -141,7 +141,7 @@ public class TrapDecomHelper
     /// <param name="root">The current root node of the tree</param>
     /// <param name="newEdge">The new edge that needs to be inserted</param>
     /// <returns></returns>
-    public static List<TrapFace> Insert(ITrapDecomNode root, IDotsEdge newEdge)
+    public static List<TrapFace> Insert(ITrapDecomNode root, DotsEdge newEdge)
     {
         // Inititialize helper variables for inserting
 

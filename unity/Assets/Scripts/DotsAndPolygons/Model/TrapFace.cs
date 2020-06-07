@@ -45,7 +45,7 @@ namespace DotsAndPolygons
             Parents = new List<ITrapDecomNode>();
         }
 
-        public ITrapDecomNode query(IDotsVertex queryPoint)
+        public ITrapDecomNode query(DotsVertex queryPoint)
         {
             return this;
         }

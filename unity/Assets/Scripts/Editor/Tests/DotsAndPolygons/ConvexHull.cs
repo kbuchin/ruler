@@ -16,7 +16,7 @@ namespace DotsAndPolygons.Tests
             var c = new Vector2(0.2f, 1.2f);
             var d = new Vector2(.5f, .5f);
 
-            var vertices = new List<IDotsVertex>
+            var vertices = new List<DotsVertex>
             {
                 new DotsVertex(a),
                 new DotsVertex(b),
@@ -64,7 +64,7 @@ namespace DotsAndPolygons.Tests
             var g = new Vector2(.55f, .6f);
             var h = new Vector2(.45f, .3f);
 
-            var vertices = new List<IDotsVertex>
+            var vertices = new List<DotsVertex>
             {
                 new DotsVertex(a),
                 new DotsVertex(b),
@@ -105,7 +105,7 @@ namespace DotsAndPolygons.Tests
             var h = new Vector2(.45f, .3f);
             var i = new Vector2(1.2f, 1.3f);
 
-            var vertices = new List<IDotsVertex>
+            var vertices = new List<DotsVertex>
             {
                 new DotsVertex(a),
                 new DotsVertex(b),

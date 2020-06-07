@@ -8,10 +8,10 @@ namespace DotsAndPolygons
         {
         }
 
-        public abstract (IDotsVertex, IDotsVertex) NextMove(
-            HashSet<IDotsEdge> dotsEdges,
-            HashSet<IDotsHalfEdge> dotsHalfEdges,
-            HashSet<IDotsFace> faces, 
-            IEnumerable<IDotsVertex> vertices);
+        public abstract (DotsVertex, DotsVertex) NextMove(
+            HashSet<DotsEdge> dotsEdges,
+            HashSet<DotsHalfEdge> dotsHalfEdges,
+            HashSet<DotsFace> faces, 
+            IEnumerable<DotsVertex> vertices);
     }
 }

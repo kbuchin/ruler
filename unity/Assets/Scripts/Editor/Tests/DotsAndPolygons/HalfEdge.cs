@@ -15,9 +15,9 @@ namespace DotsAndPolygons.Tests
 
     public class HalfEdge
     {
-        private static HashSet<IDotsHalfEdge> SimpleEdge()
+        private static HashSet<DotsHalfEdge> SimpleEdge()
         {
-            var halfEdges = new HashSet<IDotsHalfEdge>();
+            var halfEdges = new HashSet<DotsHalfEdge>();
 
             var a = new DotsVertex
             (
@@ -30,8 +30,8 @@ namespace DotsAndPolygons.Tests
 
             AddEdge(a, b, 1, halfEdges, new[] {a, b}, GameMode.GameMode2);
 
-            IDotsHalfEdge ab = halfEdges.First(it => it.Origin == a);
-            IDotsHalfEdge ba = halfEdges.First(it => it.Origin == b);
+            DotsHalfEdge ab = halfEdges.First(it => it.Origin == a);
+            DotsHalfEdge ba = halfEdges.First(it => it.Origin == b);
 
             ab.Name = "ab";
             ba.Name = "ba";
@@ -55,28 +55,28 @@ namespace DotsAndPolygons.Tests
                 new Vector2(0, 1)
             );
 
-            var edges = new HashSet<IDotsHalfEdge>();
+            var edges = new HashSet<DotsHalfEdge>();
 
             AddEdge(a, b, 1, edges, new List<DotsVertex>(), GameMode.GameMode2);
 
-            IDotsHalfEdge ab = edges.First(it => it.Origin == a);
-            IDotsHalfEdge ba = edges.First(it => it.Origin == b);
+            DotsHalfEdge ab = edges.First(it => it.Origin == a);
+            DotsHalfEdge ba = edges.First(it => it.Origin == b);
 
             ab.Name = "ab";
             ba.Name = "ba";
 
             AddEdge(b, c, 1, edges, new List<DotsVertex>(), GameMode.GameMode2);
 
-            IDotsHalfEdge bc = edges.First(it => it.Origin == b && it.Name == null);
-            IDotsHalfEdge cb = edges.First(it => it.Origin == c && it.Name == null);
+            DotsHalfEdge bc = edges.First(it => it.Origin == b && it.Name == null);
+            DotsHalfEdge cb = edges.First(it => it.Origin == c && it.Name == null);
 
             bc.Name = "bc";
             cb.Name = "cb";
 
             AddEdge(a, c, 1, edges, new List<DotsVertex>(), GameMode.GameMode2);
 
-            IDotsHalfEdge ac = edges.First(it => it.Origin == a && it.Name == null);
-            IDotsHalfEdge ca = edges.First(it => it.Origin == c && it.Name == null);
+            DotsHalfEdge ac = edges.First(it => it.Origin == a && it.Name == null);
+            DotsHalfEdge ca = edges.First(it => it.Origin == c && it.Name == null);
 
             ac.Name = "ac";
             ca.Name = "ca";
@@ -106,15 +106,15 @@ namespace DotsAndPolygons.Tests
         [Test]
         public void SimpleTest()
         {
-            HashSet<IDotsHalfEdge> edges = SimpleEdge();
+            HashSet<DotsHalfEdge> edges = SimpleEdge();
 
             Assert.AreEqual(
                 2,
                 edges.Count
             );
 
-            IDotsHalfEdge ab = edges.First(it => it.Name == "ab");
-            IDotsHalfEdge ba = edges.First(it => it.Name == "ba");
+            DotsHalfEdge ab = edges.First(it => it.Name == "ab");
+            DotsHalfEdge ba = edges.First(it => it.Name == "ba");
 
             Assert.AreEqual(
                 ba,
@@ -137,10 +137,10 @@ namespace DotsAndPolygons.Tests
         [Test]
         public void ComplexerTest()
         {
-            HashSet<IDotsHalfEdge> edges = SimpleEdge();
+            HashSet<DotsHalfEdge> edges = SimpleEdge();
 
-            IDotsHalfEdge ab = edges.First(it => it.Name == "ab");
-            IDotsHalfEdge ba = edges.First(it => it.Name == "ba");
+            DotsHalfEdge ab = edges.First(it => it.Name == "ab");
+            DotsHalfEdge ba = edges.First(it => it.Name == "ba");
 
             var a = (DotsVertex) ab.Origin;
             var b = (DotsVertex) ba.Origin;
@@ -152,8 +152,8 @@ namespace DotsAndPolygons.Tests
 
             AddEdge(b, c, 1, edges, new List<DotsVertex>(), GameMode.GameMode2);
 
-            IDotsHalfEdge bc = edges.First(it => it.Origin == b && it.Name == null);
-            IDotsHalfEdge cb = edges.First(it => it.Origin == c && it.Name == null);
+            DotsHalfEdge bc = edges.First(it => it.Origin == b && it.Name == null);
+            DotsHalfEdge cb = edges.First(it => it.Origin == c && it.Name == null);
 
             bc.Name = "bc";
             cb.Name = "cb";
@@ -179,10 +179,10 @@ namespace DotsAndPolygons.Tests
         [Test]
         public void EvenComplexerTest()
         {
-            HashSet<IDotsHalfEdge> edges = SimpleEdge();
+            HashSet<DotsHalfEdge> edges = SimpleEdge();
 
-            IDotsHalfEdge ab = edges.First(it => it.Name == "ab");
-            IDotsHalfEdge ba = edges.First(it => it.Name == "ba");
+            DotsHalfEdge ab = edges.First(it => it.Name == "ab");
+            DotsHalfEdge ba = edges.First(it => it.Name == "ba");
 
             var a = (DotsVertex) ab.Origin;
             var b = (DotsVertex) ba.Origin;
@@ -194,16 +194,16 @@ namespace DotsAndPolygons.Tests
 
             AddEdge(b, c, 1, edges, new List<DotsVertex>(), GameMode.GameMode2);
 
-            IDotsHalfEdge bc = edges.First(it => it.Origin == b && it.Name == null);
-            IDotsHalfEdge cb = edges.First(it => it.Origin == c && it.Name == null);
+            DotsHalfEdge bc = edges.First(it => it.Origin == b && it.Name == null);
+            DotsHalfEdge cb = edges.First(it => it.Origin == c && it.Name == null);
 
             bc.Name = "bc";
             cb.Name = "cb";
 
             AddEdge(a, c, 1, edges, new List<DotsVertex>(), GameMode.GameMode2);
 
-            IDotsHalfEdge ac = edges.First(it => it.Origin == a && it.Name == null);
-            IDotsHalfEdge ca = edges.First(it => it.Origin == c && it.Name == null);
+            DotsHalfEdge ac = edges.First(it => it.Origin == a && it.Name == null);
+            DotsHalfEdge ca = edges.First(it => it.Origin == c && it.Name == null);
 
             ac.Name = "ac";
             ca.Name = "ca";
@@ -271,10 +271,10 @@ namespace DotsAndPolygons.Tests
         [Test]
         public void ComplexestTest()
         {
-            HashSet<IDotsHalfEdge> edges = SimpleEdge();
+            HashSet<DotsHalfEdge> edges = SimpleEdge();
 
-            IDotsHalfEdge ab = edges.First(it => it.Name == "ab");
-            IDotsHalfEdge ba = edges.First(it => it.Name == "ba");
+            DotsHalfEdge ab = edges.First(it => it.Name == "ab");
+            DotsHalfEdge ba = edges.First(it => it.Name == "ba");
 
             var a = (DotsVertex) ab.Origin;
             var b = (DotsVertex) ba.Origin;
@@ -286,16 +286,16 @@ namespace DotsAndPolygons.Tests
 
             AddEdge(b, c, 1, edges, new List<DotsVertex>(), GameMode.GameMode2);
 
-            IDotsHalfEdge bc = edges.First(it => it.Origin == b && it.Name == null);
-            IDotsHalfEdge cb = edges.First(it => it.Origin == c && it.Name == null);
+            DotsHalfEdge bc = edges.First(it => it.Origin == b && it.Name == null);
+            DotsHalfEdge cb = edges.First(it => it.Origin == c && it.Name == null);
 
             bc.Name = "bc";
             cb.Name = "cb";
 
             AddEdge(a, c, 1, edges, new List<DotsVertex>(), GameMode.GameMode2);
 
-            IDotsHalfEdge ac = edges.First(it => it.Origin == a && it.Name == null);
-            IDotsHalfEdge ca = edges.First(it => it.Origin == c && it.Name == null);
+            DotsHalfEdge ac = edges.First(it => it.Origin == a && it.Name == null);
+            DotsHalfEdge ca = edges.First(it => it.Origin == c && it.Name == null);
 
             ac.Name = "ac";
             ca.Name = "ca";
@@ -307,8 +307,8 @@ namespace DotsAndPolygons.Tests
 
             AddEdge(d, a, 1, edges, new List<DotsVertex>(), GameMode.GameMode2);
 
-            IDotsHalfEdge ad = edges.First(it => it.Origin == a && it.Name == null);
-            IDotsHalfEdge da = edges.First(it => it.Origin == d && it.Name == null);
+            DotsHalfEdge ad = edges.First(it => it.Origin == a && it.Name == null);
+            DotsHalfEdge da = edges.First(it => it.Origin == d && it.Name == null);
 
             ad.Name = "ad";
             da.Name = "da";
@@ -403,8 +403,8 @@ namespace DotsAndPolygons.Tests
                 new Vector2(0, 3)
             );
 
-            var allVertices = new List<IDotsVertex> {o, a1, a2, b1, b2, b3};
-            var allHalfEdges = new HashSet<IDotsHalfEdge>();
+            var allVertices = new List<DotsVertex> {o, a1, a2, b1, b2, b3};
+            var allHalfEdges = new HashSet<DotsHalfEdge>();
             //Assert.IsFalse(AddEdge(o, a1, 0, allHalfEdges, allVertices, GameMode.GameMode2) > 0);
             //Assert.IsFalse(AddEdge(o, a1, 0, allHalfEdges, allVertices, GameMode.GameMode2) > 0);
             //Assert.IsFalse(AddEdge(a1, a2, 0, allHalfEdges, allVertices, GameMode.GameMode2) > 0);
@@ -450,8 +450,8 @@ namespace DotsAndPolygons.Tests
                 new Vector2(-4, -2)
             );
 
-            var allVertices = new List<IDotsVertex> {o, a1, a2, b1, b2, b3};
-            var allHalfEdges = new HashSet<IDotsHalfEdge>();
+            var allVertices = new List<DotsVertex> {o, a1, a2, b1, b2, b3};
+            var allHalfEdges = new HashSet<DotsHalfEdge>();
             //Assert.IsFalse(AddEdge(o, a1, 0, allHalfEdges, allVertices, GameMode.GameMode2) > 0);
             //Assert.IsFalse(AddEdge(a1, a2, 0, allHalfEdges, allVertices, GameMode.GameMode2) > 0);
             //Assert.IsTrue(AddEdge(a2, o, 0, allHalfEdges, allVertices, GameMode.GameMode2) > 0);

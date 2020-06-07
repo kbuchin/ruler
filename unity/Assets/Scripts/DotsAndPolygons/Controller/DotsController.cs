@@ -36,7 +36,7 @@ namespace DotsAndPolygons
         [SerializeField] public bool AiEnabled;
         [SerializeField] public bool p1Ai;
 
-        protected int numberOfDots = 10; // TODO
+        protected int numberOfDots = 20; // TODO
         private float minX = -8.0f;
         private float maxX = 8.0f;
         private float minY = -3.5f;
@@ -54,10 +54,10 @@ namespace DotsAndPolygons
         public UnityDotsVertex SecondPoint { get; set; }
 
 
-        public HashSet<IDotsVertex> Vertices { get; set; } = new HashSet<IDotsVertex>();
-        protected HashSet<IDotsHalfEdge> HalfEdges { get; set; } = new HashSet<IDotsHalfEdge>();
-        protected HashSet<IDotsEdge> Edges { get; set; } = new HashSet<IDotsEdge>();
-        public HashSet<IDotsFace> Faces { get; set; } = new HashSet<IDotsFace>();
+        public HashSet<UnityDotsVertex> Vertices { get; set; } = new HashSet<UnityDotsVertex>();
+        protected HashSet<UnityDotsHalfEdge> HalfEdges { get; set; } = new HashSet<UnityDotsHalfEdge>();
+        protected HashSet<UnityDotsEdge> Edges { get; set; } = new HashSet<UnityDotsEdge>();
+        public HashSet<UnityDotsFace> Faces { get; set; } = new HashSet<UnityDotsFace>();
         public DotsPlayer CurrentPlayer { get; set; }
         public DotsPlayer Player1 { get; set; }
         public DotsPlayer Player2 { get; set; }
@@ -100,13 +100,13 @@ namespace DotsAndPolygons
 
         private void MoveAiPlayerForThread()
         {
-            (IDotsVertex a, IDotsVertex b) = (CurrentPlayer as AiPlayer)
-                .NextMove(Edges, HalfEdges, Faces, Vertices);
+            (DotsVertex a, DotsVertex b) = (CurrentPlayer as AiPlayer)
+                .NextMove(Edges, HalfEdges.Select(x => x.DotsHalfEdge).ToHashSet(), Faces.Select(x => x.DotsFace).ToHashSet(), Vertices.Select(x => x.dotsVertex));
 
             UnityMainThreadDispatcher.Instance().Enqueue(RunPostUpdate(DoMove, a, b));
         }
 
-        IEnumerator RunPostUpdate(Action<IDotsVertex, IDotsVertex> _method, IDotsVertex a, IDotsVertex b)
+        IEnumerator RunPostUpdate(Action<DotsVertex, DotsVertex> _method, DotsVertex a, DotsVertex b)
         {
             // If RunOnMainThread() is called in a secondary thread,
             // this coroutine will start on the secondary thread
@@ -128,12 +128,12 @@ namespace DotsAndPolygons
             }
         }
 
-        public void DoMove(IDotsVertex firstPoint, IDotsVertex secondPoint)
+        public void DoMove(DotsVertex firstPoint, DotsVertex secondPoint)
         {
             AddVisualEdge(firstPoint, secondPoint);
 
-            (IDotsFace face1, IDotsFace face2) = AddEdge(firstPoint, secondPoint, CurrentPlayerValue, HalfEdges,
-                Vertices,
+            (DotsFace face1, DotsFace face2) = AddEdge(firstPoint, secondPoint, CurrentPlayerValue, HalfEdges.Select(x => x.DotsHalfEdge).ToHashSet(),
+                Vertices.Select(x => x.dotsVertex),
                 CurrentGamemode, this, root);
 
             RemoveTrapDecomLines();
@@ -176,22 +176,30 @@ namespace DotsAndPolygons
             HelperFunctions.print($"Starting game with Player1 as {Player1.PlayerType} and Player2 as {Player2.PlayerType}");
 
             // get unity objects
-            Vertices = new HashSet<IDotsVertex>();
-            foreach (UnityDotsVertex vertex in FindObjectsOfType<UnityDotsVertex>()) Vertices.Add(vertex);
-            HalfEdges = new HashSet<IDotsHalfEdge>();
-            Edges = new HashSet<IDotsEdge>();
-            Faces = new HashSet<IDotsFace>();
+            Vertices = new HashSet<UnityDotsVertex>();
+            HalfEdges = new HashSet<UnityDotsHalfEdge>();
+            Edges = new HashSet<UnityDotsEdge>();
+            Faces = new HashSet<UnityDotsFace>();
             // disable advance button
             advanceButton.Disable();
 
             InstantObjects = new List<GameObject>();
             InitLevel();
 
-            Hull = ConvexHullHelper.ComputeHull(Vertices.ToList());
+            
+
+            Hull = ConvexHullHelper.ComputeHull(Vertices.Select(x => x.dotsVertex).ToList());
             HullArea = Triangulator.Triangulate(
                 new Polygon2D(Hull.Select(it => it.Point1))
             ).Area;
-
+            if(Player1.PlayerType == PlayerType.MinMaxAi)
+            {
+                ((MinMaxAi)Player1).TotalArea = HullArea;
+            }
+            if (Player2.PlayerType == PlayerType.MinMaxAi)
+            {
+                ((MinMaxAi)Player2).TotalArea = HullArea;
+            }
             UpdateVisualArea();
             if (Player1.PlayerType != PlayerType.Player)
             {
@@ -320,7 +328,7 @@ namespace DotsAndPolygons
                 p2Line.SetPosition(index, position);
         }
 
-        public void AddVisualEdge(IDotsVertex a_point1, IDotsVertex a_point2)
+        public void AddVisualEdge(DotsVertex a_point1, DotsVertex a_point2)
         {
             var segment = new LineSegment(a_point1.Coordinates, a_point2.Coordinates);
 
@@ -359,9 +367,9 @@ namespace DotsAndPolygons
             InstantObjects.Add(background);
 
             // disable all vertices
-            foreach (IDotsVertex dotsVertex in Vertices)
+            foreach (UnityDotsVertex unityDotsVertex in Vertices)
             {
-                dotsVertex.InFace = true;
+                unityDotsVertex.dotsVertex.InFace = true;
             }
         }
 
@@ -376,7 +384,7 @@ namespace DotsAndPolygons
         {
             HelperFunctions.print($"Current hull: {Hull}");
             HelperFunctions.print($"Current edges: {Edges}");
-            IEnumerable<IDotsEdge> hullEdges = Edges.Where(edge => Hull.Any(hullEdge =>
+            IEnumerable<UnityDotsEdge> hullEdges = Edges.Where(edge => Hull.Any(hullEdge =>
                 hullEdge.Point1.Equals(edge.Segment.Point2) && hullEdge.Point2.Equals(edge.Segment.Point1)
                 || hullEdge.Equals(edge.Segment)));
             return Hull.Count == hullEdges.Count();
