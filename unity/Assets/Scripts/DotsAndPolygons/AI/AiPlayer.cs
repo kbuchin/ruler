@@ -8,7 +8,7 @@ namespace DotsAndPolygons
         {
         }
 
-        public abstract (DotsVertex, DotsVertex) NextMove(
+        public abstract List<PotentialMove> NextMove(
             HashSet<DotsEdge> dotsEdges,
             HashSet<DotsHalfEdge> dotsHalfEdges,
             HashSet<DotsFace> faces, 

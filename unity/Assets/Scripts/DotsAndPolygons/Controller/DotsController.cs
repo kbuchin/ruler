@@ -13,6 +13,7 @@ using Util.Geometry.Polygon;
 namespace DotsAndPolygons
 {
     using System.Collections;
+    using System.IO;
     using System.Threading;
     using static HelperFunctions;
 
@@ -36,7 +37,7 @@ namespace DotsAndPolygons
         [SerializeField] public bool AiEnabled;
         [SerializeField] public bool p1Ai;
 
-        protected int numberOfDots = 20; // TODO
+        protected int numberOfDots = 10; // TODO
         private float minX = -8.0f;
         private float maxX = 8.0f;
         private float minY = -3.5f;
@@ -49,6 +50,10 @@ namespace DotsAndPolygons
 
         protected List<TrapFace> faces;
         protected List<GameObject> lines = new List<GameObject>();
+        private List<PotentialMove>[] paths = new List<PotentialMove>[2] { 
+            new List<PotentialMove>(),
+            new List<PotentialMove>()
+        };
 
         public UnityDotsVertex FirstPoint { get; set; }
         public UnityDotsVertex SecondPoint { get; set; }
@@ -98,15 +103,31 @@ namespace DotsAndPolygons
             }
         }
 
+        protected void UpdatePath(DotsVertex a, DotsVertex b)
+        {
+            int nextPlayer = Convert.ToInt32(CurrentPlayer.PlayerNumber.Switch()) - 1;
+            PotentialMove move = paths[nextPlayer].LastOrDefault();
+            if(move != null && ((move.A.Equals(a) && move.B.Equals(b)) || (move.A.Equals(b) && move.B.Equals(a)))) 
+            {
+                paths[nextPlayer].Remove(move);
+            }
+        }
+
         private void MoveAiPlayerForThread()
         {
-            (DotsVertex a, DotsVertex b) = (CurrentPlayer as AiPlayer).NextMove(
+            int index = Convert.ToInt32(CurrentPlayer.PlayerNumber) - 1;
+            List<PotentialMove> moves = (CurrentPlayer as AiPlayer).NextMove(
                 Edges.Select(x => x.DotsEdge).ToHashSet(),
                 HalfEdges,
                 Faces.Select(x => x.DotsFace).ToHashSet(),
                 Vertices.Select(x => x.dotsVertex).ToHashSet()
             );
-
+            DotsVertex a = moves.Last().A;
+            DotsVertex b = moves.Last().B;
+            moves.Remove(moves.Last());
+            paths[index] = moves;
+            
+            
             UnityMainThreadDispatcher.Instance().Enqueue(RunPostUpdate(DoMove, a, b));
         }
 
@@ -124,10 +145,23 @@ namespace DotsAndPolygons
         {
             if (CurrentPlayer.PlayerType != PlayerType.Player)
             {
-                Thread instanceCaller = new Thread(new ThreadStart(MoveAiPlayerForThread));
+                int index = Convert.ToInt32(CurrentPlayer.PlayerNumber) - 1;
+                List<PotentialMove> currentPath = paths[index];
+                if (currentPath.Any() && currentPath.Last().playerNumber == CurrentPlayer.PlayerNumber)
+                {
+                    DotsVertex a = currentPath.Last().A;
+                    DotsVertex b = currentPath.Last().B;
+                    currentPath.Remove(currentPath.Last());
+                    DoMove(a, b);
+                }
+                else
+                {
+                    Thread instanceCaller = new Thread(new ThreadStart(MoveAiPlayerForThread));
 
-                // Start the thread.
-                instanceCaller.Start();
+                    // Start the thread.
+                    instanceCaller.Start();
+                }
+                
             }
         }
 
@@ -148,7 +182,7 @@ namespace DotsAndPolygons
 
             RemoveTrapDecomLines();
             ShowTrapDecomLines();
-
+            UpdatePath(firstPoint, secondPoint);
             bool finished = CheckSolutionOfGameState();
             if (!finished && face1 == null && face2 == null)
             {
@@ -159,7 +193,6 @@ namespace DotsAndPolygons
                 MoveForAiPlayer();
             }
         }
-
 
         public void AddToPlayerArea(int player, float area)
         {
@@ -204,12 +237,12 @@ namespace DotsAndPolygons
             ).Area;
             if (Player1.PlayerType == PlayerType.MinMaxAi)
             {
-                ((MinMaxAi) Player1).TotalArea = HullArea;
+                ((MinMaxAi) Player1).TotalHullArea = HullArea;
             }
 
             if (Player2.PlayerType == PlayerType.MinMaxAi)
             {
-                ((MinMaxAi) Player2).TotalArea = HullArea;
+                ((MinMaxAi) Player2).TotalHullArea = HullArea;
             }
 
             UpdateVisualArea();

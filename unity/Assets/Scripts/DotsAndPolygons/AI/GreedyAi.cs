@@ -166,7 +166,7 @@ namespace DotsAndPolygons
             halfEdges.Remove(toRemove.Twin);
         }
 
-        public override (DotsVertex, DotsVertex) NextMove(
+        public override List<PotentialMove> NextMove(
             HashSet<DotsEdge> edges,
             HashSet<DotsHalfEdge> halfEdges,
             HashSet<DotsFace> faces, 
@@ -176,8 +176,9 @@ namespace DotsAndPolygons
             PotentialMove potentialMove = MinimalMove(0, vertices.Count, vertices.ToArray(), edges, halfEdges, faces);
 
             HelperFunctions.print($"PotentialMove: {potentialMove}");
-
-            return (potentialMove.A, potentialMove.B);
+            List<PotentialMove> path = new List<PotentialMove>();
+            path.Add(potentialMove);
+            return path;
         }
     }
 }

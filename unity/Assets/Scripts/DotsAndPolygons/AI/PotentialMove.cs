@@ -11,6 +11,8 @@ namespace DotsAndPolygons
     {
         public DotsVertex A { get; set; }
         public DotsVertex B { get; set; }
+        public List<ValueMove> Path { get; set; } = new List<ValueMove>();
+        public PlayerNumber playerNumber { get; set; }
         public PotentialMove(DotsVertex A, DotsVertex B)
         {
             this.A = A;
@@ -22,7 +24,7 @@ namespace DotsAndPolygons
     
     public sealed class ValueMove : PotentialMove
     {
-        public float BestValue { get; set; }
+        public float BestValue { get; set; }        
 
         //private float ThisPlayerArea { get; set; }
 
