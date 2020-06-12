@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 using UnityEngine;
 using Util.Geometry;
@@ -18,14 +20,50 @@ namespace DotsAndPolygons
 
         private float threshold = 0.33f;
 
+        private volatile float _alfa = float.MinValue;
+
+        private volatile float _beta = float.MaxValue;
+
+        private static int usingAlfa = 0;
+
+        private static int usingBeta = 0;
+
+        private volatile int[] threadDepth;
+
+        private volatile ValueMove[] resultMoves;
+
+        private int numberOfThreads = 4;
+
+        private ManualResetEvent manualResetEvent = new ManualResetEvent(false);
+
         public MinMaxAi(PlayerNumber player, HelperFunctions.GameMode mode) : base(player,
             PlayerType.MinMaxAi, mode)
         {
         }
 
-        public ValueMove MinMaxMove(PlayerNumber player, Dcel dCEL,
-            float alfa = float.MinValue, float beta = float.MaxValue, int currentDepth = 0)
+        private ValueMove MinMaxMove(PlayerNumber player, Dcel dCEL,
+            int start, int end, int threadId, int currentDepth = 0)
         {
+            if(threadDepth.Distinct().Count() != 1)
+            {
+                threadDepth[threadId] = currentDepth;
+                if(threadDepth.Distinct().Count() != 1)
+                {
+                    manualResetEvent.Set();
+                    manualResetEvent.Reset();
+                }
+                else
+                {
+                    manualResetEvent.WaitOne();
+                }
+            }
+            
+            
+            if (currentDepth > 0)
+            {
+                start = 0;
+                end = dCEL.Vertices.Length;
+            }
             float value = dCEL.DotsFaces.Sum(x =>
                 x.Player == Convert.ToInt32(this.PlayerNumber) ? x.AreaMinusInner : -x.AreaMinusInner);
             float otherPlayerArea = dCEL.DotsFaces.Sum(x => x.Player == Convert.ToInt32(this.PlayerNumber.Switch()) ? x.AreaMinusInner : 0.0f);
@@ -37,9 +75,9 @@ namespace DotsAndPolygons
             bool movePossible = false;
             var gameStateMove = new ValueMove(0.0f, null, null);
             gameStateMove.BestValue = player.Equals(this.PlayerNumber) ? float.MinValue : float.MaxValue;
-            for (int i = 0; i < dCEL.Vertices.Length - 1; i++)
+            for (int i = start; i < end - 1; i++)
             {
-                for (int j = i + 1; j < dCEL.Vertices.Length; j++)
+                for (int j = i + 1; j < end; j++)
                 {
                     DotsVertex a = dCEL.Vertices[i];
                     DotsVertex b = dCEL.Vertices[j];
@@ -68,12 +106,14 @@ namespace DotsAndPolygons
                         if (player.Equals(this.PlayerNumber))
                         {
                             ValueMove deeperMoveSamePlayer =
-                                MinMaxMove(nextPlayer, dCEL, alfa, beta, newDepth);
+                                MinMaxMove(nextPlayer, dCEL, start, end, threadId, newDepth);
                             if (gameStateMove.BestValue < deeperMoveSamePlayer.BestValue)
                             {
                                 UpdateGameStateMove(player, gameStateMove, a, b, deeperMoveSamePlayer.BestValue, deeperMoveSamePlayer.Path);
-                                alfa = Math.Max(alfa, gameStateMove.BestValue);
-                                if (alfa >= beta)
+
+                                bool alfaLteBeta = UpdateAlfaBeta(gameStateMove.BestValue, float.MaxValue);
+                                
+                                if (!alfaLteBeta)
                                 {
                                     CleanUp(dCEL.HalfEdges, a, b, face1, face2, disabled, dCEL.DotsFaces);
                                     dCEL.Edges.Remove(newEdge);
@@ -84,12 +124,12 @@ namespace DotsAndPolygons
                         else
                         {
                             ValueMove deeperMoveSamePlayer =
-                                MinMaxMove(nextPlayer, dCEL, alfa, beta, newDepth);
+                                MinMaxMove(nextPlayer, dCEL, start, end, threadId, newDepth);
                             if (gameStateMove.BestValue > deeperMoveSamePlayer.BestValue)
                             {
                                 UpdateGameStateMove(player, gameStateMove, a, b, deeperMoveSamePlayer.BestValue, deeperMoveSamePlayer.Path);
-                                beta = Math.Min(beta, gameStateMove.BestValue);
-                                if (beta <= alfa)
+                                bool alfaLteBeta = UpdateAlfaBeta(float.MinValue, gameStateMove.BestValue);
+                                if (alfaLteBeta)
                                 {
                                     CleanUp(dCEL.HalfEdges, a, b, face1, face2, disabled, dCEL.DotsFaces);
                                     dCEL.Edges.Remove(newEdge);
@@ -107,6 +147,43 @@ namespace DotsAndPolygons
             EndLoop:;
             gameStateMove.Path.Add(gameStateMove);
             return movePossible ? gameStateMove : new ValueMove(value, null, null);
+        }
+
+        private void StartThread(PlayerNumber player, Dcel dCEL,
+            int start, int end, int threadId)
+        {
+            HelperFunctions.print($"Thread id: {threadId} is starting", debug: true);
+            ValueMove result = MinMaxMove(player, dCEL, start, end, threadId);
+            HelperFunctions.print($"Thread id: {threadId} is finished", debug: true);
+            resultMoves[threadId] = result;
+        }
+
+        
+
+        private bool UpdateAlfaBeta(float alfaNew, float betaNew)
+        {
+            int count = 0;
+            int max = 1000;
+            while (count < max)
+            {
+                if (0 == Interlocked.Exchange(ref usingAlfa, 1) && 0 == Interlocked.Exchange(ref usingBeta, 1))
+                {
+                    //HelperFunctions.print($"Aquired alfa beta lock", debug: true);
+                    _alfa = !alfaNew.Equals(float.MinValue) ? Math.Max(_alfa, alfaNew) : _alfa;
+                    _beta = !betaNew.Equals(float.MaxValue) ? Math.Min(_beta, alfaNew) : _beta;
+                    bool returner = _alfa <= _beta;
+                    Interlocked.Exchange(ref usingAlfa, 0);
+                    Interlocked.Exchange(ref usingBeta, 0);
+                    //HelperFunctions.print($"released alfa beta lock", debug: true);
+                    return returner;
+                }
+                count++;
+                Thread.Sleep(1);
+                
+            }
+            HelperFunctions.print($"Unable to aquire lock", debug: true);
+            Thread.CurrentThread.Interrupt();
+            return false;
         }
 
         private static void UpdateGameStateMove(PlayerNumber player, ValueMove gameStateMove, DotsVertex a, DotsVertex b, 
@@ -142,10 +219,35 @@ namespace DotsAndPolygons
         {
             HelperFunctions.print("Calculating next minimal move for MinMaxAI player");
             Dcel dCEL = new Dcel(vertices.ToArray(), edges, halfEdges, faces);
-            ValueMove potentialMove = MinMaxMove(PlayerNumber, dCEL);
-            HelperFunctions.print($"PotentialMove: {potentialMove}", debug: true);
+            int rangeSize = Convert.ToInt32(vertices.Count / numberOfThreads);
+            this.resultMoves = new ValueMove[numberOfThreads];
+            this.threadDepth = new int[numberOfThreads];
+            _alfa = float.MinValue;
+            _beta = float.MaxValue;
+            for (int i = 0; i < numberOfThreads; i++)
+            {
+                int start = i * rangeSize;
+                int threadId = i;
+                int end = (i + 1) * rangeSize;
+                if (end > vertices.Count() - 1)
+                {
+                    end = vertices.Count();
+                }
+                var t = new Thread(() => StartThread(this.PlayerNumber, dCEL.Clone(), start, end, threadId));
+                t.Start();
+                
+            }
 
-            return potentialMove.Path.Select(x => (PotentialMove) x ).ToList();
+            while(resultMoves.Any(x => x == null))
+            {
+                Thread.Sleep(1);
+            }
+            float best = resultMoves.Select(x => x.BestValue).Max();
+            ValueMove returner = resultMoves.FirstOrDefault(x => x.BestValue == best && x.A != null && x.B != null);
+            //ValueMove potentialMove = MinMaxMove(PlayerNumber, dCEL);
+            HelperFunctions.print($"PotentialMove: {returner}", debug: true);
+
+            return returner.Path.Select(x => (PotentialMove) x ).ToList();
         }
     }
 }

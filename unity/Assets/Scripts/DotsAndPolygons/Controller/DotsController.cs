@@ -122,8 +122,8 @@ namespace DotsAndPolygons
                 Faces.Select(x => x.DotsFace).ToHashSet(),
                 Vertices.Select(x => x.dotsVertex).ToHashSet()
             );
-            DotsVertex a = moves.Last().A;
-            DotsVertex b = moves.Last().B;
+            DotsVertex a = moves.Last().A.Original;
+            DotsVertex b = moves.Last().B.Original;
             moves.Remove(moves.Last());
             paths[index] = moves;
             

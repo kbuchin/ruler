@@ -38,6 +38,6 @@ namespace DotsAndPolygons
         
         public override string ToString() => $"Coordinates: {Coordinates}, IncidentEdge: {IncidentEdge?.ToString()}, InFace: {InFace}";
 
-        public DotsVertex Clone() => new DotsVertex(Coordinates, IncidentEdge.Clone(), InFace, OnHull);
+        public DotsVertex Clone() => new DotsVertex(Coordinates, IncidentEdge?.Clone(), InFace, OnHull);
     }
 }

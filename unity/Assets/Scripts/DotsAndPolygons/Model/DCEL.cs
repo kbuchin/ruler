@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEditor.Experimental.UIElements.GraphView;
 
 namespace DotsAndPolygons
 {
@@ -36,15 +37,16 @@ namespace DotsAndPolygons
                 stream.Position = 0;
                 var returner = (Dcel) b.Deserialize(stream);
                 stream.Close();
-                
-                // set references to og vertices
+                //returner.Edges.Select(x => new Edge());
+
+                //set references to og vertices
                 for (var i = 0; i < returner.Vertices.Length; i++)
                 {
                     returner.Vertices[i].Original = Vertices[i];
                 }
-
                 return returner;
             }
+            
         }
     }
 }
