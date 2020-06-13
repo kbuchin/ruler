@@ -50,7 +50,9 @@ namespace DotsAndPolygons
 
         protected List<TrapFace> faces;
         protected List<GameObject> lines = new List<GameObject>();
-        private List<PotentialMove>[] paths = new List<PotentialMove>[2] { 
+
+        private List<PotentialMove>[] paths = new List<PotentialMove>[2]
+        {
             new List<PotentialMove>(),
             new List<PotentialMove>()
         };
@@ -107,7 +109,7 @@ namespace DotsAndPolygons
         {
             int nextPlayer = Convert.ToInt32(CurrentPlayer.PlayerNumber.Switch()) - 1;
             PotentialMove move = paths[nextPlayer].LastOrDefault();
-            if(move != null && ((move.A.Equals(a) && move.B.Equals(b)) || (move.A.Equals(b) && move.B.Equals(a)))) 
+            if (move != null && ((move.A.Equals(a) && move.B.Equals(b)) || (move.A.Equals(b) && move.B.Equals(a))))
             {
                 paths[nextPlayer].Remove(move);
             }
@@ -126,8 +128,8 @@ namespace DotsAndPolygons
             DotsVertex b = moves.Last().B.Original;
             moves.Remove(moves.Last());
             paths[index] = moves;
-            
-            
+
+
             UnityMainThreadDispatcher.Instance().Enqueue(RunPostUpdate(DoMove, a, b));
         }
 
@@ -143,25 +145,22 @@ namespace DotsAndPolygons
 
         public void MoveForAiPlayer()
         {
-            if (CurrentPlayer.PlayerType != PlayerType.Player)
+            if (CurrentPlayer.PlayerType == PlayerType.Player) return;
+            int index = Convert.ToInt32(CurrentPlayer.PlayerNumber) - 1;
+            List<PotentialMove> currentPath = paths[index];
+            if (currentPath.Any() && currentPath.Last().PlayerNumber == CurrentPlayer.PlayerNumber)
             {
-                int index = Convert.ToInt32(CurrentPlayer.PlayerNumber) - 1;
-                List<PotentialMove> currentPath = paths[index];
-                if (currentPath.Any() && currentPath.Last().playerNumber == CurrentPlayer.PlayerNumber)
-                {
-                    DotsVertex a = currentPath.Last().A;
-                    DotsVertex b = currentPath.Last().B;
-                    currentPath.Remove(currentPath.Last());
-                    DoMove(a, b);
-                }
-                else
-                {
-                    Thread instanceCaller = new Thread(new ThreadStart(MoveAiPlayerForThread));
+                DotsVertex a = currentPath.Last().A;
+                DotsVertex b = currentPath.Last().B;
+                currentPath.Remove(currentPath.Last());
+                DoMove(a, b);
+            }
+            else
+            {
+                Thread instanceCaller = new Thread(MoveAiPlayerForThread);
 
-                    // Start the thread.
-                    instanceCaller.Start();
-                }
-                
+                // Start the thread.
+                instanceCaller.Start();
             }
         }
 
