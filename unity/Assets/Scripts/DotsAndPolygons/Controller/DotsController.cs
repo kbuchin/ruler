@@ -145,25 +145,22 @@ namespace DotsAndPolygons
 
         public void MoveForAiPlayer()
         {
-            if (CurrentPlayer.PlayerType != PlayerType.Player)
+            if (CurrentPlayer.PlayerType == PlayerType.Player) return;
+            int index = Convert.ToInt32(CurrentPlayer.PlayerNumber) - 1;
+            List<PotentialMove> currentPath = paths[index];
+            if (currentPath.Any() && currentPath.Last().playerNumber == CurrentPlayer.PlayerNumber)
             {
-                int index = Convert.ToInt32(CurrentPlayer.PlayerNumber) - 1;
-                List<PotentialMove> currentPath = paths[index];
-                if (currentPath.Any() && currentPath.Last().playerNumber == CurrentPlayer.PlayerNumber)
-                {
-                    DotsVertex a = currentPath.Last().A.Original ?? currentPath.Last().A;
-                    DotsVertex b = currentPath.Last().B.Original ?? currentPath.Last().B;
-                    currentPath.Remove(currentPath.Last());
-                    DoMove(a, b);
-                }
-                else
-                {
-                    Thread instanceCaller = new Thread(MoveAiPlayerForThread);
+                DotsVertex a = currentPath.Last().A.Original ?? currentPath.Last().A;
+                DotsVertex b = currentPath.Last().B.Original ?? currentPath.Last().B;
+                currentPath.Remove(currentPath.Last());
+                DoMove(a, b);
+            }
+            else
+            {
+                Thread instanceCaller = new Thread(new ThreadStart(MoveAiPlayerForThread));
 
-                    // Start the thread.
-                    instanceCaller.Start();
-                }
-                
+                // Start the thread.
+                instanceCaller.Start();
             }
         }
 

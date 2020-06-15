@@ -9,16 +9,16 @@ namespace DotsAndPolygons
 {
     public class MinMaxAi : AiPlayer
     {
-        private readonly int _maxDepth;
+        private volatile int _maxDepth;
         public float TotalHullArea { get; set; }
 
-        private readonly float _threshold;
+        private volatile float _threshold;
 
         private volatile MoveCollection[] _resultMoves;
 
-        private readonly int _numberOfThreads;
+        private volatile int _numberOfThreads;
 
-        private readonly ManualResetEvent _manualResetEvent = new ManualResetEvent(false);
+        private ManualResetEvent _manualResetEvent = new ManualResetEvent(false);
 
         private List<(int, int)> _pairs = new List<(int, int)>();
 
@@ -103,10 +103,10 @@ namespace DotsAndPolygons
                 dcel.Edges.Add(newEdge);
 
 
-                if (player.Equals(this.PlayerNumber))
+                if (player.Equals(PlayerNumber))
                 {
                     MoveCollection deeperMoveSamePlayer =
-                        MinMaxMove(nextPlayer, dcel, start, end, alpha, beta, newDepth);
+                        MinMaxMove(player: nextPlayer, dcel: dcel, start: start, end: end, alpha: alpha, beta: beta, currentDepth: newDepth);
                     if (moveCollection.Value < deeperMoveSamePlayer.Value)
                     {
                         UpdateGameStateMove(player, gameStateMove, a, b, deeperMoveSamePlayer.Value, moveCollection,
@@ -125,7 +125,7 @@ namespace DotsAndPolygons
                 else
                 {
                     MoveCollection deeperMoveSamePlayer =
-                        MinMaxMove(nextPlayer, dcel, start, end, alpha, beta, newDepth);
+                        MinMaxMove(player: nextPlayer, dcel: dcel, start: start, end: end, alpha: alpha, beta: beta, currentDepth: newDepth);
                     if (moveCollection.Value > deeperMoveSamePlayer.Value)
                     {
                         UpdateGameStateMove(player, gameStateMove, a, b, deeperMoveSamePlayer.Value, moveCollection,
@@ -157,9 +157,9 @@ namespace DotsAndPolygons
 
         private void StartThread(PlayerNumber player, Dcel dcel, int start, int end, int threadId)
         {
-            HelperFunctions.print($"Thread id: {threadId} is starting");
-            MoveCollection result = MinMaxMove(player, dcel, start, end);
-            HelperFunctions.print($"Thread id: {threadId} is finished");
+            HelperFunctions.print($"Thread id: {threadId} is starting", true);
+            MoveCollection result = MinMaxMove(player: player, dcel: dcel, start: start, end: end);
+            HelperFunctions.print($"Thread id: {threadId} is finished", true);
             _resultMoves[threadId] = result;
             _manualResetEvent.Set();
             _manualResetEvent.Reset();
@@ -221,6 +221,7 @@ namespace DotsAndPolygons
             while (_resultMoves.Any(x => x == null))
             {
                 _manualResetEvent.WaitOne();
+                HelperFunctions.print($"Resultmoves: {string.Join(", ", _resultMoves as object[])}");
             }
 
             MoveCollection returner = _resultMoves.OrderByDescending(x => x.Value).FirstOrDefault();

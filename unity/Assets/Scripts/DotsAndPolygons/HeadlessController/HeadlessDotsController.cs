@@ -71,8 +71,8 @@ namespace DotsAndPolygons
         public HashSet<LineSegment> Hull { get; set; }
         public float HullArea { get; set; }
 
-        public bool Running { get; private set; } = false;
-        private readonly ManualResetEvent _manualResetEvent = new ManualResetEvent(false);
+        public volatile bool Running = false;
+        private readonly ManualResetEvent _manualReset = new ManualResetEvent(false);
 
         public void SwitchPlayer()
         {
@@ -96,7 +96,7 @@ namespace DotsAndPolygons
             }
         }
 
-        private void MoveAiPlayer()
+        private void MoveAiPlayerForThread()
         {
             int index = Convert.ToInt32(CurrentPlayer.PlayerNumber) - 1;
             List<PotentialMove> moves = (CurrentPlayer as AiPlayer).NextMove(
@@ -127,12 +127,16 @@ namespace DotsAndPolygons
             }
             else
             {
-                MoveAiPlayer();
+                Thread instanceCaller = new Thread(MoveAiPlayerForThread);
+
+                // Start the thread.
+                instanceCaller.Start();
             }
         }
 
         public void DoMove(DotsVertex firstPoint, DotsVertex secondPoint)
         {
+            print($"Player {CurrentPlayer} played move: {firstPoint}, {secondPoint}", true);
             AddVisualEdge(firstPoint, secondPoint);
 
             (DotsFace face1, DotsFace face2) = AddEdge(
@@ -176,7 +180,7 @@ namespace DotsAndPolygons
         }
 
         // Start is called before the first frame update
-        public Task Start()
+        public void Start()
         {
             Running = true;
             CurrentPlayer = Player1;
@@ -213,14 +217,11 @@ namespace DotsAndPolygons
                 MoveForAiPlayer();
             }
 
-            return Task.Factory.StartNew(() =>
+
+            while (Running)
             {
-                // wait until finished
-                while (Running)
-                {
-                    _manualResetEvent.WaitOne();
-                }
-            });
+                _manualReset.WaitOne();
+            }
         }
 
         public void AddDotsInGeneralPosition()
@@ -274,9 +275,10 @@ namespace DotsAndPolygons
                 unityDotsVertex.InFace = true;
             }
 
+
             Running = false;
-            _manualResetEvent.Set();
-            _manualResetEvent.Reset();
+            _manualReset.Set();
+            _manualReset.Reset();
         }
 
         // public void AdvanceLevel()
