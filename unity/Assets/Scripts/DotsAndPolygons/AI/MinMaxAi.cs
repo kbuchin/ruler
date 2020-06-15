@@ -13,187 +13,157 @@ namespace DotsAndPolygons
 {
     public class MinMaxAi : AiPlayer
     {
-        private int MaxDepth = 5;
-
-        private List<ValueMove> currentPath = new List<ValueMove>();
+        private int MaxDepth = 6;
         public float TotalHullArea { get; set; }
 
-        private float threshold = 0.33f;
+        private float threshold = 0.5f;
 
-        private volatile float _alfa = float.MinValue;
+        private volatile MoveCollection[] resultMoves;
 
-        private volatile float _beta = float.MaxValue;
-
-        private static int usingAlfa = 0;
-
-        private static int usingBeta = 0;
-
-        private volatile int[] threadDepth;
-
-        private volatile ValueMove[] resultMoves;
-
-        private int numberOfThreads = 4;
+        private int numberOfThreads = 2;
 
         private ManualResetEvent manualResetEvent = new ManualResetEvent(false);
+
+        private List<(int, int)> pairs = new List<(int, int)>();
 
         public MinMaxAi(PlayerNumber player, HelperFunctions.GameMode mode) : base(player,
             PlayerType.MinMaxAi, mode)
         {
+            
         }
 
-        private ValueMove MinMaxMove(PlayerNumber player, Dcel dCEL,
-            int start, int end, int threadId, int currentDepth = 0)
+        public void InitPairs(int numberOfDots)
         {
-            if(threadDepth.Distinct().Count() != 1)
+            for (int i = 0; i < numberOfDots; i++)
             {
-                threadDepth[threadId] = currentDepth;
-                if(threadDepth.Distinct().Count() != 1)
+                for (int j = i + 1; j < numberOfDots; j++)
                 {
-                    manualResetEvent.Set();
-                    manualResetEvent.Reset();
-                }
-                else
-                {
-                    manualResetEvent.WaitOne();
+                    pairs.Add((i, j));
                 }
             }
-            
-            
+        }
+
+        private MoveCollection MinMaxMove(PlayerNumber player, Dcel dCEL,
+            int start, int end, int threadId, float alfa = float.MinValue, float beta = float.MaxValue, int currentDepth = 0)
+        {
             if (currentDepth > 0)
             {
                 start = 0;
-                end = dCEL.Vertices.Length;
+                end = pairs.Count;
             }
             float value = dCEL.DotsFaces.Sum(x =>
                 x.Player == Convert.ToInt32(this.PlayerNumber) ? x.AreaMinusInner : -x.AreaMinusInner);
             float otherPlayerArea = dCEL.DotsFaces.Sum(x => x.Player == Convert.ToInt32(this.PlayerNumber.Switch()) ? x.AreaMinusInner : 0.0f);
+            MoveCollection moveCollection = new MoveCollection(value);
+            var gameStateMove = new ValueMove(0.0f, null, null);
+            moveCollection.Value = player.Equals(this.PlayerNumber) ? float.MinValue : float.MaxValue;
             if (currentDepth >= MaxDepth)
             {
-                return new ValueMove(value, null, null);
+                return new MoveCollection(value);
             }
 
             bool movePossible = false;
-            var gameStateMove = new ValueMove(0.0f, null, null);
-            gameStateMove.BestValue = player.Equals(this.PlayerNumber) ? float.MinValue : float.MaxValue;
-            for (int i = start; i < end - 1; i++)
+            List<(int, int)> pairstoEvaluate = pairs.Skip(start).Take(end - start).ToList();
+            foreach ((int i, int j) in pairstoEvaluate)
             {
-                for (int j = i + 1; j < end; j++)
+                DotsVertex a = dCEL.Vertices[i];
+                DotsVertex b = dCEL.Vertices[j];
+                if(currentDepth == 0)
                 {
-                    DotsVertex a = dCEL.Vertices[i];
-                    DotsVertex b = dCEL.Vertices[j];
-                    if (HelperFunctions.EdgeIsPossible(a, b, dCEL.Edges, dCEL.DotsFaces))
+                    alfa = float.MinValue;
+                    beta = float.MaxValue;
+                }
+                if (HelperFunctions.EdgeIsPossible(a, b, dCEL.Edges, dCEL.DotsFaces))
+                {
+                    if(otherPlayerArea > threshold * TotalHullArea)
                     {
-                        movePossible = true;
-                        if(otherPlayerArea > threshold * TotalHullArea)
-                        {
-                            UpdateGameStateMove(player, gameStateMove, a, b, value, new List<ValueMove>());
-                            goto EndLoop;
-                        }
-                        List<DotsVertex> disabled = new List<DotsVertex>();
-                        (DotsFace face1, DotsFace face2) = HelperFunctions.AddEdge(a, b,
-                            Convert.ToInt32(player),
-                            dCEL.HalfEdges, dCEL.Vertices, GameMode, newlyDisabled: disabled);
-                        if (face1 != null) dCEL.DotsFaces.Add(face1);
-                        if (face2 != null) dCEL.DotsFaces.Add(face2);
-                        float faceArea = (face1?.AreaMinusInner ?? 0.0f) + (face2?.AreaMinusInner ?? 0.0f);
-
-                        PlayerNumber nextPlayer = faceArea > 0.0f ? player : player.Switch();
-                        int newDepth = currentDepth + 1; 
-                        var newEdge = new DotsEdge(new LineSegment(a.Coordinates, b.Coordinates));
-                        dCEL.Edges.Add(newEdge);
-
-
-                        if (player.Equals(this.PlayerNumber))
-                        {
-                            ValueMove deeperMoveSamePlayer =
-                                MinMaxMove(nextPlayer, dCEL, start, end, threadId, newDepth);
-                            if (gameStateMove.BestValue < deeperMoveSamePlayer.BestValue)
-                            {
-                                UpdateGameStateMove(player, gameStateMove, a, b, deeperMoveSamePlayer.BestValue, deeperMoveSamePlayer.Path);
-
-                                bool alfaLteBeta = UpdateAlfaBeta(gameStateMove.BestValue, float.MaxValue);
-                                
-                                if (!alfaLteBeta)
-                                {
-                                    CleanUp(dCEL.HalfEdges, a, b, face1, face2, disabled, dCEL.DotsFaces);
-                                    dCEL.Edges.Remove(newEdge);
-                                    goto EndLoop;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            ValueMove deeperMoveSamePlayer =
-                                MinMaxMove(nextPlayer, dCEL, start, end, threadId, newDepth);
-                            if (gameStateMove.BestValue > deeperMoveSamePlayer.BestValue)
-                            {
-                                UpdateGameStateMove(player, gameStateMove, a, b, deeperMoveSamePlayer.BestValue, deeperMoveSamePlayer.Path);
-                                bool alfaLteBeta = UpdateAlfaBeta(float.MinValue, gameStateMove.BestValue);
-                                if (alfaLteBeta)
-                                {
-                                    CleanUp(dCEL.HalfEdges, a, b, face1, face2, disabled, dCEL.DotsFaces);
-                                    dCEL.Edges.Remove(newEdge);
-                                    goto EndLoop;
-                                }
-                            }
-                        }
-
-                        CleanUp(dCEL.HalfEdges, a, b, face1, face2, disabled, dCEL.DotsFaces);
-                        dCEL.Edges.Remove(newEdge);
+                        UpdateGameStateMove(player, gameStateMove, a, b, value, moveCollection, new MoveCollection(value));
                     }
+                    movePossible = true;
+                    List<DotsVertex> disabled = new List<DotsVertex>();
+                    (DotsFace face1, DotsFace face2) = HelperFunctions.AddEdge(a, b,
+                        Convert.ToInt32(player),
+                        dCEL.HalfEdges, dCEL.Vertices, GameMode, newlyDisabled: disabled);
+                    if (face1 != null) dCEL.DotsFaces.Add(face1);
+                    if (face2 != null) dCEL.DotsFaces.Add(face2);
+                    float faceArea = (face1?.AreaMinusInner ?? 0.0f) + (face2?.AreaMinusInner ?? 0.0f);
+
+                    PlayerNumber nextPlayer = faceArea > 0.0f ? player : player.Switch();
+                    int newDepth = currentDepth + 1; 
+                    var newEdge = new DotsEdge(new LineSegment(a.Coordinates, b.Coordinates));
+                    dCEL.Edges.Add(newEdge);
+
+
+                    if (player.Equals(this.PlayerNumber))
+                    {
+                        MoveCollection deeperMoveSamePlayer =
+                            MinMaxMove(nextPlayer, dCEL, start, end, threadId, alfa, beta, newDepth);
+                        if (moveCollection.Value < deeperMoveSamePlayer.Value)
+                        {
+                            UpdateGameStateMove(player, gameStateMove, a, b, deeperMoveSamePlayer.Value, moveCollection, deeperMoveSamePlayer);
+                                
+                            alfa = Math.Max(alfa, deeperMoveSamePlayer.Value);
+                                
+                            if (alfa >= beta)
+                            {
+                                CleanUp(dCEL.HalfEdges, a, b, face1, face2, disabled, dCEL.DotsFaces);
+                                dCEL.Edges.Remove(newEdge);
+                                goto EndLoop;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        MoveCollection deeperMoveSamePlayer =
+                            MinMaxMove(nextPlayer, dCEL, start, end, threadId, alfa, beta, newDepth);
+                        if (moveCollection.Value > deeperMoveSamePlayer.Value)
+                        {
+                            UpdateGameStateMove(player, gameStateMove, a, b, deeperMoveSamePlayer.Value, moveCollection, deeperMoveSamePlayer);
+                                
+                            beta = Math.Min(beta, deeperMoveSamePlayer.Value);
+                            if (beta <= alfa)
+                            {
+                                CleanUp(dCEL.HalfEdges, a, b, face1, face2, disabled, dCEL.DotsFaces);
+                                dCEL.Edges.Remove(newEdge);
+                                goto EndLoop;
+                            }
+                        }
+                    }
+
+                    CleanUp(dCEL.HalfEdges, a, b, face1, face2, disabled, dCEL.DotsFaces);
+                    dCEL.Edges.Remove(newEdge);
                 }
             }
 
             EndLoop:;
-            gameStateMove.Path.Add(gameStateMove);
-            return movePossible ? gameStateMove : new ValueMove(value, null, null);
+            moveCollection.PotentialMoves.Add(gameStateMove);
+            if(!movePossible && currentDepth == 0)
+            {
+                value = float.MinValue;
+            }
+            return movePossible ? moveCollection : new MoveCollection(value);
         }
 
         private void StartThread(PlayerNumber player, Dcel dCEL,
             int start, int end, int threadId)
         {
-            HelperFunctions.print($"Thread id: {threadId} is starting", debug: true);
-            ValueMove result = MinMaxMove(player, dCEL, start, end, threadId);
-            HelperFunctions.print($"Thread id: {threadId} is finished", debug: true);
+            HelperFunctions.print($"Thread id: {threadId} is starting");
+            MoveCollection result = MinMaxMove(player, dCEL, start, end, threadId);
+            HelperFunctions.print($"Thread id: {threadId} is finished");
             resultMoves[threadId] = result;
-        }
-
-        
-
-        private bool UpdateAlfaBeta(float alfaNew, float betaNew)
-        {
-            int count = 0;
-            int max = 1000;
-            while (count < max)
-            {
-                if (0 == Interlocked.Exchange(ref usingAlfa, 1) && 0 == Interlocked.Exchange(ref usingBeta, 1))
-                {
-                    //HelperFunctions.print($"Aquired alfa beta lock", debug: true);
-                    _alfa = !alfaNew.Equals(float.MinValue) ? Math.Max(_alfa, alfaNew) : _alfa;
-                    _beta = !betaNew.Equals(float.MaxValue) ? Math.Min(_beta, alfaNew) : _beta;
-                    bool returner = _alfa <= _beta;
-                    Interlocked.Exchange(ref usingAlfa, 0);
-                    Interlocked.Exchange(ref usingBeta, 0);
-                    //HelperFunctions.print($"released alfa beta lock", debug: true);
-                    return returner;
-                }
-                count++;
-                Thread.Sleep(1);
-                
-            }
-            HelperFunctions.print($"Unable to aquire lock", debug: true);
-            Thread.CurrentThread.Interrupt();
-            return false;
+            manualResetEvent.Set();
+            manualResetEvent.Reset();
         }
 
         private static void UpdateGameStateMove(PlayerNumber player, ValueMove gameStateMove, DotsVertex a, DotsVertex b, 
-            float value, List<ValueMove> path)
+            float value, MoveCollection path, MoveCollection deeperPath)
         {
             gameStateMove.A = a;
             gameStateMove.B = b;
             gameStateMove.playerNumber = player;
             gameStateMove.BestValue = value;
-            gameStateMove.Path = path;
+            path.Value = value;
+            path.PotentialMoves = deeperPath.PotentialMoves;
         }
 
         private static void CleanUp(HashSet<DotsHalfEdge> halfEdges, DotsVertex a, DotsVertex b,
@@ -217,37 +187,34 @@ namespace DotsAndPolygons
             HashSet<DotsFace> faces, 
             HashSet<DotsVertex> vertices)
         {
+            Timer.StartTimer();
             HelperFunctions.print("Calculating next minimal move for MinMaxAI player");
             Dcel dCEL = new Dcel(vertices.ToArray(), edges, halfEdges, faces);
-            int rangeSize = Convert.ToInt32(vertices.Count / numberOfThreads);
-            this.resultMoves = new ValueMove[numberOfThreads];
-            this.threadDepth = new int[numberOfThreads];
-            _alfa = float.MinValue;
-            _beta = float.MaxValue;
+            Random random = new Random();
+            pairs = pairs.OrderBy(_ => random.Next()).ToList();
+            this.resultMoves = new MoveCollection[numberOfThreads];
+            int remainder = pairs.Count % numberOfThreads;
+            int rangeSize = Convert.ToInt32(pairs.Count / numberOfThreads);
+            int prevEnd = 0;
             for (int i = 0; i < numberOfThreads; i++)
             {
-                int start = i * rangeSize;
+                int start = prevEnd;
                 int threadId = i;
-                int end = (i + 1) * rangeSize;
-                if (end > vertices.Count() - 1)
-                {
-                    end = vertices.Count();
-                }
-                var t = new Thread(() => StartThread(this.PlayerNumber, dCEL.Clone(), start, end, threadId));
+                int end = remainder-- > 0 ? start + rangeSize + 1 : start + rangeSize;
+                prevEnd = end;
+                Dcel cloned = dCEL.Clone();
+                var t = new Thread(() => StartThread(this.PlayerNumber, cloned, start, end, threadId));
                 t.Start();
                 
             }
-
             while(resultMoves.Any(x => x == null))
             {
-                Thread.Sleep(1);
+                manualResetEvent.WaitOne();
             }
-            float best = resultMoves.Select(x => x.BestValue).Max();
-            ValueMove returner = resultMoves.FirstOrDefault(x => x.BestValue == best && x.A != null && x.B != null);
-            //ValueMove potentialMove = MinMaxMove(PlayerNumber, dCEL);
+            MoveCollection returner = resultMoves.OrderByDescending(x => x.Value).FirstOrDefault();
             HelperFunctions.print($"PotentialMove: {returner}", debug: true);
-
-            return returner.Path.Select(x => (PotentialMove) x ).ToList();
+            Timer.StopTimer();
+            return returner.PotentialMoves;
         }
     }
 }
