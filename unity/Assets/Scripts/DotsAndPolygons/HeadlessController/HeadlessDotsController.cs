@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 using Util.Algorithms.Triangulation;
 using Util.Geometry;
@@ -175,7 +176,7 @@ namespace DotsAndPolygons
         }
 
         // Start is called before the first frame update
-        public void Start()
+        public Task Start()
         {
             Running = true;
             CurrentPlayer = Player1;
@@ -212,11 +213,14 @@ namespace DotsAndPolygons
                 MoveForAiPlayer();
             }
 
-            // wait until finished TODO
-            while (Running)
+            return Task.Factory.StartNew(() =>
             {
-                _manualResetEvent.WaitOne();
-            }
+                // wait until finished
+                while (Running)
+                {
+                    _manualResetEvent.WaitOne();
+                }
+            });
         }
 
         public void AddDotsInGeneralPosition()
