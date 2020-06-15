@@ -17,7 +17,7 @@ namespace DotsAndPolygons
     public static class HelperFunctions
     {
         public const float BIETJE = .0001f;
-        public static void print(object message, bool debug = false) // If you want print statements set debug = true
+        public static void print(object message, bool debug = true) // If you want print statements set debug = true
         {
             if (debug) MonoBehaviour.print(message);
         }

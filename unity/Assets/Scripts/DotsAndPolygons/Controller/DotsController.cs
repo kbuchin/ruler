@@ -37,7 +37,7 @@ namespace DotsAndPolygons
         [SerializeField] public bool AiEnabled;
         [SerializeField] public bool p1Ai;
 
-        protected int numberOfDots = 8; // TODO
+        protected int numberOfDots = 20; // TODO
         private float minX = -8.0f;
         private float maxX = 8.0f;
         private float minY = -3.5f;
@@ -158,7 +158,7 @@ namespace DotsAndPolygons
                 }
                 else
                 {
-                    Thread instanceCaller = new Thread(new ThreadStart(MoveAiPlayerForThread));
+                    Thread instanceCaller = new Thread(MoveAiPlayerForThread);
 
                     // Start the thread.
                     instanceCaller.Start();
@@ -294,10 +294,10 @@ namespace DotsAndPolygons
         public void AddDotsInGeneralPosition()
         {
             // Take the best out of 2
-            var bestDots = new HashSet<Vector2>();
-            for (var i = 0; i < 2; i++)
+            HashSet<Vector2> bestDots = new HashSet<Vector2>();
+            for (int i = 0; i < 2; i++)
             {
-                var dotsPlacer = new DotsPlacer(new Rect(minX, minY, maxX - minX, maxY - minY));
+                DotsPlacer dotsPlacer = new DotsPlacer(new Rect(minX, minY, maxX - minX, maxY - minY));
                 dotsPlacer.AddNewPoints(numberOfDots);
                 if (dotsPlacer.Dots.Count > bestDots.Count) bestDots = dotsPlacer.Dots;
             }
