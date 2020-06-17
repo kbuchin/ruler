@@ -42,6 +42,7 @@ namespace DotsAndPolygons
         private float maxX = 8.0f;
         private float minY = -3.5f;
         private float maxY = 3.5f;
+        private readonly bool multiThreaded = false;
 
         private HashSet<UnityTrapDecomLine> TrapDecomLines { get; set; } = new HashSet<UnityTrapDecomLine>();
         protected TrapDecomRoot root;
@@ -123,15 +124,23 @@ namespace DotsAndPolygons
                 Edges.Select(x => x.DotsEdge).ToHashSet(),
                 HalfEdges,
                 Faces.Select(x => x.DotsFace).ToHashSet(),
-                Vertices.Select(x => x.dotsVertex).ToHashSet()
+                Vertices.Select(x => x.dotsVertex).ToHashSet(),
+                multiThreaded
             );
             DotsVertex a = moves.Last().A.Original ?? moves.Last().A;
             DotsVertex b = moves.Last().B.Original ?? moves.Last().B;
             moves.Remove(moves.Last());
             paths[index] = moves;
+            if(multiThreaded)
+            {
+                UnityMainThreadDispatcher.Instance().Enqueue(RunPostUpdate(DoMove, a, b));
+            }
+            else
+            {
+                DoMove(a, b);
+            }
 
-
-            UnityMainThreadDispatcher.Instance().Enqueue(RunPostUpdate(DoMove, a, b));
+            
         }
 
         private IEnumerator RunPostUpdate(Action<DotsVertex, DotsVertex> method, DotsVertex a, DotsVertex b)
@@ -158,10 +167,18 @@ namespace DotsAndPolygons
             }
             else
             {
-                Thread instanceCaller = new Thread(new ThreadStart(MoveAiPlayerForThread));
+                if(multiThreaded)
+                {
+                    Thread instanceCaller = new Thread(new ThreadStart(MoveAiPlayerForThread));
 
-                // Start the thread.
-                instanceCaller.Start();
+                    // Start the thread.
+                    instanceCaller.Start();
+                }
+                else
+                {
+                    MoveAiPlayerForThread();
+                }
+                
             }
         }
 

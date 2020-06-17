@@ -12,6 +12,7 @@ namespace DotsAndPolygons
             HashSet<DotsEdge> dotsEdges,
             HashSet<DotsHalfEdge> dotsHalfEdges,
             HashSet<DotsFace> faces, 
-            HashSet<DotsVertex> vertices);
+            HashSet<DotsVertex> vertices,
+            bool multiThreaded = false);
     }
 }

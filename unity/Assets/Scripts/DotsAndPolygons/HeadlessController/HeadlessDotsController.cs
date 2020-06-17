@@ -103,7 +103,8 @@ namespace DotsAndPolygons
                 Edges,
                 HalfEdges,
                 Faces,
-                Vertices
+                Vertices,
+                true
             );
             DotsVertex a = moves.Last().A.Original ?? moves.Last().A;
             DotsVertex b = moves.Last().B.Original ?? moves.Last().B;

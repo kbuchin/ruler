@@ -9,17 +9,22 @@ namespace DotsAndPolygons
 {
     class Timer
     {
-        private static long startTime;
-        public static void StartTimer()
+        private long startTime;
+
+        public Timer()
+        {
+
+        }
+        public void StartTimer()
         {
             startTime = DateTime.Now.Ticks;
         }
 
-        public static void StopTimer()
+        public void StopTimer()
         {
             long stopTime = DateTime.Now.Ticks;
             TimeSpan span = new TimeSpan(stopTime - startTime);
-            HelperFunctions.print($"Code took {span.Seconds} s", debug: true);
+            HelperFunctions.print($"Code took {span.Seconds} s");
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,7 +10,6 @@ namespace DotsAndPolygons
         [SerializeField] public Text Player1Text;
 
         [SerializeField] public Text Player2Text;
-
 
         private void UpdateText()
         {
@@ -39,14 +39,32 @@ namespace DotsAndPolygons
 
         public void TogglePlayer1()
         {
-            Settings.Player1 = CyclePlayerType(Settings.Player1);
-            UpdateText();
+            if(Settings.Player2 != PlayerType.Player)
+            {
+                Settings.Player1 = PlayerType.Player;
+                UpdateText();
+            }
+            else
+            {
+                Settings.Player1 = CyclePlayerType(Settings.Player1);
+                UpdateText();
+            }
+
         }
 
         public void TogglePlayer2()
         {
-            Settings.Player2 = CyclePlayerType(Settings.Player2);
-            UpdateText();
+            if (Settings.Player1 != PlayerType.Player)
+            {
+                Settings.Player2 = PlayerType.Player;
+                UpdateText();
+            }
+            else
+            {
+                Settings.Player2 = CyclePlayerType(Settings.Player2);
+                UpdateText();
+            }
+            
         }
     }
 }

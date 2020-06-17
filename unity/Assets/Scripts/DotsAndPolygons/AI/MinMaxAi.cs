@@ -156,9 +156,9 @@ namespace DotsAndPolygons
 
         private void StartThread(PlayerNumber player, Dcel dcel, int start, int end, int threadId)
         {
-            HelperFunctions.print($"Thread id: {threadId} is starting", true);
+            HelperFunctions.print($"Thread id: {threadId} is starting");
             MoveCollection result = MinMaxMove(player: player, dcel: dcel, start: start, end: end);
-            HelperFunctions.print($"Thread id: {threadId} is finished", true);
+            HelperFunctions.print($"Thread id: {threadId} is finished");
             _resultMoves[threadId] = result;
             _manualResetEvent.Set();
             _manualResetEvent.Reset();
@@ -194,10 +194,10 @@ namespace DotsAndPolygons
             HashSet<DotsEdge> edges,
             HashSet<DotsHalfEdge> halfEdges,
             HashSet<DotsFace> faces,
-            HashSet<DotsVertex> vertices
+            HashSet<DotsVertex> vertices,
+            bool multiThreaded = false
         )
         {
-            Timer.StartTimer();
             HelperFunctions.print("Calculating next minimal move for MinMaxAI player");
             Dcel dcel = new Dcel(vertices.ToArray(), edges, halfEdges, faces);
             Random random = new Random();
@@ -206,27 +206,31 @@ namespace DotsAndPolygons
             int remainder = _pairs.Count % _numberOfThreads;
             int rangeSize = Convert.ToInt32(_pairs.Count / _numberOfThreads);
             int prevEnd = 0;
-            for (int i = 0; i < _numberOfThreads; i++)
+            if(multiThreaded)
             {
-                int start = prevEnd;
-                int threadId = i;
-                int end = remainder-- > 0 ? start + rangeSize + 1 : start + rangeSize;
-                prevEnd = end;
-                Dcel cloned = dcel.Clone();
-                Thread t = new Thread(() => StartThread(PlayerNumber, cloned, start, end, threadId));
-                t.Start();
+                for (int i = 0; i < _numberOfThreads; i++)
+                {
+                    int start = prevEnd;
+                    int threadId = i;
+                    int end = remainder-- > 0 ? start + rangeSize + 1 : start + rangeSize;
+                    prevEnd = end;
+                    Dcel cloned = dcel.Clone();
+                    Thread t = new Thread(() => StartThread(PlayerNumber, cloned, start, end, threadId));
+                    t.Start();
+                }
+                while (_resultMoves.Any(x => x == null))
+                {
+                    _manualResetEvent.WaitOne();
+                    HelperFunctions.print($"Resultmoves: {string.Join(", ", _resultMoves as object[])}");
+                }
+                MoveCollection returner = _resultMoves.OrderByDescending(x => x.Value).FirstOrDefault();
+                HelperFunctions.print($"PotentialMove: {returner}");
+                return returner.PotentialMoves;
             }
-
-            while (_resultMoves.Any(x => x == null))
+            else
             {
-                _manualResetEvent.WaitOne();
-                HelperFunctions.print($"Resultmoves: {string.Join(", ", _resultMoves as object[])}");
+                return MinMaxMove(PlayerNumber, dcel, 0, _pairs.Count).PotentialMoves;
             }
-
-            MoveCollection returner = _resultMoves.OrderByDescending(x => x.Value).FirstOrDefault();
-            HelperFunctions.print($"PotentialMove: {returner}", debug: true);
-            Timer.StopTimer();
-            return returner.PotentialMoves;
         }
     }
 }

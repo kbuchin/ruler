@@ -170,7 +170,8 @@ namespace DotsAndPolygons
             HashSet<DotsEdge> edges,
             HashSet<DotsHalfEdge> halfEdges,
             HashSet<DotsFace> faces, 
-            HashSet<DotsVertex> vertices)
+            HashSet<DotsVertex> vertices,
+            bool multiThreaded = false)
         {
             HelperFunctions.print("Calculating next minimal move for greedy player");
             PotentialMove potentialMove = MinimalMove(0, vertices.Count, vertices.ToArray(), edges, halfEdges, faces);
