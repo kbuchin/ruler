@@ -37,7 +37,7 @@ namespace DotsAndPolygons
         [SerializeField] public bool AiEnabled;
         [SerializeField] public bool p1Ai;
 
-        protected int numberOfDots = 10; // TODO
+        protected int numberOfDots = 20; // TODO
         private float minX = -8.0f;
         private float maxX = 8.0f;
         private float minY = -3.5f;
@@ -109,8 +109,9 @@ namespace DotsAndPolygons
         {
             int nextPlayer = Convert.ToInt32(CurrentPlayer.PlayerNumber.Switch()) - 1;
             PotentialMove move = paths[nextPlayer].LastOrDefault();
-            if (move != null && ((move.A.Equals(a) && move.B.Equals(b)) || (move.A.Equals(b) && move.B.Equals(a))))
-            {
+            DotsVertex A = move?.A.Original ?? move?.A;
+            DotsVertex B = move?.B.Original ?? move?.B;
+            if (move != null && ((A.Equals(a) && B.Equals(b)) || (B.Equals(b) && A.Equals(a)))) 
                 paths[nextPlayer].Remove(move);
             }
         }
@@ -124,8 +125,8 @@ namespace DotsAndPolygons
                 Faces.Select(x => x.DotsFace).ToHashSet(),
                 Vertices.Select(x => x.dotsVertex).ToHashSet()
             );
-            DotsVertex a = moves.Last().A.Original;
-            DotsVertex b = moves.Last().B.Original;
+            DotsVertex a = moves.Last().A.Original ?? moves.Last().A;
+            DotsVertex b = moves.Last().B.Original ?? moves.Last().B;
             moves.Remove(moves.Last());
             paths[index] = moves;
 
@@ -148,16 +149,16 @@ namespace DotsAndPolygons
             if (CurrentPlayer.PlayerType == PlayerType.Player) return;
             int index = Convert.ToInt32(CurrentPlayer.PlayerNumber) - 1;
             List<PotentialMove> currentPath = paths[index];
-            if (currentPath.Any() && currentPath.Last().PlayerNumber == CurrentPlayer.PlayerNumber)
+            if (currentPath.Any() && currentPath.Last().playerNumber == CurrentPlayer.PlayerNumber)
             {
-                DotsVertex a = currentPath.Last().A;
-                DotsVertex b = currentPath.Last().B;
+                DotsVertex a = currentPath.Last().A.Original ?? currentPath.Last().A;
+                DotsVertex b = currentPath.Last().B.Original ?? currentPath.Last().B;
                 currentPath.Remove(currentPath.Last());
                 DoMove(a, b);
             }
             else
             {
-                Thread instanceCaller = new Thread(MoveAiPlayerForThread);
+                Thread instanceCaller = new Thread(new ThreadStart(MoveAiPlayerForThread));
 
                 // Start the thread.
                 instanceCaller.Start();
@@ -237,11 +238,13 @@ namespace DotsAndPolygons
             if (Player1.PlayerType == PlayerType.MinMaxAi)
             {
                 ((MinMaxAi) Player1).TotalHullArea = HullArea;
+                ((MinMaxAi)Player1).InitPairs(Vertices.Count);
             }
 
             if (Player2.PlayerType == PlayerType.MinMaxAi)
             {
                 ((MinMaxAi) Player2).TotalHullArea = HullArea;
+                ((MinMaxAi)Player2).InitPairs(Vertices.Count);
             }
 
             UpdateVisualArea();
@@ -289,10 +292,10 @@ namespace DotsAndPolygons
         public void AddDotsInGeneralPosition()
         {
             // Take the best out of 2
-            var bestDots = new HashSet<Vector2>();
-            for (var i = 0; i < 2; i++)
+            HashSet<Vector2> bestDots = new HashSet<Vector2>();
+            for (int i = 0; i < 2; i++)
             {
-                var dotsPlacer = new DotsPlacer(new Rect(minX, minY, maxX - minX, maxY - minY));
+                DotsPlacer dotsPlacer = new DotsPlacer(new Rect(minX, minY, maxX - minX, maxY - minY));
                 dotsPlacer.AddNewPoints(numberOfDots);
                 if (dotsPlacer.Dots.Count > bestDots.Count) bestDots = dotsPlacer.Dots;
             }
