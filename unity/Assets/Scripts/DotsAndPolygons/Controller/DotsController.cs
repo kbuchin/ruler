@@ -111,7 +111,7 @@ namespace DotsAndPolygons
             PotentialMove move = paths[nextPlayer].LastOrDefault();
             DotsVertex A = move?.A.Original ?? move?.A;
             DotsVertex B = move?.B.Original ?? move?.B;
-            if (move != null && ((A.Equals(a) && B.Equals(b)) || (B.Equals(b) && A.Equals(a)))) 
+            if (move != null && ((A.Equals(a) && B.Equals(b)) || (B.Equals(b) && A.Equals(a)))) {  
                 paths[nextPlayer].Remove(move);
             }
         }
@@ -149,7 +149,7 @@ namespace DotsAndPolygons
             if (CurrentPlayer.PlayerType == PlayerType.Player) return;
             int index = Convert.ToInt32(CurrentPlayer.PlayerNumber) - 1;
             List<PotentialMove> currentPath = paths[index];
-            if (currentPath.Any() && currentPath.Last().playerNumber == CurrentPlayer.PlayerNumber)
+            if (currentPath.Any() && currentPath.Last().PlayerNumber == CurrentPlayer.PlayerNumber)
             {
                 DotsVertex a = currentPath.Last().A.Original ?? currentPath.Last().A;
                 DotsVertex b = currentPath.Last().B.Original ?? currentPath.Last().B;

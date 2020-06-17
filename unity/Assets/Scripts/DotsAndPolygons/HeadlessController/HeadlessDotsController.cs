@@ -118,7 +118,7 @@ namespace DotsAndPolygons
             if (CurrentPlayer.PlayerType == PlayerType.Player) return;
             int index = Convert.ToInt32(CurrentPlayer.PlayerNumber) - 1;
             List<PotentialMove> currentPath = paths[index];
-            if (currentPath.Any() && currentPath.Last().playerNumber == CurrentPlayer.PlayerNumber)
+            if (currentPath.Any() && currentPath.Last().PlayerNumber == CurrentPlayer.PlayerNumber)
             {
                 DotsVertex a = currentPath.Last().A.Original ?? currentPath.Last().A;
                 DotsVertex b = currentPath.Last().B.Original ?? currentPath.Last().B;

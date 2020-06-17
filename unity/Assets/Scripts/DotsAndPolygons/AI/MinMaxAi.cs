@@ -164,9 +164,8 @@ namespace DotsAndPolygons
             _manualResetEvent.Reset();
         }
 
-        private static void UpdateGameStateMove(PlayerNumber player, ValueMove gameStateMove, DotsVertex a,
-            DotsVertex b,
-            float value, List<ValueMove> path)
+        private static void UpdateGameStateMove(PlayerNumber player, ValueMove gameStateMove, DotsVertex a, DotsVertex b,
+            float value, MoveCollection path, MoveCollection deeperPath)
         {
             gameStateMove.A = a;
             gameStateMove.B = b;

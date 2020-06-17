@@ -11,11 +11,11 @@ namespace DotsAndPolygons
     {
         public DotsVertex A { get; set; }
         public DotsVertex B { get; set; }
-        public PlayerNumber playerNumber { get; set; }
+        public PlayerNumber PlayerNumber { get; set; }
         public PotentialMove(DotsVertex A, DotsVertex B)
         {
-            A = a;
-            B = b;
+            this.A = A;
+            this.B = B;
         }
 
         public abstract float GetValue();
