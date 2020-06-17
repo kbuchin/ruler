@@ -2,34 +2,37 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
-using JetBrains.Annotations;
-using UnityEngine;
 using Util.Geometry;
-using Util.Geometry.DCEL;
 using Random = System.Random;
 
 namespace DotsAndPolygons
 {
     public class MinMaxAi : AiPlayer
     {
-        private int MaxDepth = 6;
+        private volatile int _maxDepth;
         public float TotalHullArea { get; set; }
 
-        private float threshold = 0.5f;
+        private volatile float _threshold;
 
-        private volatile MoveCollection[] resultMoves;
+        private volatile MoveCollection[] _resultMoves;
 
-        private int numberOfThreads = 2;
+        private volatile int _numberOfThreads;
 
-        private ManualResetEvent manualResetEvent = new ManualResetEvent(false);
+        private ManualResetEvent _manualResetEvent = new ManualResetEvent(false);
 
-        private List<(int, int)> pairs = new List<(int, int)>();
+        private List<(int, int)> _pairs = new List<(int, int)>();
 
-        public MinMaxAi(PlayerNumber player, HelperFunctions.GameMode mode) : base(player,
-            PlayerType.MinMaxAi, mode)
+        public MinMaxAi(
+            PlayerNumber player,
+            HelperFunctions.GameMode mode,
+            int maxDepth = 3,
+            float threshold = 0.5f,
+            int numberOfThreads = 2
+        ) : base(player, PlayerType.MinMaxAi, mode)
         {
-            
+            _maxDepth = maxDepth;
+            _threshold = threshold;
+            _numberOfThreads = numberOfThreads;
         }
 
         public void InitPairs(int numberOfDots)
@@ -38,125 +41,132 @@ namespace DotsAndPolygons
             {
                 for (int j = i + 1; j < numberOfDots; j++)
                 {
-                    pairs.Add((i, j));
+                    _pairs.Add((i, j));
                 }
             }
         }
 
-        private MoveCollection MinMaxMove(PlayerNumber player, Dcel dCEL,
-            int start, int end, int threadId, float alfa = float.MinValue, float beta = float.MaxValue, int currentDepth = 0)
+        private MoveCollection MinMaxMove(PlayerNumber player, Dcel dcel,
+            int start, int end, float alpha = float.MinValue, float beta = float.MaxValue,
+            int currentDepth = 0)
         {
             if (currentDepth > 0)
             {
                 start = 0;
-                end = pairs.Count;
+                end = _pairs.Count;
             }
-            float value = dCEL.DotsFaces.Sum(x =>
-                x.Player == Convert.ToInt32(this.PlayerNumber) ? x.AreaMinusInner : -x.AreaMinusInner);
-            float otherPlayerArea = dCEL.DotsFaces.Sum(x => x.Player == Convert.ToInt32(this.PlayerNumber.Switch()) ? x.AreaMinusInner : 0.0f);
+
+            float value = dcel.DotsFaces.Sum(x =>
+                x.Player == Convert.ToInt32(PlayerNumber) ? x.AreaMinusInner : -x.AreaMinusInner);
+            float otherPlayerArea = dcel.DotsFaces.Sum(x =>
+                x.Player == Convert.ToInt32(PlayerNumber.Switch()) ? x.AreaMinusInner : 0.0f);
             MoveCollection moveCollection = new MoveCollection(value);
-            var gameStateMove = new ValueMove(0.0f, null, null);
-            moveCollection.Value = player.Equals(this.PlayerNumber) ? float.MinValue : float.MaxValue;
-            if (currentDepth >= MaxDepth)
+            ValueMove gameStateMove = new ValueMove(0.0f, null, null);
+            moveCollection.Value = player.Equals(PlayerNumber) ? float.MinValue : float.MaxValue;
+            if (currentDepth >= _maxDepth)
             {
                 return new MoveCollection(value);
             }
 
             bool movePossible = false;
-            List<(int, int)> pairstoEvaluate = pairs.Skip(start).Take(end - start).ToList();
-            foreach ((int i, int j) in pairstoEvaluate)
+            List<(int, int)> pairsToEvaluate = _pairs.Skip(start).Take(end - start).ToList();
+            foreach ((int i, int j) in pairsToEvaluate)
             {
-                DotsVertex a = dCEL.Vertices[i];
-                DotsVertex b = dCEL.Vertices[j];
-                if(currentDepth == 0)
+                DotsVertex a = dcel.Vertices[i];
+                DotsVertex b = dcel.Vertices[j];
+                if (currentDepth == 0)
                 {
-                    alfa = float.MinValue;
+                    alpha = float.MinValue;
                     beta = float.MaxValue;
                 }
-                if (HelperFunctions.EdgeIsPossible(a, b, dCEL.Edges, dCEL.DotsFaces))
+
+                if (!HelperFunctions.EdgeIsPossible(a, b, dcel.Edges, dcel.DotsFaces)) continue;
+                movePossible = true;
+                
+                if (otherPlayerArea > _threshold * TotalHullArea)
                 {
-                    if(otherPlayerArea > threshold * TotalHullArea)
-                    {
-                        UpdateGameStateMove(player, gameStateMove, a, b, value, moveCollection, new MoveCollection(value));
-                    }
-                    movePossible = true;
-                    List<DotsVertex> disabled = new List<DotsVertex>();
-                    (DotsFace face1, DotsFace face2) = HelperFunctions.AddEdge(a, b,
-                        Convert.ToInt32(player),
-                        dCEL.HalfEdges, dCEL.Vertices, GameMode, newlyDisabled: disabled);
-                    if (face1 != null) dCEL.DotsFaces.Add(face1);
-                    if (face2 != null) dCEL.DotsFaces.Add(face2);
-                    float faceArea = (face1?.AreaMinusInner ?? 0.0f) + (face2?.AreaMinusInner ?? 0.0f);
-
-                    PlayerNumber nextPlayer = faceArea > 0.0f ? player : player.Switch();
-                    int newDepth = currentDepth + 1; 
-                    var newEdge = new DotsEdge(new LineSegment(a.Coordinates, b.Coordinates));
-                    dCEL.Edges.Add(newEdge);
-
-
-                    if (player.Equals(this.PlayerNumber))
-                    {
-                        MoveCollection deeperMoveSamePlayer =
-                            MinMaxMove(nextPlayer, dCEL, start, end, threadId, alfa, beta, newDepth);
-                        if (moveCollection.Value < deeperMoveSamePlayer.Value)
-                        {
-                            UpdateGameStateMove(player, gameStateMove, a, b, deeperMoveSamePlayer.Value, moveCollection, deeperMoveSamePlayer);
-                                
-                            alfa = Math.Max(alfa, deeperMoveSamePlayer.Value);
-                                
-                            if (alfa >= beta)
-                            {
-                                CleanUp(dCEL.HalfEdges, a, b, face1, face2, disabled, dCEL.DotsFaces);
-                                dCEL.Edges.Remove(newEdge);
-                                goto EndLoop;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        MoveCollection deeperMoveSamePlayer =
-                            MinMaxMove(nextPlayer, dCEL, start, end, threadId, alfa, beta, newDepth);
-                        if (moveCollection.Value > deeperMoveSamePlayer.Value)
-                        {
-                            UpdateGameStateMove(player, gameStateMove, a, b, deeperMoveSamePlayer.Value, moveCollection, deeperMoveSamePlayer);
-                                
-                            beta = Math.Min(beta, deeperMoveSamePlayer.Value);
-                            if (beta <= alfa)
-                            {
-                                CleanUp(dCEL.HalfEdges, a, b, face1, face2, disabled, dCEL.DotsFaces);
-                                dCEL.Edges.Remove(newEdge);
-                                goto EndLoop;
-                            }
-                        }
-                    }
-
-                    CleanUp(dCEL.HalfEdges, a, b, face1, face2, disabled, dCEL.DotsFaces);
-                    dCEL.Edges.Remove(newEdge);
+                    UpdateGameStateMove(player, gameStateMove, a, b, value, moveCollection,
+                        new MoveCollection(value));
                 }
+                
+                List<DotsVertex> disabled = new List<DotsVertex>();
+                (DotsFace face1, DotsFace face2) = HelperFunctions.AddEdge(a, b,
+                    Convert.ToInt32(player),
+                    dcel.HalfEdges, dcel.Vertices, GameMode, newlyDisabled: disabled);
+                if (face1 != null) dcel.DotsFaces.Add(face1);
+                if (face2 != null) dcel.DotsFaces.Add(face2);
+                float faceArea = (face1?.AreaMinusInner ?? 0.0f) + (face2?.AreaMinusInner ?? 0.0f);
+
+                PlayerNumber nextPlayer = faceArea > 0.0f ? player : player.Switch();
+                int newDepth = currentDepth + 1;
+                DotsEdge newEdge = new DotsEdge(new LineSegment(a.Coordinates, b.Coordinates));
+                dcel.Edges.Add(newEdge);
+
+
+                if (player.Equals(PlayerNumber))
+                {
+                    MoveCollection deeperMoveSamePlayer =
+                        MinMaxMove(player: nextPlayer, dcel: dcel, start: start, end: end, alpha: alpha, beta: beta, currentDepth: newDepth);
+                    if (moveCollection.Value < deeperMoveSamePlayer.Value)
+                    {
+                        UpdateGameStateMove(player, gameStateMove, a, b, deeperMoveSamePlayer.Value, moveCollection,
+                            deeperMoveSamePlayer);
+
+                        alpha = Math.Max(alpha, deeperMoveSamePlayer.Value);
+
+                        if (alpha >= beta)
+                        {
+                            CleanUp(dcel.HalfEdges, a, b, face1, face2, disabled, dcel.DotsFaces);
+                            dcel.Edges.Remove(newEdge);
+                            goto EndLoop;
+                        }
+                    }
+                }
+                else
+                {
+                    MoveCollection deeperMoveSamePlayer =
+                        MinMaxMove(player: nextPlayer, dcel: dcel, start: start, end: end, alpha: alpha, beta: beta, currentDepth: newDepth);
+                    if (moveCollection.Value > deeperMoveSamePlayer.Value)
+                    {
+                        UpdateGameStateMove(player, gameStateMove, a, b, deeperMoveSamePlayer.Value, moveCollection,
+                            deeperMoveSamePlayer);
+
+                        beta = Math.Min(beta, deeperMoveSamePlayer.Value);
+                        if (beta <= alpha)
+                        {
+                            CleanUp(dcel.HalfEdges, a, b, face1, face2, disabled, dcel.DotsFaces);
+                            dcel.Edges.Remove(newEdge);
+                            goto EndLoop;
+                        }
+                    }
+                }
+
+                CleanUp(dcel.HalfEdges, a, b, face1, face2, disabled, dcel.DotsFaces);
+                dcel.Edges.Remove(newEdge);
             }
 
-            EndLoop:;
+            EndLoop: ;
             moveCollection.PotentialMoves.Add(gameStateMove);
-            if(!movePossible && currentDepth == 0)
+            if (!movePossible && currentDepth == 0)
             {
                 value = float.MinValue;
             }
+
             return movePossible ? moveCollection : new MoveCollection(value);
         }
 
-        private void StartThread(PlayerNumber player, Dcel dCEL,
-            int start, int end, int threadId)
+        private void StartThread(PlayerNumber player, Dcel dcel, int start, int end, int threadId)
         {
-            HelperFunctions.print($"Thread id: {threadId} is starting");
-            MoveCollection result = MinMaxMove(player, dCEL, start, end, threadId);
-            HelperFunctions.print($"Thread id: {threadId} is finished");
-            resultMoves[threadId] = result;
-            manualResetEvent.Set();
-            manualResetEvent.Reset();
+            HelperFunctions.print($"Thread id: {threadId} is starting", true);
+            MoveCollection result = MinMaxMove(player: player, dcel: dcel, start: start, end: end);
+            HelperFunctions.print($"Thread id: {threadId} is finished", true);
+            _resultMoves[threadId] = result;
+            _manualResetEvent.Set();
+            _manualResetEvent.Reset();
         }
 
-        private static void UpdateGameStateMove(PlayerNumber player, ValueMove gameStateMove, DotsVertex a, DotsVertex b, 
-            float value, MoveCollection path, MoveCollection deeperPath)
+        private static void UpdateGameStateMove(PlayerNumber player, ValueMove gameStateMove, DotsVertex a,
+            DotsVertex b, float value, MoveCollection path, MoveCollection deeperPath)
         {
             gameStateMove.A = a;
             gameStateMove.B = b;
@@ -184,34 +194,37 @@ namespace DotsAndPolygons
         public override List<PotentialMove> NextMove(
             HashSet<DotsEdge> edges,
             HashSet<DotsHalfEdge> halfEdges,
-            HashSet<DotsFace> faces, 
-            HashSet<DotsVertex> vertices)
+            HashSet<DotsFace> faces,
+            HashSet<DotsVertex> vertices
+        )
         {
             Timer.StartTimer();
             HelperFunctions.print("Calculating next minimal move for MinMaxAI player");
-            Dcel dCEL = new Dcel(vertices.ToArray(), edges, halfEdges, faces);
+            Dcel dcel = new Dcel(vertices.ToArray(), edges, halfEdges, faces);
             Random random = new Random();
-            pairs = pairs.OrderBy(_ => random.Next()).ToList();
-            this.resultMoves = new MoveCollection[numberOfThreads];
-            int remainder = pairs.Count % numberOfThreads;
-            int rangeSize = Convert.ToInt32(pairs.Count / numberOfThreads);
+            _pairs = _pairs.OrderBy(_ => random.Next()).ToList();
+            _resultMoves = new MoveCollection[_numberOfThreads];
+            int remainder = _pairs.Count % _numberOfThreads;
+            int rangeSize = Convert.ToInt32(_pairs.Count / _numberOfThreads);
             int prevEnd = 0;
-            for (int i = 0; i < numberOfThreads; i++)
+            for (int i = 0; i < _numberOfThreads; i++)
             {
                 int start = prevEnd;
                 int threadId = i;
                 int end = remainder-- > 0 ? start + rangeSize + 1 : start + rangeSize;
                 prevEnd = end;
-                Dcel cloned = dCEL.Clone();
-                var t = new Thread(() => StartThread(this.PlayerNumber, cloned, start, end, threadId));
+                Dcel cloned = dcel.Clone();
+                Thread t = new Thread(() => StartThread(PlayerNumber, cloned, start, end, threadId));
                 t.Start();
-                
             }
-            while(resultMoves.Any(x => x == null))
+
+            while (_resultMoves.Any(x => x == null))
             {
-                manualResetEvent.WaitOne();
+                _manualResetEvent.WaitOne();
+                HelperFunctions.print($"Resultmoves: {string.Join(", ", _resultMoves as object[])}");
             }
-            MoveCollection returner = resultMoves.OrderByDescending(x => x.Value).FirstOrDefault();
+
+            MoveCollection returner = _resultMoves.OrderByDescending(x => x.Value).FirstOrDefault();
             HelperFunctions.print($"PotentialMove: {returner}", debug: true);
             Timer.StopTimer();
             return returner.PotentialMoves;
