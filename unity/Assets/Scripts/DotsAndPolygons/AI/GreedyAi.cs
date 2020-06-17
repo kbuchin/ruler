@@ -40,7 +40,7 @@ namespace DotsAndPolygons
                             Convert.ToInt32(PlayerNumber),
                             halfEdges, vertices, GameMode, newlyDisabled: disabled);
 
-                        var newEdge = new DotsEdge(new LineSegment(a.Coordinates, b.Coordinates));
+                        DotsEdge newEdge = new DotsEdge(new LineSegment(a.Coordinates, b.Coordinates));
                         edges.Add(newEdge);
 
                         if (face1 != null || face2 != null)
@@ -65,7 +65,7 @@ namespace DotsAndPolygons
             if (maximalArea < HelperFunctions.BIETJE)
             {
                 // shuffle vertices
-                var rnd = new Random();
+                Random rnd = new Random();
                 vertices = vertices.OrderBy(_ => rnd.Next()).ToArray();
                 
                 for (int i = start; i < end - 1; i++)
@@ -83,7 +83,7 @@ namespace DotsAndPolygons
                                 Convert.ToInt32(PlayerNumber),
                                 halfEdges, vertices, GameMode, newlyDisabled: disabled);
 
-                            var newEdge = new DotsEdge(new LineSegment(a.Coordinates, b.Coordinates));
+                            DotsEdge newEdge = new DotsEdge(new LineSegment(a.Coordinates, b.Coordinates));
                             edges.Add(newEdge);
 
 
@@ -122,7 +122,7 @@ namespace DotsAndPolygons
 
             foreach (DotsVertex a in dots)
             {
-                var dotsVertices = new List<DotsVertex> {dotsVertex1, dotsVertex2};
+                List<DotsVertex> dotsVertices = new List<DotsVertex> {dotsVertex1, dotsVertex2};
                 foreach (DotsVertex b in dotsVertices)
                 {
                     if (a.Equals(dotsVertex1) || a.Equals(dotsVertex2)) continue;
@@ -176,8 +176,7 @@ namespace DotsAndPolygons
             PotentialMove potentialMove = MinimalMove(0, vertices.Count, vertices.ToArray(), edges, halfEdges, faces);
 
             HelperFunctions.print($"PotentialMove: {potentialMove}");
-            List<PotentialMove> path = new List<PotentialMove>();
-            path.Add(potentialMove);
+            List<PotentialMove> path = new List<PotentialMove> {potentialMove};
             return path;
         }
     }

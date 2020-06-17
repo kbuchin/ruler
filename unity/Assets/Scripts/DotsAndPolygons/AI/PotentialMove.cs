@@ -14,8 +14,8 @@ namespace DotsAndPolygons
         public PlayerNumber playerNumber { get; set; }
         public PotentialMove(DotsVertex A, DotsVertex B)
         {
-            this.A = A;
-            this.B = B;
+            A = a;
+            B = b;
         }
 
         public abstract float GetValue();
@@ -27,7 +27,7 @@ namespace DotsAndPolygons
 
         //private float ThisPlayerArea { get; set; }
 
-        public ValueMove(float bestValue, DotsVertex A, DotsVertex B) : base(A, B)
+        public ValueMove(float bestValue, DotsVertex a, DotsVertex b) : base(a, b)
         {
             BestValue = bestValue;
         }
@@ -39,8 +39,8 @@ namespace DotsAndPolygons
 
     public sealed class AreaMove : PotentialMove
     {
-        public float MaxArea { get; set; }
-        public AreaMove(float maxArea, DotsVertex A, DotsVertex B) : base(A, B)
+        public float MaxArea { get; }
+        public AreaMove(float maxArea, DotsVertex a, DotsVertex b) : base(a, b)
         {
             MaxArea = maxArea;
         }
@@ -51,8 +51,8 @@ namespace DotsAndPolygons
 
     public sealed class WeightMove : PotentialMove
     {
-        public float MinWeight { get; set; }
-        public WeightMove(float minWeight, DotsVertex A, DotsVertex B) : base (A, B)
+        public float MinWeight { get; }
+        public WeightMove(float minWeight, DotsVertex a, DotsVertex b) : base (a, b)
         {
             MinWeight = minWeight;
         }

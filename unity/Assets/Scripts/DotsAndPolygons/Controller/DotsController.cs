@@ -50,7 +50,9 @@ namespace DotsAndPolygons
 
         protected List<TrapFace> faces;
         protected List<GameObject> lines = new List<GameObject>();
-        private List<PotentialMove>[] paths = new List<PotentialMove>[2] { 
+
+        private List<PotentialMove>[] paths = new List<PotentialMove>[2]
+        {
             new List<PotentialMove>(),
             new List<PotentialMove>()
         };
@@ -110,7 +112,6 @@ namespace DotsAndPolygons
             DotsVertex A = move?.A.Original ?? move?.A;
             DotsVertex B = move?.B.Original ?? move?.B;
             if (move != null && ((A.Equals(a) && B.Equals(b)) || (B.Equals(b) && A.Equals(a)))) 
-            {
                 paths[nextPlayer].Remove(move);
             }
         }
@@ -128,8 +129,8 @@ namespace DotsAndPolygons
             DotsVertex b = moves.Last().B.Original ?? moves.Last().B;
             moves.Remove(moves.Last());
             paths[index] = moves;
-            
-            
+
+
             UnityMainThreadDispatcher.Instance().Enqueue(RunPostUpdate(DoMove, a, b));
         }
 

@@ -113,7 +113,6 @@ namespace DotsAndPolygons
                             deeperMoveSamePlayer);
 
                         alpha = Math.Max(alpha, deeperMoveSamePlayer.Value);
-
                         if (alpha >= beta)
                         {
                             CleanUp(dcel.HalfEdges, a, b, face1, face2, disabled, dcel.DotsFaces);
@@ -166,11 +165,12 @@ namespace DotsAndPolygons
         }
 
         private static void UpdateGameStateMove(PlayerNumber player, ValueMove gameStateMove, DotsVertex a,
-            DotsVertex b, float value, MoveCollection path, MoveCollection deeperPath)
+            DotsVertex b,
+            float value, List<ValueMove> path)
         {
             gameStateMove.A = a;
             gameStateMove.B = b;
-            gameStateMove.playerNumber = player;
+            gameStateMove.PlayerNumber = player;
             gameStateMove.BestValue = value;
             path.Value = value;
             path.PotentialMoves = deeperPath.PotentialMoves;
