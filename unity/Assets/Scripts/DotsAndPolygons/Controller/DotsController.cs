@@ -42,7 +42,7 @@ namespace DotsAndPolygons
         private float maxX = 8.0f;
         private float minY = -3.5f;
         private float maxY = 3.5f;
-        private readonly bool multiThreaded = false;
+        private readonly bool multiThreaded = Settings.MultiThreaded;
 
         private HashSet<UnityTrapDecomLine> TrapDecomLines { get; set; } = new HashSet<UnityTrapDecomLine>();
         protected TrapDecomRoot root;
@@ -167,7 +167,7 @@ namespace DotsAndPolygons
             }
             else
             {
-                if(multiThreaded)
+                if (multiThreaded)
                 {
                     Thread instanceCaller = new Thread(new ThreadStart(MoveAiPlayerForThread));
 

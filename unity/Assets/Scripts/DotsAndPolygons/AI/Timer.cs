@@ -11,6 +11,8 @@ namespace DotsAndPolygons
     {
         private long startTime;
 
+        public long endTime { get; set; }
+
         public Timer()
         {
 
@@ -24,7 +26,8 @@ namespace DotsAndPolygons
         {
             long stopTime = DateTime.Now.Ticks;
             TimeSpan span = new TimeSpan(stopTime - startTime);
-            HelperFunctions.print($"Code took {span.Seconds} s");
+            HelperFunctions.print($"Code took {span.Milliseconds} ms");
+            endTime = span.Milliseconds;
         }
     }
 }

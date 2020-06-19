@@ -309,9 +309,9 @@ namespace DotsAndPolygons
 
         public enum GameMode
         {
-            GameMode1,
-            GameMode2,
-            GameMode3
+            GameMode1 = 1,
+            GameMode2 = 2,
+            GameMode3 = 3
         }
 
         public static HashSet<DotsHalfEdge> HalfEdges(this DotsEdge dotsEdge) =>

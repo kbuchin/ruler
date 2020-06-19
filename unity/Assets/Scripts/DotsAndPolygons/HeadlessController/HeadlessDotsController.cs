@@ -51,6 +51,8 @@ namespace DotsAndPolygons
         public DotsPlayer CurrentPlayer { get; set; }
         public DotsPlayer Player1 { get; }
         public DotsPlayer Player2 { get; }
+        public List<float> AvgAIRunningTime1 { get; set; } = new List<float>();
+        public List<float> AvgAIRunningTime2 { get; set; } = new List<float>();
 
         public int CurrentPlayerValue => CurrentPlayer.Equals(Player1) ? 1 : 2;
 
@@ -98,6 +100,8 @@ namespace DotsAndPolygons
 
         private void MoveAiPlayerForThread()
         {
+            Timer timer = new Timer();
+            timer.StartTimer();
             int index = Convert.ToInt32(CurrentPlayer.PlayerNumber) - 1;
             List<PotentialMove> moves = (CurrentPlayer as AiPlayer).NextMove(
                 Edges,
@@ -110,12 +114,21 @@ namespace DotsAndPolygons
             DotsVertex b = moves.Last().B.Original ?? moves.Last().B;
             moves.Remove(moves.Last());
             paths[index] = moves;
-
+            timer.StopTimer();
+            if(CurrentPlayer.PlayerNumber == PlayerNumber.Player1)
+            {
+                this.AvgAIRunningTime1.Add(timer.endTime);
+            }
+            else
+            {
+                this.AvgAIRunningTime2.Add(timer.endTime);
+            }
             DoMove(a, b);
+            
         }
 
         public void MoveForAiPlayer()
-        {
+        {            
             if (CurrentPlayer.PlayerType == PlayerType.Player) return;
             int index = Convert.ToInt32(CurrentPlayer.PlayerNumber) - 1;
             List<PotentialMove> currentPath = paths[index];
@@ -137,7 +150,7 @@ namespace DotsAndPolygons
 
         public void DoMove(DotsVertex firstPoint, DotsVertex secondPoint)
         {
-            print($"Player {CurrentPlayer} played move: {firstPoint}, {secondPoint}", true);
+            print($"Player {CurrentPlayer} played move: {firstPoint}, {secondPoint}");
             AddVisualEdge(firstPoint, secondPoint);
 
             (DotsFace face1, DotsFace face2) = AddEdge(

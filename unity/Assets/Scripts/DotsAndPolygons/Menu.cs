@@ -39,7 +39,7 @@ namespace DotsAndPolygons
 
         public void TogglePlayer1()
         {
-            if(Settings.Player2 != PlayerType.Player)
+            if(Settings.Player2 != PlayerType.Player && !Settings.MultiThreaded)
             {
                 Settings.Player1 = PlayerType.Player;
                 UpdateText();
@@ -54,7 +54,7 @@ namespace DotsAndPolygons
 
         public void TogglePlayer2()
         {
-            if (Settings.Player1 != PlayerType.Player)
+            if (Settings.Player1 != PlayerType.Player && !Settings.MultiThreaded)
             {
                 Settings.Player2 = PlayerType.Player;
                 UpdateText();

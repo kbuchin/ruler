@@ -4,5 +4,6 @@ namespace DotsAndPolygons
     {
         public static PlayerType Player1 { get; set; } = PlayerType.Player;
         public static PlayerType Player2 { get; set; } = PlayerType.Player;
+        public static bool MultiThreaded { get; set; } = true;
     }
 }
