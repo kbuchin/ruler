@@ -27,7 +27,7 @@ namespace DotsAndPolygons
             HelperFunctions.GameMode mode,
             int maxDepth = 3,
             float threshold = 0.5f,
-            int numberOfThreads = 2
+            int numberOfThreads = 1
         ) : base(player, PlayerType.MinMaxAi, mode)
         {
             _maxDepth = maxDepth;

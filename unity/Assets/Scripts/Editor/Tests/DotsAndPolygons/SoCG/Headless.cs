@@ -13,10 +13,10 @@ namespace DotsAndPolygons.Tests.SoCG
         public void Test1()
         {
             List<int> numberOfThreadsToTest = new List<int>() { 2 };
-            List<GameMode> gameModes = new List<GameMode>() { GameMode.GameMode1, GameMode.GameMode2, GameMode.GameMode3 };
-            List<float> thresholds = new List<float>() { 0.5f };
+            List<GameMode> gameModes = new List<GameMode>() { GameMode.GameMode2 };
+            List<float> thresholds = new List<float>() {0.5f };
             List<int> depths = new List<int>() { 4 };
-            List<int> numberOfDotsToTest = new List<int>() { 8 };
+            List<int> numberOfDotsToTest = new List<int>() { 10 };
             List<PlayerType> playerTypes = new List<PlayerType> { PlayerType.GreedyAi, PlayerType.MinMaxAi };
             List<TestResult> results = new List<TestResult>();
             
@@ -37,7 +37,7 @@ namespace DotsAndPolygons.Tests.SoCG
                                     {
                                         foreach (float threshold2 in thresholds)
                                         {
-                                            for(int i = 0; i < 10; i++)
+                                            for(int i = 0; i < 3; i++)
                                             {
                                                 TestResult result = new TestResult()
                                                 {
@@ -57,15 +57,15 @@ namespace DotsAndPolygons.Tests.SoCG
                                                 {
                                                     case GameMode.GameMode1:
                                                         controller = new HeadlessDotsController1(new MinMaxAi(PlayerNumber.Player1, mode, deptsp1, threshold1, numberOfThreadsp1),
-                                                                                                new MinMaxAi(PlayerNumber.Player2, mode, deptsp2, threshold2, numberOfThreadsp2));
+                                                                                                new MinMaxAi(PlayerNumber.Player2, mode, deptsp2, threshold2, numberOfThreadsp2), numberOfDots);
                                                         break;
                                                     case GameMode.GameMode2:
                                                         controller = new HeadlessDotsController2(new MinMaxAi(PlayerNumber.Player1, mode, deptsp1, threshold1, numberOfThreadsp1),
-                                                                                                new MinMaxAi(PlayerNumber.Player2, mode, deptsp2, threshold2, numberOfThreadsp2));
+                                                                                                new MinMaxAi(PlayerNumber.Player2, mode, deptsp2, threshold2, numberOfThreadsp2), numberOfDots);
                                                         break;
                                                     case GameMode.GameMode3:
                                                         controller = new HeadlessDotsController2(new MinMaxAi(PlayerNumber.Player1, mode, deptsp1, threshold1, numberOfThreadsp1),
-                                                                                                new MinMaxAi(PlayerNumber.Player2, mode, deptsp2, threshold2, numberOfThreadsp2));
+                                                                                                new MinMaxAi(PlayerNumber.Player2, mode, deptsp2, threshold2, numberOfThreadsp2), numberOfDots);
                                                         break;
                                                 }
                                                 controller.Start();
@@ -76,6 +76,8 @@ namespace DotsAndPolygons.Tests.SoCG
                                                 result.Winner = controller.TotalAreaP1 > controller.TotalAreaP2 ? 1 : 2;
                                                 results.Add(result);
                                             }
+                                             
+                                            HelperFunctions.print("Finished with case",true);
                                         }
                                     }
                                 }
@@ -84,7 +86,7 @@ namespace DotsAndPolygons.Tests.SoCG
                     }
                 }
             }
-            using(FileStream writer2 = new FileStream($"D:/repos/ruler/testresults/results-{DateTime.Now:dd-MM-yyyy-HH.mm}.csv",FileMode.Create, FileAccess.Write))
+            using (FileStream writer2 = new FileStream($"D:/repos/ruler/testresults/results-{DateTime.Now:dd-MM-yyyy-HH.mm}.csv", FileMode.Create, FileAccess.Write))
             {
                 using(StreamWriter writer = new StreamWriter(writer2))
                 {
