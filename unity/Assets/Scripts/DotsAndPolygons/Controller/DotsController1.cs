@@ -1,22 +1,16 @@
-using UnityEngine.UI;
-
 // ReSharper disable ConvertToAutoPropertyWhenPossible
 // ReSharper disable ConvertToAutoProperty
 
 namespace DotsAndPolygons
 {
-    using System.Collections.Generic;
     using UnityEngine;
     using System.Linq;
-    using Util.Geometry.Polygon;
-    using Util.Geometry;
     using static HelperFunctions;
 
     public class DotsController1 : DotsController
     {
-        
         public override GameMode CurrentGamemode => GameMode.GameMode1;
-        
+
         // Update is called once per frame
         public void Update()
         {
@@ -43,7 +37,8 @@ namespace DotsAndPolygons
             }
             else // User let go of mouse button
             {
-                if (EdgeIsPossible(FirstPoint?.dotsVertex, SecondPoint?.dotsVertex, Edges.Select(x => x.DotsEdge), Faces.Select(x => x.DotsFace).ToHashSet()))
+                if (EdgeIsPossible(FirstPoint?.dotsVertex, SecondPoint?.dotsVertex, Edges.Select(x => x.DotsEdge),
+                    Faces.Select(x => x.DotsFace).ToHashSet()))
                 {
                     DoMove(FirstPoint?.dotsVertex, SecondPoint?.dotsVertex);
                 }
@@ -62,6 +57,7 @@ namespace DotsAndPolygons
                 FinishLevel();
                 return true;
             }
+
             return false;
         }
 

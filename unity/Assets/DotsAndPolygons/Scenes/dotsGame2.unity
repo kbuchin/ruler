@@ -143,6 +143,18 @@ PrefabInstance:
       propertyPath: m_Color.b
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 11498874, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 11498874, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 11498874, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 22409496, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -234,18 +246,6 @@ PrefabInstance:
     - target: {fileID: 22465764, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
       propertyPath: m_SizeDelta.y
       value: -40
-      objectReference: {fileID: 0}
-    - target: {fileID: 11498874, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
-      propertyPath: m_Color.r
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 11498874, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
-      propertyPath: m_Color.g
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 11498874, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
-      propertyPath: m_Color.b
-      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
@@ -901,6 +901,18 @@ PrefabInstance:
       propertyPath: m_Color.b
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 11498874, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 11498874, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 11498874, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 22409496, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -984,18 +996,6 @@ PrefabInstance:
     - target: {fileID: 22409496, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
       propertyPath: m_Pivot.y
       value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 11498874, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
-      propertyPath: m_Color.r
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 11498874, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
-      propertyPath: m_Color.g
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 11498874, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
-      propertyPath: m_Color.b
-      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
@@ -1150,6 +1150,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1955554123}
     m_Modifications:
+    - target: {fileID: 112202, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
+      propertyPath: m_Name
+      value: Current Player Text
+      objectReference: {fileID: 0}
     - target: {fileID: 135086, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
       propertyPath: m_Name
       value: CurrentPlayer
@@ -1160,7 +1164,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 11418384, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
-      value: 0
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 11418384, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1986019891}
+    - target: {fileID: 11418384, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: ToggleTrapDecomLines
+      objectReference: {fileID: 0}
+    - target: {fileID: 11418384, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 11426352, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
       propertyPath: m_Text
@@ -1177,6 +1193,18 @@ PrefabInstance:
     - target: {fileID: 11426352, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
       propertyPath: m_Color.b
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 11498874, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 11498874, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
+      propertyPath: m_Color.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 11498874, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
+      propertyPath: m_Color.b
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 22409496, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1261,22 +1289,6 @@ PrefabInstance:
     - target: {fileID: 22409496, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
       propertyPath: m_Pivot.y
       value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 11498874, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
-      propertyPath: m_Color.r
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 11498874, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
-      propertyPath: m_Color.g
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 11498874, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
-      propertyPath: m_Color.b
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 112202, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}
-      propertyPath: m_Name
-      value: Current Player Text
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1115d4335193dd643963c561dd1f1b1d, type: 3}

@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using DotsAndPolygons;
-using General.Model;
 using UnityEngine;
-using UnityEngine.UI;
 using Util.Geometry;
-using Random = UnityEngine.Random;
 
 // ReSharper disable ConvertToAutoPropertyWhenPossible
 // ReSharper disable ConvertToAutoProperty

@@ -37,7 +37,7 @@ namespace DotsAndPolygons
         [SerializeField] public bool AiEnabled;
         [SerializeField] public bool p1Ai;
 
-        protected int numberOfDots = 3; // TODO
+        protected int numberOfDots = 20; // TODO
         private float minX = -8.0f;
         private float maxX = 8.0f;
         private float minY = -3.5f;
@@ -269,6 +269,15 @@ namespace DotsAndPolygons
             {
                 MoveForAiPlayer();
             }
+        }
+
+        public void ToggleTrapDecomLines()
+        {
+            _showTrapDecomLines = !_showTrapDecomLines;
+            if (_showTrapDecomLines)
+                ShowTrapDecomLines();
+            else
+                RemoveTrapDecomLines();
         }
 
         protected void ShowTrapDecomLines()

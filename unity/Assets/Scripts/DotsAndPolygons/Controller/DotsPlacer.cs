@@ -5,7 +5,6 @@ using Util.Algorithms.Triangulation;
 using Util.Geometry.Polygon;
 using Util.Geometry.Triangulation;
 using IntPoint = ClipperLib.IntPoint;
-using Object = UnityEngine.Object;
 
 namespace DotsAndPolygons
 {
