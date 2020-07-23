@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using UnityEditor;
 using Util.Geometry;
 using Random = System.Random;
 
@@ -12,13 +13,14 @@ namespace DotsAndPolygons
         private volatile int _maxDepth;
         public float TotalHullArea { get; set; }
 
-        private volatile float _threshold;
+        private float _threshold;
 
         private volatile MoveCollection[] _resultMoves;
+        private volatile int _noResultMoves;
 
-        private volatile int _numberOfThreads;
+        private int _numberOfThreads;
 
-        private ManualResetEvent _manualResetEvent = new ManualResetEvent(false);
+        private AutoResetEvent _autoResetEvent = new AutoResetEvent(false);
 
         private List<(int, int)> _pairs = new List<(int, int)>();
 
@@ -26,8 +28,8 @@ namespace DotsAndPolygons
             PlayerNumber player,
             HelperFunctions.GameMode mode,
             int maxDepth = 3,
-            float threshold = 0.5f,
-            int numberOfThreads = 1
+            float threshold = 0.33f,
+            int numberOfThreads = 2
         ) : base(player, PlayerType.MinMaxAi, mode)
         {
             _maxDepth = maxDepth;
@@ -82,13 +84,13 @@ namespace DotsAndPolygons
 
                 if (!HelperFunctions.EdgeIsPossible(a, b, dcel.Edges, dcel.DotsFaces)) continue;
                 movePossible = true;
-                
+
                 if (otherPlayerArea > _threshold * TotalHullArea)
                 {
                     UpdateGameStateMove(player, gameStateMove, a, b, value, moveCollection,
                         new MoveCollection(value));
                 }
-                
+
                 List<DotsVertex> disabled = new List<DotsVertex>();
                 (DotsFace face1, DotsFace face2) = HelperFunctions.AddEdge(a, b,
                     Convert.ToInt32(player),
@@ -106,7 +108,8 @@ namespace DotsAndPolygons
                 if (player.Equals(PlayerNumber))
                 {
                     MoveCollection deeperMoveSamePlayer =
-                        MinMaxMove(player: nextPlayer, dcel: dcel, start: start, end: end, alpha: alpha, beta: beta, currentDepth: newDepth);
+                        MinMaxMove(player: nextPlayer, dcel: dcel, start: start, end: end, alpha: alpha, beta: beta,
+                            currentDepth: newDepth);
                     if (moveCollection.Value < deeperMoveSamePlayer.Value)
                     {
                         UpdateGameStateMove(player, gameStateMove, a, b, deeperMoveSamePlayer.Value, moveCollection,
@@ -124,7 +127,8 @@ namespace DotsAndPolygons
                 else
                 {
                     MoveCollection deeperMoveSamePlayer =
-                        MinMaxMove(player: nextPlayer, dcel: dcel, start: start, end: end, alpha: alpha, beta: beta, currentDepth: newDepth);
+                        MinMaxMove(player: nextPlayer, dcel: dcel, start: start, end: end, alpha: alpha, beta: beta,
+                            currentDepth: newDepth);
                     if (moveCollection.Value > deeperMoveSamePlayer.Value)
                     {
                         UpdateGameStateMove(player, gameStateMove, a, b, deeperMoveSamePlayer.Value, moveCollection,
@@ -159,12 +163,19 @@ namespace DotsAndPolygons
             HelperFunctions.print($"Thread id: {threadId} is starting");
             MoveCollection result = MinMaxMove(player: player, dcel: dcel, start: start, end: end);
             HelperFunctions.print($"Thread id: {threadId} is finished");
-            _resultMoves[threadId] = result;
-            _manualResetEvent.Set();
-            _manualResetEvent.Reset();
+
+            lock (_autoResetEvent)
+            {
+                _resultMoves[threadId] = result;
+                _noResultMoves++;
+                _autoResetEvent.Set();
+                // _autoResetEvent.Reset();
+                HelperFunctions.print($"Sent signal from thread {threadId}");
+            }
         }
 
-        private static void UpdateGameStateMove(PlayerNumber player, ValueMove gameStateMove, DotsVertex a, DotsVertex b,
+        private static void UpdateGameStateMove(PlayerNumber player, ValueMove gameStateMove, DotsVertex a,
+            DotsVertex b,
             float value, MoveCollection path, MoveCollection deeperPath)
         {
             gameStateMove.A = a;
@@ -203,10 +214,11 @@ namespace DotsAndPolygons
             Random random = new Random();
             _pairs = _pairs.OrderBy(_ => random.Next()).ToList();
             _resultMoves = new MoveCollection[_numberOfThreads];
+            _noResultMoves = 0;
             int remainder = _pairs.Count % _numberOfThreads;
             int rangeSize = Convert.ToInt32(_pairs.Count / _numberOfThreads);
             int prevEnd = 0;
-            if(multiThreaded)
+            if (multiThreaded)
             {
                 for (int i = 0; i < _numberOfThreads; i++)
                 {
@@ -218,11 +230,13 @@ namespace DotsAndPolygons
                     Thread t = new Thread(() => StartThread(PlayerNumber, cloned, start, end, threadId));
                     t.Start();
                 }
-                while (_resultMoves.Any(x => x == null))
+                
+                while (_noResultMoves < _numberOfThreads)
                 {
-                    _manualResetEvent.WaitOne();
-                    HelperFunctions.print($"Resultmoves: {string.Join(", ", _resultMoves as object[])}");
+                    _autoResetEvent.WaitOne();
+                    HelperFunctions.print($"Received signal, _noResultMoves: {_noResultMoves}, _numberOfThreads: {_numberOfThreads}");
                 }
+
                 MoveCollection returner = _resultMoves.OrderByDescending(x => x.Value).FirstOrDefault();
                 HelperFunctions.print($"PotentialMove: {returner}");
                 return returner.PotentialMoves;

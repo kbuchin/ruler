@@ -9,7 +9,9 @@ namespace DotsAndPolygons
 {
     public class GreedyAi : AiPlayer
     {
-        public GreedyAi(PlayerNumber player, HelperFunctions.GameMode mode) : base(player, PlayerType.GreedyAi, mode) {}
+        public GreedyAi(PlayerNumber player, HelperFunctions.GameMode mode) : base(player, PlayerType.GreedyAi, mode)
+        {
+        }
 
         public PotentialMove MinimalMove(int start, int length, DotsVertex[] vertices, HashSet<DotsEdge> edges,
             HashSet<DotsHalfEdge> halfEdges, HashSet<DotsFace> dotsFaces)
@@ -33,30 +35,28 @@ namespace DotsAndPolygons
                     DotsVertex a = vertices[i];
                     DotsVertex b = vertices[j];
 
-                    if (HelperFunctions.EdgeIsPossible(a, b, edges, dotsFaces))
+                    if (!HelperFunctions.EdgeIsPossible(a, b, edges, dotsFaces)) continue;
+                    List<DotsVertex> disabled = new List<DotsVertex>();
+                    (DotsFace face1, DotsFace face2) = HelperFunctions.AddEdge(a, b,
+                        Convert.ToInt32(PlayerNumber),
+                        halfEdges, vertices, GameMode, newlyDisabled: disabled);
+
+                    DotsEdge newEdge = new DotsEdge(new LineSegment(a.Coordinates, b.Coordinates));
+                    edges.Add(newEdge);
+
+                    if (face1 != null || face2 != null)
                     {
-                        List<DotsVertex> disabled = new List<DotsVertex>();
-                        (DotsFace face1, DotsFace face2) = HelperFunctions.AddEdge(a, b,
-                            Convert.ToInt32(PlayerNumber),
-                            halfEdges, vertices, GameMode, newlyDisabled: disabled);
-
-                        DotsEdge newEdge = new DotsEdge(new LineSegment(a.Coordinates, b.Coordinates));
-                        edges.Add(newEdge);
-
-                        if (face1 != null || face2 != null)
+                        float newMaximalArea = (face1?.AreaMinusInner ?? 0.0f) + (face2?.AreaMinusInner ?? 0.0f);
+                        if (newMaximalArea > maximalArea)
                         {
-                            float newMaximalArea = (face1?.AreaMinusInner ?? 0.0f) + (face2?.AreaMinusInner ?? 0.0f);
-                            if (newMaximalArea > maximalArea)
-                            {
-                                maximalArea = newMaximalArea;
-                                maxAreaA = a;
-                                maxAreaB = b;
-                            }
+                            maximalArea = newMaximalArea;
+                            maxAreaA = a;
+                            maxAreaB = b;
                         }
-
-                        CleanUp(halfEdges, a, b, face1, face2, disabled);
-                        edges.Remove(newEdge);
                     }
+
+                    CleanUp(halfEdges, a, b, face1, face2, disabled);
+                    edges.Remove(newEdge);
                 }
             }
 
@@ -67,7 +67,7 @@ namespace DotsAndPolygons
                 // shuffle vertices
                 Random rnd = new Random();
                 vertices = vertices.OrderBy(_ => rnd.Next()).ToArray();
-                
+
                 for (int i = start; i < end - 1; i++)
                 {
                     for (int j = i + 1; j < end; j++)
@@ -131,12 +131,12 @@ namespace DotsAndPolygons
                     {
                         List<DotsVertex> disabled = new List<DotsVertex>();
                         (DotsFace face1, DotsFace face2) = HelperFunctions.AddEdge(
-                            a,
-                            b,
-                            Convert.ToInt32(PlayerNumber),
-                            halfEdges,
-                            dots,
-                            GameMode,
+                            a: a,
+                            b: b,
+                            currentPlayer: Convert.ToInt32(PlayerNumber),
+                            m_halfEdges: halfEdges,
+                            allVertices: dots,
+                            gameMode: GameMode,
                             newlyDisabled: disabled
                         );
                         float area = face1?.AreaMinusInner ?? 0.0f + face2?.AreaMinusInner ?? 0.0f;
@@ -169,7 +169,7 @@ namespace DotsAndPolygons
         public override List<PotentialMove> NextMove(
             HashSet<DotsEdge> edges,
             HashSet<DotsHalfEdge> halfEdges,
-            HashSet<DotsFace> faces, 
+            HashSet<DotsFace> faces,
             HashSet<DotsVertex> vertices,
             bool multiThreaded = false)
         {
