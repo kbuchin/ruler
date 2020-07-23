@@ -351,7 +351,15 @@ namespace DotsAndPolygons
                 leftPointing = incident;
             }
 
-            if (root != null) TrapDecomHelper.Insert(root, new DotsEdge(leftPointing, rightPointing));
+            try
+            {
+                // TODO
+                if (root != null) TrapDecomHelper.Insert(root, new DotsEdge(leftPointing, rightPointing));
+            }
+            catch (Exception e)
+            {
+                print(e, true);
+            }
 
             AssignNextAndPrev(incident); // Also assigns twin
 

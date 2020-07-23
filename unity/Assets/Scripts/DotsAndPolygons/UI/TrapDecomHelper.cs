@@ -282,7 +282,7 @@ public class TrapDecomHelper
                 i_lower++;
 
                 newlineNode.RightChild = upperFaces[i_upper];
-                newlineNode.LeftChild = lowerFaces[i_lower];
+                newlineNode.LeftChild = lowerFaces[i_lower]; // TODO leo, this one is out of range sometimes
                 upperFaces[i_upper].AddParent(newlineNode);
                 lowerFaces[i_lower].AddParent(newlineNode);
 
