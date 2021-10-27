@@ -1,0 +1,84 @@
+
+@import url('https://fonts.googleapis.com/css?family=Eagle+Lake');
+
+html {
+    width: 100%;
+    height: 100%;
+    background-image: url('img/wood.jpg');
+    background-size: cover;
+    background-position: fixed;
+    color: #313131;
+}
+
+body {
+    font-family: 'Eagle Lake', cursive;
+    font-size: 20px;
+    transform: rotate(-2deg);
+    width: 95%;
+}
+
+p, table {
+    max-width: 1000px;
+    width: 100%;
+    margin: auto;
+}
+
+p {
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 25px;
+    padding: 20px;
+}
+
+table {
+    border-spacing: 100px 0px;
+    border-collapse: separate;
+}
+
+tr:nth-child(2) td {
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 25px;
+    padding: 10px 20px;
+}
+
+h1 {
+    text-align: center;
+    font-weight: normal;
+}
+
+h1 img {
+    width: 80%;
+    max-width: 600px;
+}
+
+table td {
+    width: 50%;
+    text-align: center;
+}
+
+table td img {
+    width: 40%;
+    max-width: 100px;
+}
+
+table {
+    margin-top: 50px;
+}
+
+a {
+    color: #313131;
+    transition: color .25s;
+}
+
+a:hover {
+    color: #8f2c2c;
+}
+
+div {
+    text-align: center;
+}
+
+img.main-image {
+    width: 20%;
+    max-width: 200px;
+    margin: auto;
+}
