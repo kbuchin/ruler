@@ -4,5 +4,4 @@ Ruler of the Plane is a set of games illustrating concepts from combinatorial an
 
 The games are implemented using C# in the game engine Unity.
 
-There is a website for the games, where also the online WebGL version is hosted:
-http://www.win.tue.nl/~kbuchin/proj/ruler/
+On https://kbuchin.github.io/ruler/ you can also play the WebGL version of the game (and branches).
