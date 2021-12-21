@@ -1,6 +1,7 @@
 ﻿using ArtGallery;
 using Divide;
 using KingsTaxes;
+using TheHeist;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -39,6 +40,10 @@ public class LoadLevelEditor : ScriptedImporter
         {
             obj = LoadArtGalleryLevel(fileSelected, name);
         }
+        else if (name.StartsWith("thLevel"))
+        {
+            obj = LoadTheHeistLevel(fileSelected, name);
+        }
         else if (name.StartsWith("ktLevel"))
         {
             obj = LoadKingsTaxesLevel(fileSelected, name);
@@ -68,6 +73,125 @@ public class LoadLevelEditor : ScriptedImporter
     {
         // create the output scriptable object
         var asset = ScriptableObject.CreateInstance<ArtGalleryLevel>();
+
+        // retrieve page data from .ipe file
+        var items = fileSelected.Descendants("page").First().Descendants("path").ToList();
+
+        // check that .ipe file contains one and only one polygon
+        if (items.Count == 0)
+        {
+            EditorUtility.DisplayDialog("Error", "No paths (lines/polygons) found in ipe file.", "OK");
+            return asset;
+        }
+
+        var outerPoints = new List<Vector2>();
+        var holes = new List<List<Vector2>>();
+        var checkPoints = new List<Vector2>();
+
+        foreach (var poly in items)
+        {
+            List<float> transformation = null;
+            if (poly.Attribute("matrix") != null)
+            {
+                transformation = poly.Attribute("matrix").Value
+                    .Split(' ')
+                    .Select(s => float.Parse(s))
+                    .ToList();
+            }
+
+            // retrieve coordinates from .ipe file
+            var points = new List<Vector2>();
+            foreach (var coordString in poly.Value.Split('\n'))
+            {
+                var coords = coordString.Split(' ').ToList();
+
+                if (coords.Count < 2) continue;
+
+                var x = float.Parse(coords[0]);
+                var y = float.Parse(coords[1]);
+
+                if (!MathUtil.IsFinite(x) || !MathUtil.IsFinite(y)) continue;
+
+                if (transformation != null)
+                {
+                    // apply transformation matrix (could be made into library function)
+                    x = transformation[0] * x + transformation[2] * y + transformation[4];
+                    y = transformation[1] * x + transformation[3] * y + transformation[5];
+                }
+
+                points.Add(new Vector2(x, y));
+            }
+
+            if (outerPoints.Count == 0 || new Polygon2D(outerPoints).Area < new Polygon2D(points).Area)
+            {
+                if (outerPoints.Count > 0) holes.Add(outerPoints);
+                outerPoints = points;
+            }
+            else
+            {
+                holes.Add(points);
+            }
+
+            // Add all defining vertices to checkPoints
+        }
+
+
+        // normalize coordinates
+        var rect = BoundingBoxComputer.FromPoints(outerPoints);
+        outerPoints = Normalize(rect, agSIZE, outerPoints);
+        checkPoints.AddRange(outerPoints);
+        for (var i = 0; i < holes.Count; i++)
+        {
+            holes[i] = Normalize(rect, agSIZE, holes[i]);
+            checkPoints.AddRange(holes[i]);
+        }
+
+
+
+        // reverse if not clockwise
+        if (!(new Polygon2D(outerPoints).IsClockwise()))
+        {
+            outerPoints.Reverse();
+        }
+
+        for (var i = 0; i < holes.Count; i++)
+        {
+            // reverse if not clockwise
+            if (!(new Polygon2D(holes[i]).IsClockwise()))
+            {
+                holes[i].Reverse();
+            }
+        }
+
+        var gridPoints = ComputeGridPoints(rect, outerPoints, holes, 50);
+
+        checkPoints.AddRange(gridPoints);
+
+        asset.Outer = outerPoints;
+        asset.Holes = holes.Select(h => new Vector2Array(h.ToArray())).ToList();
+        asset.CheckPoints = checkPoints;
+
+        Debug.Log(asset.CheckPoints);
+
+        // get level arguments
+        var args = name.Split('_').ToList();
+        if (args.Count > 2)
+        {
+            EditorUtility.DisplayDialog("Error", "Too many level arguments given in path name", "OK");
+            return asset;
+        }
+        else if (args.Count == 2)
+        {
+            asset.MaxNumberOfLighthouses = int.Parse(args[1]);
+        }
+
+        return asset;
+    }
+
+    public UnityEngine.Object LoadTheHeistLevel(XElement fileSelected, string name)
+    {
+        // create the output scriptable object
+        var asset = ScriptableObject.CreateInstance<TheHeistLevel>();
 
         // retrieve page data from .ipe file
         var items = fileSelected.Descendants("page").First().Descendants("path").ToList();
