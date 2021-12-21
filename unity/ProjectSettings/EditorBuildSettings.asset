@@ -116,4 +116,19 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/ConvexHull/Scenes/hullVictory.unity
     guid: 63d6523b6cb3eb547847bceeba850975
+  - enabled: 1
+    path: Assets/TheHeist/Scenes/thMenu.unity
+    guid: 4399c2403b4751443b05ab20ff356112
+  - enabled: 1
+    path: Assets/TheHeist/Scenes/thControls.unity
+    guid: 1ceb739754fd5044fab10c657194dd17
+  - enabled: 1
+    path: Assets/TheHeist/Scenes/thExplanation.unity
+    guid: 48956efa7358f9e4cbbfdbd1267c78ca
+  - enabled: 1
+    path: Assets/TheHeist/Scenes/thLevel.unity
+    guid: 4d40f25c540166a4a9b8ca9551e3e465
+  - enabled: 1
+    path: Assets/TheHeist/Scenes/thVictory.unity
+    guid: e25fc707fdff87443969039364ec75bc
   m_configObjects: {}

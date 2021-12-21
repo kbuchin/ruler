@@ -271,7 +271,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1698274569}
+      - m_Target: {fileID: 2002079872}
         m_MethodName: AdvanceLevel
         m_Mode: 1
         m_Arguments:
@@ -524,7 +524,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: agMenu
+          m_StringArgument: thMenu
           m_BoolArgument: 0
         m_CallState: 1
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
@@ -792,12 +792,6 @@ CanvasRenderer:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1110610433}
   m_CullTransparentMesh: 0
---- !u!114 &1698274569 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 114624802737080694, guid: df3d444a912111e4dada71b6deec06cc,
-    type: 2}
-  m_PrefabInternal: {fileID: 2002079870}
-  m_Script: {fileID: 11500000, guid: f154930771b1dff4ab7d450f5961f6c9, type: 3}
 --- !u!1 &1809658443
 GameObject:
   m_ObjectHideFlags: 0
@@ -1035,7 +1029,7 @@ Prefab:
         type: 3}
     - target: {fileID: 1356252125741086, guid: df3d444a912111e4dada71b6deec06cc, type: 2}
       propertyPath: m_Name
-      value: ArtGalleryController
+      value: TheHeistController
       objectReference: {fileID: 0}
     - target: {fileID: 114624802737080694, guid: df3d444a912111e4dada71b6deec06cc,
         type: 2}
@@ -1105,9 +1099,39 @@ Prefab:
       propertyPath: m_lighthousePrefab
       value: 
       objectReference: {fileID: 189480, guid: 52e5a999253ee854c99f4ecc1a19d437, type: 2}
+    - target: {fileID: 114624802737080694, guid: df3d444a912111e4dada71b6deec06cc,
+        type: 2}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: df3d444a912111e4dada71b6deec06cc, type: 2}
   m_IsPrefabAsset: 0
+--- !u!1 &2002079871 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1356252125741086, guid: df3d444a912111e4dada71b6deec06cc,
+    type: 2}
+  m_PrefabInternal: {fileID: 2002079870}
+--- !u!114 &2002079872
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2002079871}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5366980ab628ab41980869ac56c5ea6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_levels:
+  - {fileID: 11400000, guid: 19e31991337313241a94b1dd26fe35db, type: 2}
+  m_victoryScreen: thVictory
+  m_lighthousePrefab: {fileID: 189480, guid: e26f9fdb5894d53408a4592179a18ad8, type: 2}
+  m_debugPrefab: {fileID: 189480, guid: 836baa76232861f44a669996f3d8f4b0, type: 2}
+  m_advanceButton: {fileID: 2135131466}
+  m_lighthouseText: {fileID: 148341695}
+  m_timeLabel: {fileID: 2057911039}
+  m_puzzleCounterLabel: {fileID: 1110610433}
 --- !u!1 &2028647603
 GameObject:
   m_ObjectHideFlags: 0
