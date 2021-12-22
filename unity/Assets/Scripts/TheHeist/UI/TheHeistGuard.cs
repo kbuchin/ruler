@@ -1,14 +1,11 @@
 ﻿namespace TheHeist
 {
+    using System.Collections;
+    using System.Collections.Generic;
     using UnityEngine;
     using Util.Geometry.Polygon;
 
-    /// <summary>
-    /// Represents the lighthouse object in the game.
-    /// Holds its position as well as the corresponding visibility polygon.
-    /// Handles user clicks and drags.
-    /// </summary>
-    public class TheHeistLightHouse : MonoBehaviour
+    public class TheHeistGuard : MonoBehaviour
     {
         // stores a prefab object for the vision polygon
         [SerializeField]
@@ -35,7 +32,7 @@
                 gameObject.transform.position = value;
 
                 // update vision polygon
-               // m_controller.UpdateVision(this);
+                m_controller.UpdateVision(this);
             }
         }
 
@@ -44,7 +41,6 @@
         /// </summary>
         public Polygon2D VisionPoly { get; set; }
 
-        // Use this for initialization
         void Awake()
         {
             m_controller = FindObjectOfType<TheHeistController>();
@@ -53,20 +49,13 @@
             GameObject go = Instantiate(m_visionAreaPrefab, new Vector3(0, 0, -1.5f), Quaternion.identity) as GameObject;
             VisionAreaMesh = go.GetComponent<TheHeistIsland>();
 
-           // m_controller.UpdateVision(this);
+            m_controller.UpdateVision(this);
         }
 
-        void OnDestroy()
+        // Update is called once per frame
+        void Update()
         {
-            if (VisionAreaMesh != null)
-            {
-                Destroy(VisionAreaMesh.gameObject);
-            }
-        }
-
-        void OnMouseDown()
-        {
-            m_controller.SelectLighthouse(this);
+            m_controller.SelectGuard(this);
         }
     }
 }

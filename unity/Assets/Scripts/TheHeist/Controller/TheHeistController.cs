@@ -24,7 +24,10 @@
         private string m_victoryScreen = "thVictory";
 
         [SerializeField]
-        private GameObject m_lighthousePrefab;
+        private GameObject m_LighthousePrefab;
+
+        [SerializeField]
+        private GameObject m_GuardPrefab;
 
         [SerializeField]
         private GameObject m_debugPrefab;
@@ -36,6 +39,9 @@
         private Text m_lighthouseText;
 
         [SerializeField]
+        private Text m_guardText;
+
+        [SerializeField]
         private GameObject m_timeLabel;
 
         [SerializeField]
@@ -44,7 +50,10 @@
         // stores the current level index
         private int m_levelCounter = -1;
 
-        // specified max number of lighthouses in level
+        // specified max number of guards in level
+        private int m_maxNumberOfGuards;
+
+
         private int m_maxNumberOfLighthouses;
 
         // store starting time of level
@@ -53,7 +62,9 @@
         // store relevant art gallery objects
         private TheHeistSolution m_solution;
         private TheHeistIsland m_levelMesh;
-        private TheHeistLightHouse m_selectedLighthouse;
+        private TheHeistLightHouse m_SelectedLighthouse;
+
+        private TheHeistGuard m_SelectedGuard;
 
         private GameObject debugpoint;
         public Polygon2DWithHoles LevelPolygon { get; private set; }
@@ -75,7 +86,7 @@
 
 
             // return if no lighthouse was selected since last update
-            if (m_selectedLighthouse == null) return;
+            if (m_SelectedLighthouse == null) return;
 
             // get current mouseposition
             var worldlocation = Camera.main.ScreenPointToRay(Input.mousePosition).origin;
@@ -83,22 +94,22 @@
 
             // move lighthouse to mouse position
             // will update visibility polygon
-            m_selectedLighthouse.Pos = worldlocation;
+            m_SelectedLighthouse.Pos = worldlocation;
 
             // see if lighthouse was released 
             if (Input.GetMouseButtonUp(0))
             {
                 //check whether lighthouse is over the island
-                if (!LevelPolygon.ContainsInside(m_selectedLighthouse.Pos))
+                if (!LevelPolygon.ContainsInside(m_SelectedLighthouse.Pos))
                 {
                     // destroy the lighthouse
-                    m_solution.RemoveLighthouse(m_selectedLighthouse);
-                    Destroy(m_selectedLighthouse.gameObject);
+                    m_solution.RemoveLighthouse(m_SelectedLighthouse);
+                    Destroy(m_SelectedLighthouse.gameObject);
                     UpdateLighthouseText();
                 }
 
                 // lighthouse no longer selected
-                m_selectedLighthouse = null;
+                m_SelectedLighthouse = null;
 
                 CheckSolution();
             }
@@ -108,7 +119,7 @@
         {
             // clear old level
             m_solution.Clear();
-            m_selectedLighthouse = null;
+            m_SelectedLighthouse = null;
             m_advanceButton.Disable();
 
             // create new level
@@ -147,6 +158,9 @@
             return true;
         }
 
+        /**
+         * TODO: replace this by a check if the player is in vision of the guard.
+         * */
         public void CheckSolution()
         {
             if (m_levels[m_levelCounter].MaxNumberOfLighthouses != m_solution.Count || !CheckContainmentPoints()) return;
@@ -191,7 +205,7 @@
         public void HandleIslandClick()
         {
             // return if lighthouse was already selected or player can place no more lighthouses
-            if (m_selectedLighthouse != null || m_solution.Count >= m_maxNumberOfLighthouses)
+            if (m_SelectedLighthouse != null || m_solution.Count >= m_maxNumberOfLighthouses)
                 return;
 
             // obtain mouse position
@@ -199,7 +213,7 @@
             worldlocation.z = -2f;
 
             // create a new lighthouse from prefab
-            var go = Instantiate(m_lighthousePrefab, worldlocation, Quaternion.identity) as GameObject;
+            var go = Instantiate(m_LighthousePrefab, worldlocation, Quaternion.identity) as GameObject;
 
             // add lighthouse to art gallery solution
             m_solution.AddLighthouse(go);
@@ -209,17 +223,17 @@
         }
 
         /// <summary>
-        /// Update the vision polygon for the given lighthouse.
+        /// Update the vision polygon for the given lighthouse. TODO: guard, also remove from update loop only do this after 'end turn'
         /// Calculates the visibility polygon.
         /// </summary>
-        /// <param name="m_lighthouse"></param>
-        public void UpdateVision(TheHeistLightHouse m_lighthouse)
+        /// <param name="m_guard"></param>
+        public void UpdateVision(TheHeistGuard m_guard)
         {
 
-            if (LevelPolygon.ContainsInside(m_lighthouse.Pos))
+            if (LevelPolygon.ContainsInside(m_guard.Pos))
             {
                 // calculate new visibility polygon
-                var vision = VisibilitySweep.Vision(LevelPolygon, m_lighthouse.Pos);
+                var vision = VisibilitySweep.Vision(LevelPolygon, m_guard.Pos);
 
                 if (vision == null)
                 {
@@ -227,14 +241,14 @@
                 }
 
                 // update lighthouse visibility
-                m_lighthouse.VisionPoly = vision;
-                m_lighthouse.VisionAreaMesh.Polygon = new Polygon2DWithHoles(vision);
+                m_guard.VisionPoly = vision;
+                m_guard.VisionAreaMesh.Polygon = new Polygon2DWithHoles(vision);
             }
             else
             {
                 // remove visibility polygon from lighthouse
-                m_lighthouse.VisionPoly = null;
-                m_lighthouse.VisionAreaMesh.Polygon = null;
+                m_guard.VisionPoly = null;
+                m_guard.VisionAreaMesh.Polygon = null;
             }
         }
 
@@ -244,7 +258,16 @@
         /// <param name="a_select"></param>
         internal void SelectLighthouse(TheHeistLightHouse a_select)
         {
-            m_selectedLighthouse = a_select;
+            m_SelectedLighthouse = a_select;
+        }
+
+        /// <summary>
+        /// Set given guard as selected one
+        /// </summary>
+        /// <param name="a_select"></param>
+        internal void SelectGuard(TheHeistGuard a_select)
+        {
+            m_SelectedGuard = a_select;
         }
 
         /// <summary>
