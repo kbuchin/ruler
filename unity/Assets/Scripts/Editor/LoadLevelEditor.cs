@@ -19,6 +19,7 @@ using General.Model;
 public class LoadLevelEditor : ScriptedImporter
 {
     private readonly float agSIZE = 9f;
+    private readonly float thSIZE = 9f;
     private readonly float ktSIZE = 6f;
     private readonly float divSIZE = 5f;
 
@@ -196,6 +197,16 @@ public class LoadLevelEditor : ScriptedImporter
         // retrieve page data from .ipe file
         var items = fileSelected.Descendants("page").First().Descendants("path").ToList();
 
+        var marklist = fileSelected.Descendants("page").Last().Descendants("use");
+
+        if (asset.Guards.Count == 0)
+        {
+            EditorUtility.DisplayDialog("Warning", "File does not contain any guards (disks).", "OK");
+        }
+
+        asset.Guards.AddRange(GetMarkers(marklist, "disk"));
+
+
         // check that .ipe file contains one and only one polygon
         if (items.Count == 0)
         {
@@ -206,6 +217,12 @@ public class LoadLevelEditor : ScriptedImporter
         var outerPoints = new List<Vector2>();
         var holes = new List<List<Vector2>>();
         var checkPoints = new List<Vector2>();
+    
+        //give warning if no relevant data found
+        if (asset.Guards.Count == 0)
+        {
+            EditorUtility.DisplayDialog("Warning", "File does not contain any guards (disks).", "OK");
+        }
 
         foreach (var poly in items)
         {
@@ -254,18 +271,16 @@ public class LoadLevelEditor : ScriptedImporter
             // Add all defining vertices to checkPoints
         }
 
-
         // normalize coordinates
         var rect = BoundingBoxComputer.FromPoints(outerPoints);
-        outerPoints = Normalize(rect, agSIZE, outerPoints);
+        outerPoints = Normalize(rect, thSIZE, outerPoints);
         checkPoints.AddRange(outerPoints);
+        asset.Guards = Normalize(rect, thSIZE, asset.Guards);
         for (var i = 0; i < holes.Count; i++)
         {
-            holes[i] = Normalize(rect, agSIZE, holes[i]);
+            holes[i] = Normalize(rect, thSIZE, holes[i]);
             checkPoints.AddRange(holes[i]);
         }
-
-
 
         // reverse if not clockwise
         if (!(new Polygon2D(outerPoints).IsClockwise()))

@@ -27,7 +27,7 @@
         private GameObject m_LighthousePrefab;
 
         [SerializeField]
-        private GameObject m_GuardPrefab;
+        private GameObject m_guardPrefab;
 
         [SerializeField]
         private GameObject m_debugPrefab;
@@ -47,6 +47,9 @@
         [SerializeField]
         private GameObject m_puzzleCounterLabel;
 
+        // list of game objects instantiated, for removal
+        protected List<GameObject> instantObjects = new List<GameObject>();
+
         // stores the current level index
         private int m_levelCounter = -1;
 
@@ -63,6 +66,8 @@
         private TheHeistSolution m_solution;
         private TheHeistIsland m_levelMesh;
         private TheHeistLightHouse m_SelectedLighthouse;
+
+        protected TheHeistGuard[] m_guards;
 
         private TheHeistGuard m_SelectedGuard;
 
@@ -127,6 +132,20 @@
             LevelPolygon = level.Polygon;
             m_maxNumberOfLighthouses = level.MaxNumberOfLighthouses;
             m_levelMesh.Polygon = LevelPolygon;
+
+            //prints number of guards extracted from IPE file
+            print(m_levels[m_levelCounter].Guards.Count);
+
+            // initialize guards
+            foreach (var guard in m_levels[m_levelCounter].Guards)
+            {
+                print("guards: " + guard);
+                var obj = Instantiate(m_guardPrefab, guard, Quaternion.identity);
+                obj.transform.parent = this.transform;
+                instantObjects.Add(obj);
+            }
+            var obje = Instantiate(m_guardPrefab, transform);
+            instantObjects.Add(obje);
 
             // update text box
             UpdateLighthouseText();
@@ -229,6 +248,9 @@
         /// <param name="m_guard"></param>
         public void UpdateVision(TheHeistGuard m_guard)
         {
+
+            Vector3 iets = m_guard.Pos;
+            print(iets);
 
             if (LevelPolygon.ContainsInside(m_guard.Pos))
             {

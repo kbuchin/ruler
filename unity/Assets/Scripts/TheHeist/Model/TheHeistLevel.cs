@@ -33,5 +33,8 @@
         {
             get { return new Polygon2DWithHoles(new Polygon2D(Outer), Holes.Select(h => new Polygon2D(h.Points))); }
         }
+
+        [Header("Guards")]
+        public List<Vector2> Guards = new List<Vector2>();
     }
 }
