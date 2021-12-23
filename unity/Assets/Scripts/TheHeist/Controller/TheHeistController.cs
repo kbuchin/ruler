@@ -108,7 +108,7 @@
                 if (!LevelPolygon.ContainsInside(m_SelectedLighthouse.Pos))
                 {
                     // destroy the lighthouse
-                    m_solution.RemoveLighthouse(m_SelectedLighthouse);
+                    m_solution.RemoveLighthouse(m_SelectedGuard);
                     Destroy(m_SelectedLighthouse.gameObject);
                     UpdateLighthouseText();
                 }
@@ -144,8 +144,11 @@
                 obj.transform.parent = this.transform;
                 instantObjects.Add(obj);
             }
-            var obje = Instantiate(m_guardPrefab, transform);
-            instantObjects.Add(obje);
+
+            //initialize one guard
+            var obje = Instantiate(m_guardPrefab, new Vector3(3.5f, -0.85f, -2f) , Quaternion.identity) as GameObject;
+            //obje.transform.parent = this.transform;
+            m_solution.AddGuard(obje);
 
             // update text box
             UpdateLighthouseText();
@@ -158,9 +161,9 @@
             foreach (var point in level.CheckPoints)
             {
                 var found = false;
-                foreach (var lighthouse in m_solution.m_lighthouses)
+                foreach (var guard in m_solution.m_guards)
                 {
-                    if (lighthouse.VisionPoly.Contains(point))
+                    if (guard.VisionPoly.Contains(point))
                     {
                         found = true;
                         break;
@@ -235,7 +238,7 @@
             var go = Instantiate(m_LighthousePrefab, worldlocation, Quaternion.identity) as GameObject;
 
             // add lighthouse to art gallery solution
-            m_solution.AddLighthouse(go);
+            m_solution.PlacePlayer(go);
             UpdateLighthouseText();
 
             CheckSolution();

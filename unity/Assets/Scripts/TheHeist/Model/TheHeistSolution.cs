@@ -14,7 +14,7 @@
         /// <summary>
         /// The number of lighthouses placed
         /// </summary>
-        public int Count { get { return m_lighthouses.Count; } }
+        public int Count { get { return m_guards.Count; } }
 
         /// <summary>
         /// Total area visible by all lighthouses
@@ -25,19 +25,21 @@
             {
                 if (Count <= 0) return 0f;
 
-                /*
+                
                 // create multi polygon of visibility area
-                var visiblePolygon = new MultiPolygon2D(m_lighthouses[0].VisionPoly);
+                /*
+                var visiblePolygon = new MultiPolygon2D(m_guards[0].VisionPoly);
 
+                
                 // add visibility polygons, cutting out the overlap
-                foreach (TheHeistLightHouse lighthouse in m_lighthouses.Skip(1))
+                foreach (TheHeistGuard lighthouse in m_guards.Skip(1))
                 {
                     visiblePolygon = Clipper.CutOut(visiblePolygon, lighthouse.VisionPoly);
                     visiblePolygon.AddPolygon(lighthouse.VisionPoly);
                 }
                 */
 
-                var visiblePolygon = new UnionSweepLine().Union(m_lighthouses.Select(lh => lh.VisionPoly).ToList());
+                var visiblePolygon = new UnionSweepLine().Union(m_guards.Select(lh => lh.VisionPoly).ToList());
 
                 // return total area
                 return visiblePolygon.Area;
@@ -45,7 +47,7 @@
         }
 
         // collection of lighthouses
-        public List<TheHeistLightHouse> m_lighthouses;
+        public List<TheHeistGuard> m_guards;
 
         // stores lighthouse objects for easy destroyal
         private List<GameObject> m_objects;
@@ -53,39 +55,61 @@
         public TheHeistSolution()
         {
             m_objects = new List<GameObject>();
-            m_lighthouses = new List<TheHeistLightHouse>();
+            m_guards = new List<TheHeistGuard>();
         }
 
         /// <summary>
         /// Add lighthouse to solution.
         /// </summary>
-        /// <param name="m_lighthouse"></param>
-        public void AddLighthouse(TheHeistLightHouse m_lighthouse)
+        /// <param name="m_guard"></param>
+        public void AddGuard(TheHeistGuard m_guard)
         {
-            m_lighthouses.Add(m_lighthouse);
+            m_guards.Add(m_guard);
         }
 
         /// <summary>
-        /// Create a lighthouse object for given game object and add to solution.
+        /// Create a player object for given game object and add to solution.
         /// </summary>
         /// <param name="obj"></param>
-        public void AddLighthouse(GameObject obj)
+        public void AddGuard(GameObject obj)
         {
             // remember object for removal
             m_objects.Add(obj);
 
             // add the lighthouse component of game object to solution
-            AddLighthouse(obj.GetComponent<TheHeistLightHouse>());
+            AddGuard(obj.GetComponent<TheHeistGuard>());
+        }
+
+        /// <summary>
+        /// Add lighthouse to solution.
+        /// </summary>
+        /// <param name="m_player"></param>
+        public void PlacePlayer(TheHeistLightHouse m_player)
+        {
+            //m_guards.Add(m_guard); // add player somewhere
+        }
+
+        /// <summary>
+        /// Create a player object for given game object and add to solution.
+        /// </summary>
+        /// <param name="obj"></param>
+        public void PlacePlayer(GameObject obj)
+        {
+            // remember object for removal
+            m_objects.Add(obj);
+
+            // add the lighthouse component of game object to solution
+            PlacePlayer(obj.GetComponent<TheHeistLightHouse>());
         }
 
         /// <summary>
         /// Remove the given lighthouse from the solution
         /// </summary>
-        /// <param name="m_lighthouse"></param>
-        public void RemoveLighthouse(TheHeistLightHouse m_lighthouse)
+        /// <param name="m_guard"></param>
+        public void RemoveLighthouse(TheHeistGuard m_guard)
         {
-            m_lighthouses.Remove(m_lighthouse);
-            Destroy(m_lighthouse);
+            m_guards.Remove(m_guard);
+            Destroy(m_guard);
         }
 
         /// <summary>
@@ -93,9 +117,9 @@
         /// </summary>
         public void Clear()
         {
-            foreach (var lh in m_lighthouses) Destroy(lh);
+            foreach (var lh in m_guards) Destroy(lh);
             foreach (var obj in m_objects) Destroy(obj);
-            m_lighthouses.Clear();
+            m_guards.Clear();
         }
 
         public void OnDestroy()

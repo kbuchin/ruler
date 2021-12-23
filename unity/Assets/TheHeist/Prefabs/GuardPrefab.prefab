@@ -78,7 +78,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7be55627ca09f74bb422743722a09e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_visionAreaPrefab: {fileID: 130026, guid: cd7e15fb70298da45a68853b0af36f05, type: 2}
+  m_visionAreaPrefab: {fileID: 130026, guid: e9e62894d2261e449bc5ac33dd503dd2, type: 2}
 --- !u!212 &212575300955429378
 SpriteRenderer:
   m_ObjectHideFlags: 1
