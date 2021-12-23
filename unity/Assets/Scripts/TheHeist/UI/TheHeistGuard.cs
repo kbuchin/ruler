@@ -45,8 +45,6 @@
         {
             m_controller = FindObjectOfType<TheHeistController>();
 
-            print("creating vision area");
-
             // initialize the vision polygon
             GameObject go = Instantiate(m_visionAreaPrefab, new Vector3(0, 0, -1.5f), Quaternion.identity) as GameObject;
             VisionAreaMesh = go.GetComponent<TheHeistIsland>();

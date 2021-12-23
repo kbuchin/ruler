@@ -10,6 +10,7 @@
     using Util.Algorithms.Polygon;
     using Util.Geometry.Polygon;
     using Util.Math;
+    using UnityEngine.Experimental.UIElements;
 
     /// <summary>
     /// Main controller for the art gallery game.
@@ -67,8 +68,11 @@
         private TheHeistIsland m_levelMesh;
         private TheHeistLightHouse m_SelectedLighthouse;
 
-        protected TheHeistGuard[] m_guards;
+        protected List<TheHeistGuard> m_guards = new List<TheHeistGuard>();
         protected TheHeistPlayer m_playerScript;
+        protected bool playerTurn = true;
+        protected float timer = 0;
+        protected float delay = 0.75f;
 
         private TheHeistGuard m_SelectedGuard;
 
@@ -91,7 +95,7 @@
             UpdateTimeText();
 
             //Handle turn based movement
-            MovePlayer();
+            HandleTurn();
 
 
             // return if no lighthouse was selected since last update
@@ -137,24 +141,26 @@
             m_maxNumberOfLighthouses = level.MaxNumberOfLighthouses;
             m_levelMesh.Polygon = LevelPolygon;
 
-            //prints number of guards extracted from IPE file
-            print(m_levels[m_levelCounter].Guards.Count);
 
             // initialize guards
             foreach (var guard in m_levels[m_levelCounter].Guards)
             {
-                print("guards: " + guard);
+                //print("guards: " + guard);
                 var obj = Instantiate(m_guardPrefab, new Vector3(guard.x, guard.y, -2f), Quaternion.identity);
+                m_guards.Add(obj.GetComponent<TheHeistGuard>());
                 m_solution.AddGuard(obj);
             }
-
+            //print(m_levels[m_levelCounter].Player.Count);
+            foreach (var player in m_levels[m_levelCounter].Player)
+            {
+                var playerobj = Instantiate(m_playerPrefab, new Vector3(player.x, player.y, -2f), Quaternion.identity);
+                m_playerScript = playerobj.GetComponent<TheHeistPlayer>();
+                m_solution.AddPlayer(playerobj);
+                
+            }
             ////initialize one guard
             //var obje = Instantiate(m_guardPrefab, new Vector3(3.5f, -0.85f, -2f) , Quaternion.identity) as GameObject;
             //m_solution.AddGuard(obje);
-
-            var m_player = Instantiate(m_playerPrefab, new Vector3(-3.5f, 0.85f, -2f), Quaternion.identity) as GameObject;
-            m_playerScript = m_player.GetComponent<TheHeistPlayer>();
-            m_solution.AddPlayer(m_player);
 
             // update text box
             UpdateLighthouseText();
@@ -227,21 +233,76 @@
         }
 
 
+        private void HandleTurn()
+        {
+            float stepsize = 0.75f;
+            timer -= Time.deltaTime;
+            if (playerTurn && timer <= 0)
+            {
+                MovePlayer(stepsize);
+            }
+            else if (!playerTurn)
+            {
+                MoveGuards(stepsize);
+            }
+            //yield return new WaitForSeconds(4f);
+            print(timer);
+        }
+
+        public void MoveGuards(float stepsize)
+        { 
+            foreach (var guard in m_guards) {
+
+                if (CheckLegal(guard.Pos + new Vector3(0, stepsize, 0f)))
+                { 
+                    guard.Pos += new Vector3(0, stepsize, 0f);
+                }
+                else if (CheckLegal(guard.Pos + new Vector3(-stepsize, 0f, 0f)))
+                {
+                    guard.Pos += new Vector3(-stepsize, 0f, 0f);
+                }
+                    playerTurn = true;
+            }
+        }
+
         /// <summary>
         /// Handle keyboard input.
         /// </summary> 
-        public void MovePlayer ()
+        public void MovePlayer (float stepsize)
         {
-            if (Input.GetKey(KeyCode.A))
-                m_playerScript.Pos += new Vector3(-0.24f, 0f ,0f);
-            if (Input.GetKey(KeyCode.D))
-                m_playerScript.Pos += new Vector3(0.24f, 0f, 0f);
-            if (Input.GetKey(KeyCode.W))
-                m_playerScript.Pos += new Vector3(0f, 0.24f, 0f);
-            if (Input.GetKey(KeyCode.S))
-                m_playerScript.Pos += new Vector3(0f, -0.24f, 0f);
+            if (Input.GetKey(KeyCode.A) && CheckLegal(m_playerScript.Pos + new Vector3(-stepsize, 0f, 0f)))
+            {
+                timer = delay;
+                playerTurn = false;
+                m_playerScript.Pos += new Vector3(-stepsize, 0f, 0f);
+            }
+            if (Input.GetKey(KeyCode.D) && CheckLegal(m_playerScript.Pos + new Vector3(stepsize, 0f, 0f)))
+            {
+                timer = delay;
+                playerTurn = false;
+                m_playerScript.Pos += new Vector3(stepsize, 0f, 0f);
+            }
+
+            if (Input.GetKey(KeyCode.W) && CheckLegal(m_playerScript.Pos + new Vector3(0, stepsize, 0f)))
+            {
+                timer = delay;
+                playerTurn = false;
+                m_playerScript.Pos += new Vector3(0f, stepsize, 0f);
+            }
+            if (Input.GetKey(KeyCode.S) && CheckLegal(m_playerScript.Pos + new Vector3(0f, -stepsize, 0f)))
+            {
+                timer = delay;
+                playerTurn = false;
+                m_playerScript.Pos += new Vector3(0f, -stepsize, 0f);
+            }
+
+            //print("playerpos: " + m_playerScript.Pos);
         }
 
+        public bool CheckLegal(Vector3 input)
+        {
+            return LevelPolygon.ContainsInside(input);
+        }
         /// <summary>
         /// Handle a click on the island mesh.
         /// </summary>
@@ -272,9 +333,6 @@
         /// <param name="m_guard"></param>
         public void UpdateVision(TheHeistGuard m_guard)
         {
-
-            Vector3 iets = m_guard.Pos;
-            print(iets);
 
             if (LevelPolygon.ContainsInside(m_guard.Pos))
             {

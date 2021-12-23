@@ -36,5 +36,8 @@
 
         [Header("Guards")]
         public List<Vector2> Guards = new List<Vector2>();
+        [Header("Player")]
+        public List<Vector2> Player = new List<Vector2>();
+
     }
 }

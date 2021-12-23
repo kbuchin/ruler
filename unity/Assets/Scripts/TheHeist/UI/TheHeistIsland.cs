@@ -12,7 +12,7 @@
 
         public TheHeistIsland()
         {
-            m_scale = 9.7f;
+            m_scale = 9.65f;
         }
 
         // Use this for initialization

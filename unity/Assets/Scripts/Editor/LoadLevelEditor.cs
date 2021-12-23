@@ -199,12 +199,8 @@ public class LoadLevelEditor : ScriptedImporter
 
         var marklist = fileSelected.Descendants("page").Last().Descendants("use");
 
-        if (asset.Guards.Count == 0)
-        {
-            EditorUtility.DisplayDialog("Warning", "File does not contain any guards (disks).", "OK");
-        }
-
         asset.Guards.AddRange(GetMarkers(marklist, "disk"));
+        asset.Player.AddRange(GetMarkers(marklist, "square"));
 
 
         // check that .ipe file contains one and only one polygon
@@ -276,6 +272,7 @@ public class LoadLevelEditor : ScriptedImporter
         outerPoints = Normalize(rect, thSIZE, outerPoints);
         checkPoints.AddRange(outerPoints);
         asset.Guards = Normalize(rect, thSIZE, asset.Guards);
+        asset.Player = Normalize(rect, thSIZE, asset.Player);
         for (var i = 0; i < holes.Count; i++)
         {
             holes[i] = Normalize(rect, thSIZE, holes[i]);
