@@ -24,7 +24,7 @@
         private string m_victoryScreen = "thVictory";
 
         [SerializeField]
-        private GameObject m_LighthousePrefab;
+        private GameObject m_playerPrefab;
 
         [SerializeField]
         private GameObject m_guardPrefab;
@@ -68,6 +68,7 @@
         private TheHeistLightHouse m_SelectedLighthouse;
 
         protected TheHeistGuard[] m_guards;
+        protected TheHeistPlayer m_playerScript;
 
         private TheHeistGuard m_SelectedGuard;
 
@@ -88,6 +89,9 @@
         void Update()
         {
             UpdateTimeText();
+
+            //Handle turn based movement
+            MovePlayer();
 
 
             // return if no lighthouse was selected since last update
@@ -140,15 +144,17 @@
             foreach (var guard in m_levels[m_levelCounter].Guards)
             {
                 print("guards: " + guard);
-                var obj = Instantiate(m_guardPrefab, guard, Quaternion.identity);
-                obj.transform.parent = this.transform;
-                instantObjects.Add(obj);
+                var obj = Instantiate(m_guardPrefab, new Vector3(guard.x, guard.y, -2f), Quaternion.identity);
+                m_solution.AddGuard(obj);
             }
 
-            //initialize one guard
-            var obje = Instantiate(m_guardPrefab, new Vector3(3.5f, -0.85f, -2f) , Quaternion.identity) as GameObject;
-            //obje.transform.parent = this.transform;
-            m_solution.AddGuard(obje);
+            ////initialize one guard
+            //var obje = Instantiate(m_guardPrefab, new Vector3(3.5f, -0.85f, -2f) , Quaternion.identity) as GameObject;
+            //m_solution.AddGuard(obje);
+
+            var m_player = Instantiate(m_playerPrefab, new Vector3(-3.5f, 0.85f, -2f), Quaternion.identity) as GameObject;
+            m_playerScript = m_player.GetComponent<TheHeistPlayer>();
+            m_solution.AddPlayer(m_player);
 
             // update text box
             UpdateLighthouseText();
@@ -222,26 +228,41 @@
 
 
         /// <summary>
+        /// Handle keyboard input.
+        /// </summary> 
+        public void MovePlayer ()
+        {
+            if (Input.GetKey(KeyCode.A))
+                m_playerScript.Pos += new Vector3(-0.24f, 0f ,0f);
+            if (Input.GetKey(KeyCode.D))
+                m_playerScript.Pos += new Vector3(0.24f, 0f, 0f);
+            if (Input.GetKey(KeyCode.W))
+                m_playerScript.Pos += new Vector3(0f, 0.24f, 0f);
+            if (Input.GetKey(KeyCode.S))
+                m_playerScript.Pos += new Vector3(0f, -0.24f, 0f);
+        }
+
+        /// <summary>
         /// Handle a click on the island mesh.
         /// </summary>
         public void HandleIslandClick()
         {
-            // return if lighthouse was already selected or player can place no more lighthouses
-            if (m_SelectedLighthouse != null || m_solution.Count >= m_maxNumberOfLighthouses)
-                return;
+            //// return if lighthouse was already selected or player can place no more lighthouses
+            //if (m_SelectedLighthouse != null || m_solution.Count >= m_maxNumberOfLighthouses)
+            //    return;
 
-            // obtain mouse position
-            var worldlocation = Camera.main.ScreenPointToRay(Input.mousePosition).origin;
-            worldlocation.z = -2f;
+            //// obtain mouse position
+            //var worldlocation = Camera.main.ScreenPointToRay(Input.mousePosition).origin;
+            //worldlocation.z = -2f;
 
-            // create a new lighthouse from prefab
-            var go = Instantiate(m_LighthousePrefab, worldlocation, Quaternion.identity) as GameObject;
+            //// create a new lighthouse from prefab
+            //var go = Instantiate(m_LighthousePrefab, worldlocation, Quaternion.identity) as GameObject;
 
-            // add lighthouse to art gallery solution
-            m_solution.PlacePlayer(go);
-            UpdateLighthouseText();
+            //// add lighthouse to art gallery solution
+            //m_solution.PlacePlayer(go);
+            //UpdateLighthouseText();
 
-            CheckSolution();
+            //CheckSolution();
         }
 
         /// <summary>

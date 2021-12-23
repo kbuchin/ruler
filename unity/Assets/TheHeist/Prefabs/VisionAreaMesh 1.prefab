@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 2372902}
   - component: {fileID: 114330275411732170}
   m_Layer: 0
-  m_Name: VisionAreaMeshHeist
+  m_Name: VisionAreaMesh 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -9,7 +9,7 @@ GameObject:
   m_Component:
   - component: {fileID: 477620}
   - component: {fileID: 21230616}
-  - component: {fileID: 114515023506799994}
+  - component: {fileID: 114143734416193008}
   - component: {fileID: 61000011016102134}
   m_Layer: 0
   m_Name: PlayerPrefab
@@ -26,7 +26,7 @@ Transform:
   m_GameObject: {fileID: 189480}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -2}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_LocalScale: {x: 0.4, y: 0.4, z: 0.4}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -117,7 +117,7 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.5, y: 0.8}
   m_EdgeRadius: 0
---- !u!114 &114515023506799994
+--- !u!114 &114143734416193008
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
@@ -125,7 +125,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 189480}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1b7abbbec11247c4f805d2604a34b744, type: 3}
+  m_Script: {fileID: 11500000, guid: f9f8080da613cda4f88153a0331a92a1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_visionAreaPrefab: {fileID: 130026, guid: cd7e15fb70298da45a68853b0af36f05, type: 2}

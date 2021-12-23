@@ -84,7 +84,7 @@
         /// Add lighthouse to solution.
         /// </summary>
         /// <param name="m_player"></param>
-        public void PlacePlayer(TheHeistLightHouse m_player)
+        public void AddPlayer(TheHeistPlayer m_player)
         {
             //m_guards.Add(m_guard); // add player somewhere
         }
@@ -93,13 +93,13 @@
         /// Create a player object for given game object and add to solution.
         /// </summary>
         /// <param name="obj"></param>
-        public void PlacePlayer(GameObject obj)
+        public void AddPlayer(GameObject obj)
         {
             // remember object for removal
             m_objects.Add(obj);
 
             // add the lighthouse component of game object to solution
-            PlacePlayer(obj.GetComponent<TheHeistLightHouse>());
+            AddPlayer(obj.GetComponent<TheHeistPlayer>());
         }
 
         /// <summary>
