@@ -70,9 +70,14 @@
 
         protected List<TheHeistGuard> m_guards = new List<TheHeistGuard>();
         protected TheHeistPlayer m_playerScript;
-        protected bool playerTurn = true;
         protected float timer = 0;
         protected float delay = 0.75f;
+        protected string state = "player";
+        protected Vector3 playerStart;
+        protected List<Vector3> guardStarts = new List<Vector3>();
+        float t = 0;
+        int i = 0;
+
 
         private TheHeistGuard m_SelectedGuard;
 
@@ -94,38 +99,126 @@
         {
             UpdateTimeText();
 
-            //Handle turn based movement
-            HandleTurn();
 
 
-            // return if no lighthouse was selected since last update
-            if (m_SelectedLighthouse == null) return;
+            float stepsize = 0.75f;
+            timer -= Time.deltaTime;
 
-            // get current mouseposition
-            var worldlocation = Camera.main.ScreenPointToRay(Input.mousePosition).origin;
-            worldlocation.z = -2f;
-
-            // move lighthouse to mouse position
-            // will update visibility polygon
-            m_SelectedLighthouse.Pos = worldlocation;
-
-            // see if lighthouse was released 
-            if (Input.GetMouseButtonUp(0))
+            // State design pattern for turns
+            switch (state)
             {
-                //check whether lighthouse is over the island
-                if (!LevelPolygon.ContainsInside(m_SelectedLighthouse.Pos))
-                {
-                    // destroy the lighthouse
-                    m_solution.RemoveLighthouse(m_SelectedGuard);
-                    Destroy(m_SelectedLighthouse.gameObject);
-                    UpdateLighthouseText();
-                }
+                case "player":
+                    if (timer <= 0f)
+                    {
+                        MovePlayer(stepsize);
+                    }
+                    foreach (var guard in m_guards)
+                    {
+                        guardStarts.Add(guard.transform.position);
+                        t = 0;
+                    }
+                    
+                    break;
+                case "guard":
 
-                // lighthouse no longer selected
-                m_SelectedLighthouse = null;
+                    playerStart = m_playerScript.transform.position;
+                    MoveGuards(stepsize);
+            break;
+                case "pause":
+                    break;
 
-                CheckSolution();
             }
+
+            //// return if no lighthouse was selected since last update
+            //if (m_SelectedLighthouse == null) return;
+
+            //// get current mouseposition
+            //var worldlocation = Camera.main.ScreenPointToRay(Input.mousePosition).origin;
+            //worldlocation.z = -2f;
+
+            //// move lighthouse to mouse position
+            //// will update visibility polygon
+            //m_SelectedLighthouse.Pos = worldlocation;
+
+            //// see if lighthouse was released 
+            //if (Input.GetMouseButtonUp(0))
+            //{
+            //    //check whether lighthouse is over the island
+            //    if (!LevelPolygon.ContainsInside(m_SelectedLighthouse.Pos))
+            //    {
+            //        // destroy the lighthouse
+            //        m_solution.RemoveLighthouse(m_SelectedGuard);
+            //        Destroy(m_SelectedLighthouse.gameObject);
+            //        UpdateLighthouseText();
+            //    }
+
+            //    // lighthouse no longer selected
+            //    m_SelectedLighthouse = null;
+
+            //    CheckSolution();
+            //}
+        }
+        
+        public void MoveGuards(float stepsize)
+        {
+            int i = 0;
+            t += Time.deltaTime / 1;
+            foreach (var guard in m_guards)
+            {
+
+
+                if (CheckLegal(guardStarts[i] + new Vector3(0, stepsize, 0f)))
+                {
+                    guard.Pos = Vector3.Lerp(guardStarts[i], guardStarts[i] + new Vector3(0, stepsize, 0f), t);
+                }
+                else if (CheckLegal(guardStarts[i] + new Vector3(-stepsize, 0f, 0f)))
+                {
+                    guard.Pos = Vector3.Lerp(guardStarts[i], guardStarts[i] + new Vector3(-stepsize, 0f, 0f), t);
+
+                }
+                i++;
+            }
+            state = "player";
+
+        }
+
+        /// <summary>
+        /// Handle keyboard input.
+        /// </summary> 
+        public void MovePlayer(float stepsize)
+        {
+            if (Input.GetKey(KeyCode.A) && CheckLegal(m_playerScript.Pos + new Vector3(-stepsize, 0f, 0f)))
+            {
+                timer = delay;
+                state = "guard";
+                m_playerScript.Pos += new Vector3(-stepsize, 0f, 0f);
+            }
+            if (Input.GetKey(KeyCode.D) && CheckLegal(m_playerScript.Pos + new Vector3(stepsize, 0f, 0f)))
+            {
+                timer = delay;
+                state = "guard";
+                m_playerScript.Pos += new Vector3(stepsize, 0f, 0f);
+            }
+
+            if (Input.GetKey(KeyCode.W) && CheckLegal(m_playerScript.Pos + new Vector3(0, stepsize, 0f)))
+            {
+                timer = delay;
+                state = "guard";
+                m_playerScript.Pos += new Vector3(0f, stepsize, 0f);
+            }
+            if (Input.GetKey(KeyCode.S) && CheckLegal(m_playerScript.Pos + new Vector3(0f, -stepsize, 0f)))
+            {
+                timer = delay;
+                state = "guard";
+                m_playerScript.Pos += new Vector3(0f, -stepsize, 0f);
+            }
+
+            //print("playerpos: " + m_playerScript.Pos);
+        }
+
+        private void MoveObject(GameObject obj)
+        {
+
         }
 
         public void InitLevel()
@@ -230,73 +323,6 @@
             }
 
             puzzleStartTime = Time.time;
-        }
-
-
-        private void HandleTurn()
-        {
-            float stepsize = 0.75f;
-            timer -= Time.deltaTime;
-            if (playerTurn && timer <= 0)
-            {
-                MovePlayer(stepsize);
-            }
-            else if (!playerTurn)
-            {
-                MoveGuards(stepsize);
-            }
-            //yield return new WaitForSeconds(4f);
-            print(timer);
-        }
-
-        public void MoveGuards(float stepsize)
-        { 
-            foreach (var guard in m_guards) {
-
-                if (CheckLegal(guard.Pos + new Vector3(0, stepsize, 0f)))
-                { 
-                    guard.Pos += new Vector3(0, stepsize, 0f);
-                }
-                else if (CheckLegal(guard.Pos + new Vector3(-stepsize, 0f, 0f)))
-                {
-                    guard.Pos += new Vector3(-stepsize, 0f, 0f);
-                }
-                    playerTurn = true;
-            }
-        }
-
-        /// <summary>
-        /// Handle keyboard input.
-        /// </summary> 
-        public void MovePlayer (float stepsize)
-        {
-            if (Input.GetKey(KeyCode.A) && CheckLegal(m_playerScript.Pos + new Vector3(-stepsize, 0f, 0f)))
-            {
-                timer = delay;
-                playerTurn = false;
-                m_playerScript.Pos += new Vector3(-stepsize, 0f, 0f);
-            }
-            if (Input.GetKey(KeyCode.D) && CheckLegal(m_playerScript.Pos + new Vector3(stepsize, 0f, 0f)))
-            {
-                timer = delay;
-                playerTurn = false;
-                m_playerScript.Pos += new Vector3(stepsize, 0f, 0f);
-            }
-
-            if (Input.GetKey(KeyCode.W) && CheckLegal(m_playerScript.Pos + new Vector3(0, stepsize, 0f)))
-            {
-                timer = delay;
-                playerTurn = false;
-                m_playerScript.Pos += new Vector3(0f, stepsize, 0f);
-            }
-            if (Input.GetKey(KeyCode.S) && CheckLegal(m_playerScript.Pos + new Vector3(0f, -stepsize, 0f)))
-            {
-                timer = delay;
-                playerTurn = false;
-                m_playerScript.Pos += new Vector3(0f, -stepsize, 0f);
-            }
-
-            //print("playerpos: " + m_playerScript.Pos);
         }
 
         public bool CheckLegal(Vector3 input)
