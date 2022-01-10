@@ -76,7 +76,12 @@
         protected Vector3 playerStart;
         protected List<Vector3> guardStarts = new List<Vector3>();
         float t = 0;
+        float speed = 1;
         int i = 0;
+        // x and y for player input
+        float x = 0;
+        float y = 0;
+        bool inputCheck = true;
 
 
         private TheHeistGuard m_SelectedGuard;
@@ -92,38 +97,53 @@
 
             // go to initial island polygon
             AdvanceLevel();
+            playerStart = m_playerScript.Pos;
         }
 
         // Update is called once per frame
-        void Update()
+        void FixedUpdate()
         {
             UpdateTimeText();
 
-
-
             float stepsize = 0.75f;
-            timer -= Time.deltaTime;
 
             // State design pattern for turns
             switch (state)
             {
                 case "player":
-                    if (timer <= 0f)
+                    if (inputCheck)
                     {
-                        MovePlayer(stepsize);
-                    }
-                    foreach (var guard in m_guards)
+                        GetInput(stepsize); 
+                       
+                    } else
                     {
-                        guardStarts.Add(guard.transform.position);
-                        t = 0;
-                    }
-                    
-                    break;
+                        if (t >= 1)
+                        {
+                            foreach (var guard in m_guards)
+                            {
+                                guardStarts.Add(guard.transform.position);
+                            }
+                            t = 0;
+                            state = "guard";
+                        }
+                        else
+                        {
+                            LerpPlayer(stepsize);
+                        }
+                    }                     
+                break;
                 case "guard":
 
                     playerStart = m_playerScript.transform.position;
                     MoveGuards(stepsize);
-            break;
+                    if (t >= 1)
+                    {
+                        guardStarts.Clear();
+                        t = 0;
+                        inputCheck = true;
+                        state = "player";
+                    }
+                break;
                 case "pause":
                     break;
 
@@ -162,63 +182,64 @@
         public void MoveGuards(float stepsize)
         {
             int i = 0;
-            t += Time.deltaTime / 1;
+            t += Time.deltaTime;
+            //float distCovered = (Time.time - t) * 0.1f;
             foreach (var guard in m_guards)
             {
-
-
                 if (CheckLegal(guardStarts[i] + new Vector3(0, stepsize, 0f)))
                 {
-                    guard.Pos = Vector3.Lerp(guardStarts[i], guardStarts[i] + new Vector3(0, stepsize, 0f), t);
+                    guard.Pos = Vector3.Lerp(guardStarts[i], guardStarts[i] + new Vector3(0, stepsize, 0f), t * speed);
                 }
                 else if (CheckLegal(guardStarts[i] + new Vector3(-stepsize, 0f, 0f)))
                 {
-                    guard.Pos = Vector3.Lerp(guardStarts[i], guardStarts[i] + new Vector3(-stepsize, 0f, 0f), t);
-
+                    guard.Pos = Vector3.Lerp(guardStarts[i], guardStarts[i] + new Vector3(-stepsize, 0f, 0f), t * speed);
                 }
                 i++;
             }
-            state = "player";
-
         }
 
         /// <summary>
         /// Handle keyboard input.
         /// </summary> 
-        public void MovePlayer(float stepsize)
+        public void GetInput(float stepsize)
         {
-            if (Input.GetKey(KeyCode.A) && CheckLegal(m_playerScript.Pos + new Vector3(-stepsize, 0f, 0f)))
+            if (Input.GetKey(KeyCode.A) && CheckLegal(playerStart + new Vector3(-stepsize, 0f, 0f)))
             {
-                timer = delay;
-                state = "guard";
-                m_playerScript.Pos += new Vector3(-stepsize, 0f, 0f);
+                inputCheck = false;
+                //m_playerScript.Pos += new Vector3(-stepsize, 0f, 0f);
+                x = -stepsize;
+                y = 0;
             }
-            if (Input.GetKey(KeyCode.D) && CheckLegal(m_playerScript.Pos + new Vector3(stepsize, 0f, 0f)))
+            if (Input.GetKey(KeyCode.D) && CheckLegal(playerStart + new Vector3(stepsize, 0f, 0f)))
             {
-                timer = delay;
-                state = "guard";
-                m_playerScript.Pos += new Vector3(stepsize, 0f, 0f);
+                inputCheck = false;
+                x = stepsize;
+                y = 0;
             }
 
-            if (Input.GetKey(KeyCode.W) && CheckLegal(m_playerScript.Pos + new Vector3(0, stepsize, 0f)))
+            if (Input.GetKey(KeyCode.W) && CheckLegal(playerStart + new Vector3(0f, stepsize, 0f)))
             {
-                timer = delay;
-                state = "guard";
-                m_playerScript.Pos += new Vector3(0f, stepsize, 0f);
+                inputCheck = false;
+                y = stepsize;
+                x = 0;
             }
-            if (Input.GetKey(KeyCode.S) && CheckLegal(m_playerScript.Pos + new Vector3(0f, -stepsize, 0f)))
+            if (Input.GetKey(KeyCode.S) && CheckLegal(playerStart + new Vector3(0f, -stepsize, 0f)))
             {
-                timer = delay;
-                state = "guard";
-                m_playerScript.Pos += new Vector3(0f, -stepsize, 0f);
+                inputCheck = false;
+                y = -stepsize;
+                x = 0;
             }
 
             //print("playerpos: " + m_playerScript.Pos);
         }
 
-        private void MoveObject(GameObject obj)
+        public void LerpPlayer(float stepsize)
         {
-
+            t += Time.deltaTime;
+            if (CheckLegal(playerStart + new Vector3(x*stepsize, y*stepsize, 0f))) {
+                //print("LerpPlayer start:"+ playerStart );
+                m_playerScript.Pos = Vector3.Lerp(playerStart, playerStart + new Vector3(x, y, 0f), t * speed);
+            }
         }
 
         public void InitLevel()
