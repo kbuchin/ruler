@@ -201,7 +201,7 @@ public class LoadLevelEditor : ScriptedImporter
 
         asset.Guards.AddRange(GetMarkers(marklist, "disk"));
         asset.Player.AddRange(GetMarkers(marklist, "square"));
-
+        
 
         // check that .ipe file contains one and only one polygon
         if (items.Count == 0)

@@ -76,12 +76,18 @@
         protected Vector3 playerStart;
         protected List<Vector3> guardStarts = new List<Vector3>();
         float t = 0;
-        float speed = 1;
+        float speed = 2.8f;
         int i = 0;
         // x and y for player input
         float x = 0;
         float y = 0;
         bool inputCheck = true;
+        // w a s d, in int order.
+        public int[] path0 = new int[6] { 2, 1, 3, 4, 4, 4 };
+        public int[] path1 = new int[6] { 2, 3, 2, 1, 2, 3 };
+        public int[] path2 = new int[6] { 1, 2, 3, 2, 1, 2 };
+        int m = 0;
+        float stepsize = 0.75f;
 
 
         private TheHeistGuard m_SelectedGuard;
@@ -105,7 +111,7 @@
         {
             UpdateTimeText();
 
-            float stepsize = 0.75f;
+
 
             // State design pattern for turns
             switch (state)
@@ -117,10 +123,11 @@
                        
                     } else
                     {
-                        if (t >= 1)
+                        if (t*speed >= 1)
                         {
                             foreach (var guard in m_guards)
                             {
+                                print("guards: " + m_guards.Count);
                                 guardStarts.Add(guard.transform.position);
                             }
                             t = 0;
@@ -135,11 +142,18 @@
                 case "guard":
 
                     playerStart = m_playerScript.transform.position;
-                    MoveGuards(stepsize);
-                    if (t >= 1)
+                    if (m_levelCounter == 0)
+                    {
+                        MoveGuards(path0);
+                    } else
+                    {
+                        MoveGuards(path1);
+                    }
+                    if (t*speed >= 1)
                     {
                         guardStarts.Clear();
                         t = 0;
+                        m = 0;
                         inputCheck = true;
                         state = "player";
                     }
@@ -179,21 +193,67 @@
             //}
         }
         
-        public void MoveGuards(float stepsize)
+        public void MoveGuards(int[] path)
         {
-            int i = 0;
+            int i = 0; //guard index
             t += Time.deltaTime;
             //float distCovered = (Time.time - t) * 0.1f;
             foreach (var guard in m_guards)
             {
-                if (CheckLegal(guardStarts[i] + new Vector3(0, stepsize, 0f)))
+                switch (path[m])
                 {
-                    guard.Pos = Vector3.Lerp(guardStarts[i], guardStarts[i] + new Vector3(0, stepsize, 0f), t * speed);
+                    case 1: //up
+                        if (CheckLegal(guardStarts[i] + new Vector3(0, stepsize, 0f)))
+                        {
+                            guard.Pos = Vector3.Lerp(guardStarts[i], guardStarts[i] + new Vector3(0, stepsize, 0f), t * speed);
+                        } else
+                        {
+                            m++;
+                        }
+                        break;
+                    case 2: //left
+                        if (CheckLegal(guardStarts[i] + new Vector3(-stepsize, 0f, 0f)))
+                        {
+                            guard.Pos = Vector3.Lerp(guardStarts[i], guardStarts[i] + new Vector3(-stepsize, 0f, 0f), t * speed);
+                        }
+                        else
+                        {
+                            m++;
+                        }
+                        break;
+                    case 3: //down
+                        if (CheckLegal(guardStarts[i] + new Vector3(0, -stepsize, 0f)))
+                        {
+                            guard.Pos = Vector3.Lerp(guardStarts[i], guardStarts[i] + new Vector3(0, -stepsize, 0f), t * speed);
+                        }
+                        else
+                        {
+                            m++;
+                        }
+                        break;
+                    case 4: //right
+                        if (CheckLegal(guardStarts[i] + new Vector3(stepsize, 0f, 0f)))
+                        {
+                            guard.Pos = Vector3.Lerp(guardStarts[i], guardStarts[i] + new Vector3(stepsize, 0f, 0f), t * speed);
+                        }
+                        else
+                        {
+                            m++;
+                        }
+                        break;
+
                 }
-                else if (CheckLegal(guardStarts[i] + new Vector3(-stepsize, 0f, 0f)))
-                {
-                    guard.Pos = Vector3.Lerp(guardStarts[i], guardStarts[i] + new Vector3(-stepsize, 0f, 0f), t * speed);
-                }
+
+                //if (CheckLegal(guardStarts[i] + new Vector3(0, stepsize, 0f)))
+                //{
+                //    guard.Pos = Vector3.Lerp(guardStarts[i], guardStarts[i] + new Vector3(0, stepsize, 0f), t * speed);
+                //}
+                //else if (CheckLegal(guardStarts[i] + new Vector3(-stepsize, 0f, 0f)))
+                //{
+                //    guard.Pos = Vector3.Lerp(guardStarts[i], guardStarts[i] + new Vector3(-stepsize, 0f, 0f), t * speed);
+                //} else if (CheckLegal(guardStarts[i] + new Vector3(0f, -stepsize, 0f))) {
+                //    guard.Pos = Vector3.Lerp(guardStarts[i], guardStarts[i] + new Vector3(0f, -stepsize, 0f), t * speed);
+                //}
                 i++;
             }
         }
@@ -229,6 +289,12 @@
                 y = -stepsize;
                 x = 0;
             }
+            if (Input.GetKey(KeyCode.Space))
+            {
+                inputCheck = false;
+                y = 0;
+                x = 0;
+            }
 
             //print("playerpos: " + m_playerScript.Pos);
         }
@@ -247,7 +313,9 @@
             // clear old level
             m_solution.Clear();
             m_SelectedLighthouse = null;
-            m_advanceButton.Disable();
+            m_guards.Clear();
+            //m_advanceButton.Disable();
+            m_advanceButton.Enable();
 
             // create new level
             var level = m_levels[m_levelCounter];
@@ -401,6 +469,29 @@
                 m_guard.VisionPoly = null;
                 m_guard.VisionAreaMesh.Polygon = null;
             }
+
+
+            ////artcode
+            //if (LevelPolygon.ContainsInside(m_guard.Pos))
+            //{
+            //    // calculate new visibility polygon
+            //    var vision = VisibilitySweep.Vision(LevelPolygon, m_guard.Pos);
+
+            //    if (vision == null)
+            //    {
+            //        throw new Exception("Vision polygon cannot be null");
+            //    }
+
+            //    // update lighthouse visibility
+            //    m_guard.VisionPoly = vision;
+            //    m_guard.VisionAreaMesh.Polygon = new Polygon2DWithHoles(vision);
+            //}
+            //else
+            //{
+            //    // remove visibility polygon from lighthouse
+            //    m_guard.VisionPoly = null;
+            //    m_guard.VisionAreaMesh.Polygon = null;
+            //}
         }
 
         /// <summary>

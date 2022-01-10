@@ -36,6 +36,10 @@
             }
         }
 
+        public int[] path;
+       
+           
+
         /// <summary>
         /// Holds the visibility polygon.
         /// </summary>
@@ -43,6 +47,7 @@
 
         void Awake()
         {
+
             m_controller = FindObjectOfType<TheHeistController>();
 
             // initialize the vision polygon
