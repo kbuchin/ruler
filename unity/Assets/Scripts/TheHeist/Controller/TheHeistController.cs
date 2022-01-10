@@ -83,10 +83,11 @@
         float y = 0;
         bool inputCheck = true;
         // w a s d, in int order.
-        public int[] path0 = new int[6] { 2, 1, 3, 4, 4, 4 };
-        public int[] path1 = new int[6] { 2, 3, 2, 1, 2, 3 };
-        public int[] path2 = new int[6] { 1, 2, 3, 2, 1, 2 };
+        public int[] path0 = new int[23] { 2,2,2,2,2,2, 1,1,1,1,1, 2,2,2,2,2, 3,3,3,3,3, 4, 1};
+        public int[] path1 = new int[20] { 2,2,2,2,2, 3,3, 2,2,2, 1,1, 2,2,2, 3,3,3,3,3};
+        public int[] path2 = new int[33] { 1,1,1,1,1,1, 4,4, 1,1,1,1,1, 2, 2, 2, 2, 2, 3, 3, 2, 2, 2, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3 };
         int m = 0;
+        int n = 0;
         float stepsize = 0.75f;
 
 
@@ -142,18 +143,13 @@
                 case "guard":
 
                     playerStart = m_playerScript.transform.position;
-                    if (m_levelCounter == 0)
-                    {
-                        MoveGuards(path0);
-                    } else
-                    {
-                        MoveGuards(path1);
-                    }
+                    MoveGuards();
+                 
                     if (t*speed >= 1)
                     {
                         guardStarts.Clear();
+                        m++;
                         t = 0;
-                        m = 0;
                         inputCheck = true;
                         state = "player";
                     }
@@ -193,13 +189,18 @@
             //}
         }
         
-        public void MoveGuards(int[] path)
+        public void MoveGuards()
         {
             int i = 0; //guard index
             t += Time.deltaTime;
             //float distCovered = (Time.time - t) * 0.1f;
             foreach (var guard in m_guards)
             {
+                int[] path = guard.GetComponent<TheHeistGuard>().path;
+                if (m >= path.Length-1)
+                {
+                    m = 0;
+                }
                 switch (path[m])
                 {
                     case 1: //up
@@ -307,6 +308,31 @@
                 m_playerScript.Pos = Vector3.Lerp(playerStart, playerStart + new Vector3(x, y, 0f), t * speed);
             }
         }
+        public void AddPathToGuard()
+        {
+            print(m_levelCounter);
+            foreach (var guard in m_guards)
+            {
+                if (m_levelCounter == 0)
+                {
+                    
+                    guard.GetComponent<TheHeistGuard>().path = path0;
+                } else
+                {
+                    if (n == 0)
+                    {
+                        guard.GetComponent<TheHeistGuard>().path = path1;
+                        n++;
+                    }
+                    else
+                    {
+                        guard.GetComponent<TheHeistGuard>().path = path2;
+                        n++;
+                    }
+                    
+                }
+            }
+        }
 
         public void InitLevel()
         {
@@ -316,7 +342,7 @@
             m_guards.Clear();
             //m_advanceButton.Disable();
             m_advanceButton.Enable();
-
+            n = 0;
             // create new level
             var level = m_levels[m_levelCounter];
             LevelPolygon = level.Polygon;
@@ -332,6 +358,7 @@
                 m_guards.Add(obj.GetComponent<TheHeistGuard>());
                 m_solution.AddGuard(obj);
             }
+            AddPathToGuard();
             //print(m_levels[m_levelCounter].Player.Count);
             foreach (var player in m_levels[m_levelCounter].Player)
             {
