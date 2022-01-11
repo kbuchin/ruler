@@ -63,10 +63,5 @@
                 Destroy(VisionAreaMesh.gameObject);
             }
         }
-
-        void OnMouseDown()
-        {
-            m_controller.SelectLighthouse(this);
-        }
     }
 }

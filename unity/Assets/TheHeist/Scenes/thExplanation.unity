@@ -171,6 +171,39 @@ Prefab:
       propertyPath: m_Depth
       value: -1
       objectReference: {fileID: 0}
+    - target: {fileID: 23000011487690486, guid: ca1610ea91f8c504facc8b4bb2692d06,
+        type: 2}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 640a539b0ed2cd9458c33f766c02b4e5, type: 2}
+    - target: {fileID: 212000012145531714, guid: ca1610ea91f8c504facc8b4bb2692d06,
+        type: 2}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: ada6b95d8b7fad745bf5b2a3414bf244,
+        type: 3}
+    - target: {fileID: 4000013957545760, guid: ca1610ea91f8c504facc8b4bb2692d06, type: 2}
+      propertyPath: m_LocalScale.x
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4000013957545760, guid: ca1610ea91f8c504facc8b4bb2692d06, type: 2}
+      propertyPath: m_LocalScale.y
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 212000012042780932, guid: ca1610ea91f8c504facc8b4bb2692d06,
+        type: 2}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: ada6b95d8b7fad745bf5b2a3414bf244,
+        type: 3}
+    - target: {fileID: 4000010977288998, guid: ca1610ea91f8c504facc8b4bb2692d06, type: 2}
+      propertyPath: m_LocalScale.x
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4000010977288998, guid: ca1610ea91f8c504facc8b4bb2692d06, type: 2}
+      propertyPath: m_LocalScale.y
+      value: 3
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ca1610ea91f8c504facc8b4bb2692d06, type: 2}
   m_IsPrefabAsset: 0
@@ -219,7 +252,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 22485368, guid: 47375d1ad9de78947b5dddba6bf6a125, type: 2}
       propertyPath: m_AnchoredPosition.y
-      value: -10
+      value: 25.799988
       objectReference: {fileID: 0}
     - target: {fileID: 22485368, guid: 47375d1ad9de78947b5dddba6bf6a125, type: 2}
       propertyPath: m_SizeDelta.x
@@ -255,17 +288,15 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 11497240, guid: 47375d1ad9de78947b5dddba6bf6a125, type: 2}
       propertyPath: m_Text
-      value: "The problem that you solve in this game is known as the \u2018Art Gallery
-        problem\u2019. It requires the player to place \u201Ctorches\u201D inside
-        a polygon (a shape) in order to light it up entirely. This problem is known
-        to be NP-hard.\n\r\nThe levels in the game are a selection of generated levels
-        using two NP-hard reductions, as well as some hand-made art galleries. One
-        reduction is from the problem 3SAT, and the other is from Vertex Cover.\n\nThe
-        visibility area of a \"torch\" is calculated using a sweepline algorithm.
-        The solution is verified using a combination of a naive checker for containment
-        of certain points by some visibility polygon, and an area comparison (with
-        some tolerance) between the original polygon and the union of visibility polygons.
-        The union is calculated using a (different) sweepline algorithm.\n"
+      value: "The problem that you solve in this game is getting to the gem. It requires
+        the player to place to avoid the guards field of view entirely.\n\r\nThe levels
+        in the game are grids of tiles that the player and the guards traverse in
+        a turn based system.\n\nThe visibility area of a guard is calculated using
+        a sweepline algorithm. The solution is verified using a combination of a naive
+        checker for containment of certain points by some visibility polygon, and
+        an area comparison (with some tolerance) between the original polygon and
+        the union of visibility polygons. The union is calculated using a (different)
+        sweepline algorithm.\n"
       objectReference: {fileID: 0}
     - target: {fileID: 11497240, guid: 47375d1ad9de78947b5dddba6bf6a125, type: 2}
       propertyPath: m_FontData.m_Font
@@ -278,6 +309,14 @@ Prefab:
     - target: {fileID: 11497240, guid: 47375d1ad9de78947b5dddba6bf6a125, type: 2}
       propertyPath: m_FontData.m_Alignment
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 22485368, guid: 47375d1ad9de78947b5dddba6bf6a125, type: 2}
+      propertyPath: m_LocalScale.x
+      value: 0.9
+      objectReference: {fileID: 0}
+    - target: {fileID: 22485368, guid: 47375d1ad9de78947b5dddba6bf6a125, type: 2}
+      propertyPath: m_LocalScale.y
+      value: 0.9
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 47375d1ad9de78947b5dddba6bf6a125, type: 2}
@@ -342,7 +381,7 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_FontData:
-    m_Font: {fileID: 12800000, guid: 2b8da20d9161d5346820093527f0a1c3, type: 3}
+    m_Font: {fileID: 12800000, guid: f6ebc120889a61a4ebd10dc62fc39021, type: 3}
     m_FontSize: 72
     m_FontStyle: 0
     m_BestFit: 1
@@ -503,7 +542,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 22409496, guid: 1115d4335193dd643963c561dd1f1b1d, type: 2}
       propertyPath: m_AnchoredPosition.y
-      value: 45
+      value: 70
       objectReference: {fileID: 0}
     - target: {fileID: 22409496, guid: 1115d4335193dd643963c561dd1f1b1d, type: 2}
       propertyPath: m_SizeDelta.x
@@ -544,6 +583,23 @@ Prefab:
     - target: {fileID: 11426352, guid: 1115d4335193dd643963c561dd1f1b1d, type: 2}
       propertyPath: m_Text
       value: Back
+      objectReference: {fileID: 0}
+    - target: {fileID: 11498874, guid: 1115d4335193dd643963c561dd1f1b1d, type: 2}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 08c3152df04fcdb438f33b379f90c790,
+        type: 3}
+    - target: {fileID: 11498874, guid: 1115d4335193dd643963c561dd1f1b1d, type: 2}
+      propertyPath: m_Type
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 22409496, guid: 1115d4335193dd643963c561dd1f1b1d, type: 2}
+      propertyPath: m_LocalScale.x
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 22409496, guid: 1115d4335193dd643963c561dd1f1b1d, type: 2}
+      propertyPath: m_LocalScale.y
+      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1115d4335193dd643963c561dd1f1b1d, type: 2}

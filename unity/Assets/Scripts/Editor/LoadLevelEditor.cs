@@ -197,11 +197,11 @@ public class LoadLevelEditor : ScriptedImporter
         // retrieve page data from .ipe file
         var items = fileSelected.Descendants("page").First().Descendants("path").ToList();
 
-        var marklist = fileSelected.Descendants("page").Last().Descendants("use");
+        var marklist = fileSelected.Descendants("page").First().Descendants("use");
 
         asset.Guards.AddRange(GetMarkers(marklist, "disk"));
         asset.Player.AddRange(GetMarkers(marklist, "square"));
-        
+        asset.Goal.AddRange(GetMarkers(marklist, "cross"));
 
         // check that .ipe file contains one and only one polygon
         if (items.Count == 0)
@@ -273,6 +273,7 @@ public class LoadLevelEditor : ScriptedImporter
         checkPoints.AddRange(outerPoints);
         asset.Guards = Normalize(rect, thSIZE, asset.Guards);
         asset.Player = Normalize(rect, thSIZE, asset.Player);
+        asset.Goal = Normalize(rect, thSIZE, asset.Goal);
         for (var i = 0; i < holes.Count; i++)
         {
             holes[i] = Normalize(rect, thSIZE, holes[i]);

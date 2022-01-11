@@ -16,6 +16,7 @@
     /// Main controller for the art gallery game.
     /// Handles the game update loop, as well as level initialization and advancement.
     /// </summary>
+    
     public class TheHeistController : MonoBehaviour, IController
     {
         [SerializeField]
@@ -31,13 +32,13 @@
         private GameObject m_guardPrefab;
 
         [SerializeField]
+        private GameObject m_gemPrefab;
+
+        [SerializeField]
         private GameObject m_debugPrefab;
 
         [SerializeField]
         private ButtonContainer m_advanceButton;
-
-        [SerializeField]
-        private Text m_lighthouseText;
 
         [SerializeField]
         private Text m_guardText;
@@ -58,18 +59,16 @@
         private int m_maxNumberOfGuards;
 
 
-        private int m_maxNumberOfLighthouses;
-
         // store starting time of level
         private float puzzleStartTime;
 
         // store relevant art gallery objects
         private TheHeistSolution m_solution;
         private TheHeistIsland m_levelMesh;
-        private TheHeistLightHouse m_SelectedLighthouse;
 
         protected List<TheHeistGuard> m_guards = new List<TheHeistGuard>();
         protected TheHeistPlayer m_playerScript;
+        protected GameObject m_gem;
         protected float timer = 0;
         protected float delay = 0.75f;
         protected string state = "player";
@@ -83,11 +82,12 @@
         float y = 0;
         bool inputCheck = true;
         // w a s d, in int order.
-        public int[] path0 = new int[23] { 2,2,2,2,2,2, 1,1,1,1,1, 2,2,2,2,2, 3,3,3,3,3, 4, 1};
-        public int[] path1 = new int[20] { 2,2,2,2,2, 3,3, 2,2,2, 1,1, 2,2,2, 3,3,3,3,3};
-        public int[] path2 = new int[33] { 1,1,1,1,1,1, 4,4, 1,1,1,1,1, 2, 2, 2, 2, 2, 3, 3, 2, 2, 2, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3 };
-        int m = 0;
-        int n = 0;
+        public int[] pathTest;
+        public int[] path0;
+        public int[] path1;
+        public int[] path2;
+        int m;
+        int n;
         float stepsize = 0.75f;
 
 
@@ -104,7 +104,7 @@
 
             // go to initial island polygon
             AdvanceLevel();
-            playerStart = m_playerScript.Pos;
+            
         }
 
         // Update is called once per frame
@@ -128,11 +128,11 @@
                         {
                             foreach (var guard in m_guards)
                             {
-                                print("guards: " + m_guards.Count);
                                 guardStarts.Add(guard.transform.position);
                             }
                             t = 0;
                             state = "guard";
+                            CheckSolution();
                         }
                         else
                         {
@@ -199,6 +199,7 @@
                 int[] path = guard.GetComponent<TheHeistGuard>().path;
                 if (m >= path.Length-1)
                 {
+                    System.Array.Reverse(path);
                     m = 0;
                 }
                 switch (path[m])
@@ -244,17 +245,6 @@
                         break;
 
                 }
-
-                //if (CheckLegal(guardStarts[i] + new Vector3(0, stepsize, 0f)))
-                //{
-                //    guard.Pos = Vector3.Lerp(guardStarts[i], guardStarts[i] + new Vector3(0, stepsize, 0f), t * speed);
-                //}
-                //else if (CheckLegal(guardStarts[i] + new Vector3(-stepsize, 0f, 0f)))
-                //{
-                //    guard.Pos = Vector3.Lerp(guardStarts[i], guardStarts[i] + new Vector3(-stepsize, 0f, 0f), t * speed);
-                //} else if (CheckLegal(guardStarts[i] + new Vector3(0f, -stepsize, 0f))) {
-                //    guard.Pos = Vector3.Lerp(guardStarts[i], guardStarts[i] + new Vector3(0f, -stepsize, 0f), t * speed);
-                //}
                 i++;
             }
         }
@@ -267,7 +257,6 @@
             if (Input.GetKey(KeyCode.A) && CheckLegal(playerStart + new Vector3(-stepsize, 0f, 0f)))
             {
                 inputCheck = false;
-                //m_playerScript.Pos += new Vector3(-stepsize, 0f, 0f);
                 x = -stepsize;
                 y = 0;
             }
@@ -310,14 +299,13 @@
         }
         public void AddPathToGuard()
         {
-            print(m_levelCounter);
+        
             foreach (var guard in m_guards)
             {
                 if (m_levelCounter == 0)
                 {
-                    
                     guard.GetComponent<TheHeistGuard>().path = path0;
-                } else
+                } else //make elsif if more levels
                 {
                     if (n == 0)
                     {
@@ -338,15 +326,22 @@
         {
             // clear old level
             m_solution.Clear();
-            m_SelectedLighthouse = null;
             m_guards.Clear();
-            //m_advanceButton.Disable();
-            m_advanceButton.Enable();
+            m_advanceButton.Disable();
+            //m_advanceButton.Enable();
+            //reset stats
+            pathTest = new int[6] { 2, 2, 2, 3, 4, 4 };
+            path0 = new int[23] { 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 1 };
+            path1 = new int[20] { 2, 2, 2, 2, 2, 3, 3, 2, 2, 2, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3 };
+            path2 = new int[33] { 1, 1, 1, 1, 1, 1, 4, 4, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 2, 2, 2, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3 };
+            m = 0;
             n = 0;
+            stepsize = 0.75f;
             // create new level
-            var level = m_levels[m_levelCounter];
+            state = "player";
+
+        var level = m_levels[m_levelCounter];
             LevelPolygon = level.Polygon;
-            m_maxNumberOfLighthouses = level.MaxNumberOfLighthouses;
             m_levelMesh.Polygon = LevelPolygon;
 
 
@@ -365,14 +360,12 @@
                 var playerobj = Instantiate(m_playerPrefab, new Vector3(player.x, player.y, -2f), Quaternion.identity);
                 m_playerScript = playerobj.GetComponent<TheHeistPlayer>();
                 m_solution.AddPlayer(playerobj);
-                
+                playerStart = m_playerScript.Pos;
             }
-            ////initialize one guard
-            //var obje = Instantiate(m_guardPrefab, new Vector3(3.5f, -0.85f, -2f) , Quaternion.identity) as GameObject;
-            //m_solution.AddGuard(obje);
-
-            // update text box
-            UpdateLighthouseText();
+            foreach (var gem in m_levels[m_levelCounter].Goal)
+            {
+                m_gem = Instantiate(m_gemPrefab, new Vector3(gem.x, gem.y, -2f), Quaternion.identity);
+            }
         }
 
         public bool CheckContainmentPoints()
@@ -406,18 +399,15 @@
          * */
         public void CheckSolution()
         {
-            if (m_levels[m_levelCounter].MaxNumberOfLighthouses != m_solution.Count || !CheckContainmentPoints()) return;
 
-            // calculate ratio of area visible
-            var ratio = m_solution.Area / LevelPolygon.Area;
-
-            Debug.Log(ratio + " part is visible");
-
-            // see if entire polygon is covered
-            // only check if no solution yet found
-            if (MathUtil.GEQEps(ratio, 1f, 0.001f * m_levels[m_levelCounter].MaxNumberOfLighthouses))
+            // see if player has reached the gem
+            // if guard spots player on the gem level is passed anyway
+            print(Vector3.Distance(m_playerScript.Pos, m_gem.transform.position));
+            if (stepsize/2 > Vector3.Distance(m_playerScript.Pos, m_gem.transform.position))
             {
                 m_advanceButton.Enable();
+                Destroy(m_gem);
+                state = "pause";
             }
         }
 
@@ -522,29 +512,12 @@
         }
 
         /// <summary>
-        /// Set given lighthouse as selected one
-        /// </summary>
-        /// <param name="a_select"></param>
-        internal void SelectLighthouse(TheHeistLightHouse a_select)
-        {
-            m_SelectedLighthouse = a_select;
-        }
-
-        /// <summary>
         /// Set given guard as selected one
         /// </summary>
         /// <param name="a_select"></param>
         internal void SelectGuard(TheHeistGuard a_select)
         {
             m_SelectedGuard = a_select;
-        }
-
-        /// <summary>
-        /// Update the text field with max number of lighthouses which can still be placed
-        /// </summary>
-        private void UpdateLighthouseText()
-        {
-            m_lighthouseText.text = "Torches left: " + (m_maxNumberOfLighthouses - m_solution.Count);
         }
 
         /// <summary>
@@ -560,7 +533,7 @@
         /// </summary>
         private void UpdatePuzzleCounter()
         {
-            m_puzzleCounterLabel.GetComponentInChildren<Text>().text = string.Format("Puzzle {0} / {1}", m_levelCounter + 1, m_levels.Count);
+            m_puzzleCounterLabel.GetComponentInChildren<Text>().text = string.Format("Level {0} / {1}", m_levelCounter + 1, m_levels.Count);
         }
     }
 }
