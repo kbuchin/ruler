@@ -155,6 +155,9 @@
                     }
                 break;
                 case "pause":
+                    guardStarts.Clear();
+                    t = 0;
+                    inputCheck = true;
                     break;
 
             }
@@ -509,6 +512,18 @@
             //    m_guard.VisionPoly = null;
             //    m_guard.VisionAreaMesh.Polygon = null;
             //}
+        }
+
+        public void SetSpeed()
+        {
+            if (speed > 2.8f)
+            {
+                speed = 2.8f;
+            }
+            else
+            {
+                speed = 8;
+            }
         }
 
         /// <summary>
