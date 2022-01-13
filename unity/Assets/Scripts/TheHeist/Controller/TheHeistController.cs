@@ -74,6 +74,7 @@
         protected string state = "player";
         protected Vector3 playerStart;
         protected List<Vector3> guardStarts = new List<Vector3>();
+        protected Vector2 guardOrientation;
         float t = 0;
         float speed = 2.8f;
         int i = 0;
@@ -211,6 +212,7 @@
                         if (CheckLegal(guardStarts[i] + new Vector3(0, stepsize, 0f)))
                         {
                             guard.Pos = Vector3.Lerp(guardStarts[i], guardStarts[i] + new Vector3(0, stepsize, 0f), t * speed);
+                            guard.ori = Vector2.up;
                         } else
                         {
                             m++;
@@ -220,6 +222,7 @@
                         if (CheckLegal(guardStarts[i] + new Vector3(-stepsize, 0f, 0f)))
                         {
                             guard.Pos = Vector3.Lerp(guardStarts[i], guardStarts[i] + new Vector3(-stepsize, 0f, 0f), t * speed);
+                            guard.ori = Vector2.left;
                         }
                         else
                         {
@@ -230,6 +233,7 @@
                         if (CheckLegal(guardStarts[i] + new Vector3(0, -stepsize, 0f)))
                         {
                             guard.Pos = Vector3.Lerp(guardStarts[i], guardStarts[i] + new Vector3(0, -stepsize, 0f), t * speed);
+                            guard.ori = Vector2.down;
                         }
                         else
                         {
@@ -240,6 +244,7 @@
                         if (CheckLegal(guardStarts[i] + new Vector3(stepsize, 0f, 0f)))
                         {
                             guard.Pos = Vector3.Lerp(guardStarts[i], guardStarts[i] + new Vector3(stepsize, 0f, 0f), t * speed);
+                            guard.ori = Vector2.right;
                         }
                         else
                         {
@@ -405,7 +410,7 @@
 
             // see if player has reached the gem
             // if guard spots player on the gem level is passed anyway
-            print(Vector3.Distance(m_playerScript.Pos, m_gem.transform.position));
+            //print(Vector3.Distance(m_playerScript.Pos, m_gem.transform.position));
             if (stepsize/2 > Vector3.Distance(m_playerScript.Pos, m_gem.transform.position))
             {
                 m_advanceButton.Enable();
@@ -471,8 +476,11 @@
 
             if (LevelPolygon.ContainsInside(m_guard.Pos))
             {
-                // calculate new visibility polygon
-                var vision = VisibilitySweep.Vision(LevelPolygon, m_guard.Pos);
+                // calculate new visibility polygon using the sweepline algorithm and a cone query
+                var vision = gameObject.GetComponent<TheHeistAlgorithmV2>()
+                    .Vision(LevelPolygon, m_guard.Pos, new Vector3(0,0,0), m_guard.ori);
+                //var vision = visionWithHoles.Outside;
+                var lines = LevelPolygon.Segments;
 
                 if (vision == null)
                 {
@@ -522,7 +530,7 @@
             }
             else
             {
-                speed = 8;
+                speed = 10;
             }
         }
 
@@ -550,5 +558,6 @@
         {
             m_puzzleCounterLabel.GetComponentInChildren<Text>().text = string.Format("Level {0} / {1}", m_levelCounter + 1, m_levels.Count);
         }
+
     }
 }

@@ -37,6 +37,8 @@
         }
 
         public int[] path;
+
+        public Vector2 ori;
        
            
 
@@ -54,7 +56,7 @@
             GameObject go = Instantiate(m_visionAreaPrefab, new Vector3(0, 0, -1.5f), Quaternion.identity) as GameObject;
             VisionAreaMesh = go.GetComponent<TheHeistIsland>();
 
-            m_controller.UpdateVision(this);
+            //m_controller.UpdateVision(this);
         }
 
         void OnDestroy()

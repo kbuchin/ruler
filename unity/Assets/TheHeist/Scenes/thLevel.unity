@@ -858,6 +858,7 @@ GameObject:
   m_Component:
   - component: {fileID: 809593871}
   - component: {fileID: 2002079872}
+  - component: {fileID: 809593872}
   m_Layer: 0
   m_Name: TheHeistController
   m_TagString: Untagged
@@ -882,6 +883,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &809593872
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 809593870}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ce65ade75d0c114eab8808c1ecb44bf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  coneWidth: 0
+  coneLength: 0
 --- !u!1 &952631161
 GameObject:
   m_ObjectHideFlags: 0
