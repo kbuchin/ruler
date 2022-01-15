@@ -339,7 +339,7 @@
             //m_advanceButton.Enable();
             //reset stats
             pathTest = new int[6] { 2, 2, 2, 3, 4, 4 };
-            path0 = new int[23] { 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 1 };
+            path0 = new int[24] { 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 1 };
             path1 = new int[20] { 2, 2, 2, 2, 2, 3, 3, 2, 2, 2, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3 };
             path2 = new int[33] { 1, 1, 1, 1, 1, 1, 4, 4, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 2, 2, 2, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3 };
             m = 0;
@@ -360,6 +360,7 @@
                 var obj = Instantiate(m_guardPrefab, new Vector3(guard.x, guard.y, -2f), Quaternion.identity);
                 m_guards.Add(obj.GetComponent<TheHeistGuard>());
                 m_solution.AddGuard(obj);
+                UpdateVision(obj.GetComponent<TheHeistGuard>());
             }
             AddPathToGuard();
             //print(m_levels[m_levelCounter].Player.Count);
