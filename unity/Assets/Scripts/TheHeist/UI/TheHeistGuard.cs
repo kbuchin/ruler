@@ -32,7 +32,7 @@
                 gameObject.transform.position = value;
 
                 // update vision polygon
-                m_controller.UpdateVision(this);
+                //m_controller.UpdateVision(this);
             }
         }
 
