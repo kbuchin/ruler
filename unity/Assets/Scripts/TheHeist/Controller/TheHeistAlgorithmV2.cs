@@ -68,18 +68,18 @@
         class Interval
         {
             public bool isLeftEndpoint;
-            public Endpoint endpoint;
+            public Intervalpoint intervalpoint;
             public float startInterval, endInterval;
             public Line correspondingLine;
             public List<Interval> intervals = new List<Interval>();
 
             //TODO keep track of intervals in which the endpoint lies.
 
-            public Interval(Endpoint endpoint, Line correspondingLine)
+            public Interval(Intervalpoint endpoint, Line correspondingLine)
             {
                 this.startInterval = correspondingLine.startInterval;
                 this.endInterval = correspondingLine.endInterval;
-                this.endpoint = endpoint;
+                this.intervalpoint = endpoint;
                 this.correspondingLine = correspondingLine;
             }
             public COMPARE compare(Interval other)
@@ -89,11 +89,11 @@
                 if (interval == null)
                     throw new Exception("Other interval to compare is null");
 
-                if (this.endpoint.pos > interval.endpoint.pos)
+                if (this.intervalpoint.angle > interval.intervalpoint.angle)
                     return COMPARE.SMALLER;
-                else if (this.endpoint.pos == interval.endpoint.pos)
+                else if (this.intervalpoint.angle == interval.intervalpoint.angle)
                     return COMPARE.EQUAL;
-                else if (this.endpoint.pos < interval.endpoint.pos)
+                else if (this.intervalpoint.angle < interval.intervalpoint.angle)
                     return COMPARE.GREATER;
                 else
                     return COMPARE.UNKOWN;
@@ -101,21 +101,21 @@
 
             public string print()
             {
-                if (endpoint != null)
-                    return "pos: " + endpoint.pos + "is left: " + isLeftEndpoint;
+                if (intervalpoint != null)
+                    return "pos: " + intervalpoint.angle + "is left: " + isLeftEndpoint;
                 else
                     return "No endpoint avaiable";
             }
         }
 
-        class Endpoint
+        class Intervalpoint
         {
-            public float pos;
+            public float angle;
             public bool isLeft;
 
-            public Endpoint(float pos, bool isLeft)
+            public Intervalpoint(float angle, bool isLeft)
             {
-                this.pos = pos;
+                this.angle = angle;
                 this.isLeft = isLeft;
             }
         }
@@ -129,7 +129,8 @@
         {
             //comparable data in our case a interval(eindpoint) 
             public Interval data;
-            public List<Interval> intervals = new List<Interval>();
+            public List<Interval> isInIntervals = new List<Interval>();
+            public List<Interval> isOutIntervals = new List<Interval>();
             //node info
             public Node left;
             public Node right;
@@ -155,7 +156,7 @@
                 left.isLeftChild = true;
                 right.isLeftChild = false;
                 if (data != null)
-                    this.intervals = data.intervals;
+                    this.isInIntervals = data.intervals;
             }
 
             public void setParent(Node parent)
@@ -242,11 +243,120 @@
 
             public void Query(float angle, ref Node currentNode)
             {
-                if (angle < currentNode.data.endpoint.pos)
+                if (angle < currentNode.data.intervalpoint.angle)
                 {
 
                 }
             }
+
+
+            public void UpdateNode(float angle, bool isLeft, ref Node currentNode, List<Interval> inIntervals, List<Interval> outIntervals)
+            {
+                if (currentNode.data.intervalpoint.angle == angle && currentNode.data.intervalpoint.isLeft == isLeft)
+                {
+                    // update node when found
+                    inIntervals = ListSubstractor(inIntervals, outIntervals);
+
+                    currentNode.isInIntervals = inIntervals;
+                    currentNode.isOutIntervals = outIntervals;
+                }
+                else
+                {
+                    inIntervals = ListExclusiveCombine(inIntervals, currentNode.isInIntervals);
+                    outIntervals = ListExclusiveCombine(outIntervals, currentNode.isOutIntervals);
+                    // update all nodes in path
+                    if (angle <= currentNode.data.intervalpoint.angle)
+                    {
+                        if (currentNode.left.data != null)
+                           UpdateNode(angle, isLeft, ref currentNode.left, inIntervals, outIntervals);
+                        else
+                        {
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        if (currentNode.right.data != null)
+                            UpdateNode(angle, isLeft, ref currentNode.right, inIntervals, outIntervals);
+                        else
+                        {
+                            return;
+                        }
+                    }
+                }
+            }
+
+            public Interval Search(float angle, bool isLeft, ref Node currentNode)
+            {
+                if (currentNode.data.intervalpoint.angle == angle && currentNode.data.intervalpoint.isLeft == isLeft)
+                {
+                    return currentNode.data;
+                } else
+                {
+                    if (angle <= currentNode.data.intervalpoint.angle)
+                    { 
+                        if (currentNode.left.data != null)
+                            return Search(angle, isLeft, ref currentNode.left);
+                        else
+                        {
+                            return currentNode.data;
+                        }
+                    }
+                    else 
+                    {
+                        if (currentNode.right.data != null)
+                            return Search(angle, isLeft, ref currentNode.right);
+                        else
+                        {
+                            return currentNode.data;
+                        }
+                    }
+                }
+            }
+            public List<Interval> ListSubstractor(List<Interval> inList, List<Interval> outList)
+            {
+                List<Interval> finalList = new List<Interval>();
+                foreach (Interval inter in inList)
+                {
+                    bool found = false;
+                    foreach (Interval inter2 in outList)
+                    {
+                        if (inter.correspondingLine.equal(inter2.correspondingLine))
+                            found = true;
+                    }
+                    if (!found)
+                        finalList.Add(inter);
+                }
+                return finalList;
+            }
+            /// <summary>
+            /// Combines two lists of intervals excluding duplicates
+            /// </summary>
+            /// <param name="list1"></param>
+            /// <param name="list2"></param>
+            /// <returns></returns>
+            public List<Interval> ListExclusiveCombine(List<Interval> list1, List<Interval> list2)
+            {
+                List<Interval> finalList = list1;
+                foreach (Interval inter in list2)
+                {
+                    bool found = false;
+                    foreach (Interval inter2 in list1)
+                    {
+                        if (inter.intervalpoint.angle == inter2.intervalpoint.angle && inter.intervalpoint.isLeft == inter2.intervalpoint.isLeft)
+                        {
+                            found = true;
+                        }
+
+                    }
+                    if (!found)
+                    {
+                        finalList.Add(inter);
+                    }
+                }
+                return finalList;
+            }
+
 
             private void insertNode(Interval interval, ref Node currentNode)
             {
@@ -257,26 +367,26 @@
                 }
                 else
                 {
-                    //keep track of known intervals
-                    List<Interval> knownIntervals = new List<Interval>();
-                    foreach (Interval i in currentNode.intervals)
-                    {
-                        bool alreadyKnown = false;
-                        foreach (Interval ii in interval.intervals)
-                        {
-                            if (ii.correspondingLine.equal(i.correspondingLine))
-                            {
-                                alreadyKnown = true;
-                            }
-                        }
-                        if (alreadyKnown == false)
-                            knownIntervals.Add(i);
-                    }
+                    ////keep track of known intervals
+                    //List<Interval> knownIntervals = new List<Interval>();
+                    //foreach (Interval i in currentNode.intervals)
+                    //{
+                    //    bool alreadyKnown = false;
+                    //    foreach (Interval ii in interval.intervals)
+                    //    {
+                    //        if (ii.correspondingLine.equal(i.correspondingLine))
+                    //        {
+                    //            alreadyKnown = true;
+                    //        }
+                    //    }
+                    //    if (alreadyKnown == false)
+                    //        knownIntervals.Add(i);
+                    //}
 
-                    foreach (Interval I in knownIntervals)
-                    {
-                        interval.intervals.Add(I);
-                    }
+                    //foreach (Interval I in knownIntervals)
+                    //{
+                    //    interval.intervals.Add(I);
+                    //}
 
 
 
@@ -285,126 +395,48 @@
                     {
                         case COMPARE.SMALLER:
                             {
-                                if (currentNode.data.endpoint.isLeft)
+                                if (interval.intervalpoint.isLeft)
                                 {
-                                    List<Interval> tempList = new List<Interval>();
-                                    foreach (Interval I in interval.intervals)
-                                    {
-                                        if (!I.correspondingLine.equal(currentNode.data.correspondingLine))
-                                        {
-                                            tempList.Add(I);
-                                        }
-                                    }
-                                    interval.intervals = tempList;
-                                    //uit known intervals
-                                }
-                                else
+                                    currentNode.isInIntervals.Add(interval); //add interval that current is in
+                                } else
                                 {
-                                    interval.intervals.Add(currentNode.data);
+                                    currentNode.isOutIntervals.Add(interval);
                                 }
 
+                                currentNode.isInIntervals = ListSubstractor(currentNode.isInIntervals, currentNode.isOutIntervals);
 
-                                if (interval.endpoint.isLeft)
-                                {
-                                    currentNode.intervals.Add(interval);
-                                    //ligt in interval
-                                }
-                                else
-                                {
-                                    List<Interval> tempList = new List<Interval>();
-                                    foreach (Interval I in currentNode.intervals)
-                                    {
-                                        if (!I.correspondingLine.equal(interval.correspondingLine))
-                                        {
-                                            tempList.Add(I);
-                                        }
-                                    }
-
-                                    currentNode.intervals = tempList;
-                                    //lig niet in interval
-                                }
                                 insertNode(interval, ref currentNode.left);
                             }
                             break;
                         case COMPARE.EQUAL:
                             {
-                                if (currentNode.data.endpoint.isLeft)
+                                if (interval.intervalpoint.isLeft)
                                 {
-                                    List<Interval> tempList = new List<Interval>();
-                                    foreach (Interval I in interval.intervals)
-                                    {
-                                        if (!I.correspondingLine.equal(currentNode.data.correspondingLine))
-                                        {
-                                            tempList.Add(I);
-                                        }
-                                    }
-                                    interval.intervals = tempList;
-                                    //uit known intervals
+                                    currentNode.isInIntervals.Add(interval); //add interval that current is in
                                 }
                                 else
                                 {
-                                    interval.intervals.Add(currentNode.data);
+                                    currentNode.isOutIntervals.Add(interval);
                                 }
 
-                                if (interval.endpoint.isLeft)
-                                {
-                                    currentNode.intervals.Add(interval);
-                                    //ligt in interval
-                                }
-                                else
-                                {
-                                    List<Interval> tempList = new List<Interval>();
-                                    foreach (Interval I in currentNode.intervals)
-                                    {
-                                        if (!I.correspondingLine.equal(interval.correspondingLine))
-                                        {
-                                            tempList.Add(I);
-                                        }
-                                    }
-                                    currentNode.intervals = tempList;
-                                    //lig niet in interval
-                                }
+                                currentNode.isInIntervals = ListSubstractor(currentNode.isInIntervals, currentNode.isOutIntervals);
+
                                 insertNode(interval, ref currentNode.left);
                             }
                             break;
                         case COMPARE.GREATER:
                             {
-                                if (currentNode.data.endpoint.isLeft)
+                                if (!interval.intervalpoint.isLeft)
                                 {
-                                    interval.intervals.Add(currentNode.data);
+                                    currentNode.isInIntervals.Add(interval); //add interval that current is in
                                 }
                                 else
                                 {
-                                    List<Interval> tempList = new List<Interval>();
-                                    foreach (Interval I in interval.intervals)
-                                    {
-                                        if (!I.correspondingLine.equal(currentNode.data.correspondingLine))
-                                        {
-                                            tempList.Add(I);
-                                        }
-                                    }
-                                    interval.intervals = tempList;
-                                    //uit known intervals
+                                    currentNode.isOutIntervals.Add(interval);
                                 }
+                                
+                                currentNode.isInIntervals = ListSubstractor(currentNode.isInIntervals, currentNode.isOutIntervals);
 
-                                if (interval.endpoint.isLeft)
-                                {
-                                    List<Interval> tempList = new List<Interval>();
-                                    foreach (Interval I in currentNode.intervals)
-                                    {
-                                        if (!I.correspondingLine.equal(interval.correspondingLine))
-                                        {
-                                            tempList.Add(I);
-                                        }
-                                    }
-                                    currentNode.intervals = tempList;
-                                    //ligt niet in interval
-                                }
-                                else
-                                {
-                                    currentNode.intervals.Add(interval);
-                                    //lig in interval
-                                }
                                 insertNode(interval, ref currentNode.right);
                             }
                             break;
@@ -421,7 +453,7 @@
 
 
 
-            public bool checkVisibility(Vector2 playerPos, Vector2 guardPos, Vector2 guardOrientation)
+        public bool checkVisibility(Vector2 playerPos, Vector2 guardPos, Vector2 guardOrientation)
         {
             //this.playerPos = playerPos;
             //this.guardPos = guardPos;
@@ -439,41 +471,18 @@
                 RedBlackTree tree = new RedBlackTree();
                 foreach (Line l in sortedMiddletDistance)
                 {
-                    tree.insertInterval(new Interval(new Endpoint(l.startInterval, true), l));
-                    tree.insertInterval(new Interval(new Endpoint(l.endInterval, false), l));
+                    tree.insertInterval(new Interval(new Intervalpoint(l.startInterval, true), l));
+                    tree.UpdateNode(l.startInterval, true, ref tree.root, new List<Interval>(), new List<Interval>());
+                    tree.insertInterval(new Interval(new Intervalpoint(l.endInterval, false), l));
+                    tree.UpdateNode(l.startInterval, false, ref tree.root, new List<Interval>(), new List<Interval>());
                 }
 
-                tree.print();
+                //tree.print();
 
                 return true;
         }
 
-        void diskSweep()
-        {
-            //Important to have the lvl and the guard pos set!!
-            //List<Line> linesWithDistance = calculateDistance(CurrentLevel, guardPos);
-            //Queue<HeistEvent> status = getEvents(linesWithDistance);
-            //return status;
-        }
 
-        void getEvents(List<Line> sortedLines)
-        {
-            //List<HeistEvent> events = new List<HeistEvent>();
-            //foreach(Line l in sortedLines)
-            //{
-            //    events.Add(new HeistEvent(l, true));
-            //    events.Add(new HeistEvent(l, false));
-            //}
-
-            ////sort on event with smallest distance
-            //events.Sort((x, y) => x.distance.CompareTo(y.distance));
-            //Queue<HeistEvent> status = new Queue<HeistEvent>();
-            //foreach(HeistEvent he in events)
-            //{
-            //    status.Enqueue(he);
-            //}
-            //return status;
-        }
 
         void calculateDistanceAndAngle(List<Line> currentLevel, Vector2 guardPos, out List<Line> sortedShortestDistance, out List<Line> sortedLongestDistance
                 , out List<Line> sortedMiddleDistance, out List<Line> sortedStartInterval, out List<Line> sortedEndInterval)
@@ -575,8 +584,10 @@
             {
                 lines.Add(line);
             }
-            CurrentLevel = lines;
-
+            //CurrentLevel = lines;
+            CurrentLevel = new List<Line>();
+            CurrentLevel.Add(new Line(new Vector2(432, 590), new Vector2(432, 530)));
+            CurrentLevel.Add(new Line(new Vector2(420, 560), new Vector2(420, 500)));
             checkVisibility(guardPos, playerPos, guardOrientation);
 
             List<Vector2> polyPoints = new List<Vector2>();
