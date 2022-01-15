@@ -67,6 +67,7 @@
         private TheHeistIsland m_levelMesh;
 
         protected List<TheHeistGuard> m_guards = new List<TheHeistGuard>();
+        protected GameObject m_player;
         protected TheHeistPlayer m_playerScript;
         protected GameObject m_gem;
         protected float timer = 0;
@@ -152,9 +153,18 @@
                         m++;
                         t = 0;
                         inputCheck = true;
-                        state = "player";
+                        state = "visionCheck";
                     }
                 break;
+                case "visionCheck":
+                    {
+                        foreach (TheHeistGuard guard in m_guards)
+                        {
+                            UpdateVision(guard);
+                        }
+                        state = "player";
+                    }
+                    break;
                 case "pause":
                     guardStarts.Clear();
                     t = 0;
@@ -370,6 +380,7 @@
                 m_playerScript = playerobj.GetComponent<TheHeistPlayer>();
                 m_solution.AddPlayer(playerobj);
                 playerStart = m_playerScript.Pos;
+               // m_player =  playerobj as GameObject;
             }
             foreach (var gem in m_levels[m_levelCounter].Goal)
             {
@@ -478,19 +489,23 @@
             if (LevelPolygon.ContainsInside(m_guard.Pos))
             {
                 // calculate new visibility polygon using the sweepline algorithm and a cone query
-                var vision = gameObject.GetComponent<TheHeistAlgorithmV2>()
-                    .Vision(LevelPolygon, m_guard.Pos, new Vector3(0,0,0), m_guard.ori);
-                //var vision = visionWithHoles.Outside;
-                var lines = LevelPolygon.Segments;
-
-                if (vision == null)
+                if (m_playerScript != null)
                 {
-                    throw new Exception("Vision polygon cannot be null");
-                }
+                    var vision = gameObject.GetComponent<TheHeistAlgorithmV2>().Vision(LevelPolygon, m_guard.Pos, m_playerScript.Pos, m_guard.ori);
 
-                // update lighthouse visibility
-                m_guard.VisionPoly = vision;
-                m_guard.VisionAreaMesh.Polygon = new Polygon2DWithHoles(vision);
+
+                    //var vision = visionWithHoles.Outside;
+                    var lines = LevelPolygon.Segments;
+
+                    if (vision == null)
+                    {
+                        throw new Exception("Vision polygon cannot be null");
+                    }
+
+                    // update lighthouse visibility
+                    m_guard.VisionPoly = vision;
+                    m_guard.VisionAreaMesh.Polygon = new Polygon2DWithHoles(vision);
+                }
             }
             else
             {

@@ -24,7 +24,7 @@ public class TheHeistAlgorithmV3 : MonoBehaviour
     enum DIRECTION { LEFT, RIGHT };
     enum COMPARE { SMALLER, EQUAL, GREATER, UNKOWN }
 
-    class Line
+    public class Line
     {
         public Line(Vector2 start, Vector2 end)
         {
@@ -631,6 +631,40 @@ public class TheHeistAlgorithmV3 : MonoBehaviour
         sortedEndInterval.Sort((x, y) => x.endInterval.CompareTo(y.endInterval));
     }
 
+
+    public bool playerVisible(Vector2 playerPos, Vector2 guardPos, Line line)
+    {
+        //convert to right format
+        Vector3 linePoint1 = new Vector3(guardPos.x, guardPos.y, 0);
+        Vector3 lineVec1 = new Vector3(playerPos.x - guardPos.x, playerPos.y - guardPos.y, 0);
+        Vector3 linePoint2 = new Vector3(line.start.x,line.start.y,0);
+        Vector3 lineVec2 = new Vector3(line.end.x - line.start.x, line.end.y - line.start.y, 0);
+        Vector3 intersection = new Vector3();
+
+        Vector3 lineVec3 = linePoint2 - linePoint1;
+        Vector3 crossVec1and2 = Vector3.Cross(lineVec1, lineVec2);
+        Vector3 crossVec3and2 = Vector3.Cross(lineVec3, lineVec2);
+
+        float planarFactor = Vector3.Dot(lineVec3, crossVec1and2);
+
+        //is coplanar, and not parallel
+        if (Mathf.Abs(planarFactor) < 0.0001f
+                && crossVec1and2.sqrMagnitude > 0.0001f)
+        {
+            float s = Vector3.Dot(crossVec3and2, crossVec1and2)
+                    / crossVec1and2.sqrMagnitude;
+            intersection = linePoint1 + (lineVec1 * s);
+            if (s >= 0 && s <= 1)
+                return true;
+            else
+                return false;
+        }
+        else
+        {
+            intersection = Vector3.zero;
+            return false;
+        }
+    }
 
     // Use this for initialization
     void Start()

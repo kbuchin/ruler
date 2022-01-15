@@ -32,7 +32,7 @@
         enum DIRECTION { LEFT, RIGHT };
         enum COMPARE { SMALLER, EQUAL, GREATER, UNKOWN }
 
-        class Line
+        public class Line
         {
             public Line(Vector2 start, Vector2 end)
             {
@@ -580,15 +580,37 @@
         {
             List<Line> lines = new List<Line>();
             var lineSegments = polygon.Segments;
-            foreach(var line in lines)
+            foreach(var lineSegment in lineSegments)
             {
-                lines.Add(line);
+                lines.Add(new Line(lineSegment.Point1, lineSegment.Point2));
             }
-            //CurrentLevel = lines;
-            CurrentLevel = new List<Line>();
-            CurrentLevel.Add(new Line(new Vector2(432, 590), new Vector2(432, 530)));
-            CurrentLevel.Add(new Line(new Vector2(420, 560), new Vector2(420, 500)));
-            checkVisibility(guardPos, playerPos, guardOrientation);
+
+
+
+            CurrentLevel = lines;
+            //CurrentLevel = new List<Line>();
+            //CurrentLevel.Add(new Line(new Vector2(432, 590), new Vector2(432, 530)));
+            //CurrentLevel.Add(new Line(new Vector2(420, 560), new Vector2(420, 500)));
+            //checkVisibility(guardPos, playerPos, guardOrientation);
+            bool playerHiding = false;
+            foreach(Line l in CurrentLevel)
+            {
+                if (!playerVisible(playerPos, guardPos, l))
+                    playerHiding = true;
+            }
+
+            if (playerHiding)
+            {
+                Debug.Log("Player is hiding");
+
+            }
+            else
+            {
+                Debug.Log("Player is not hiding");               
+            }
+
+
+
 
             List<Vector2> polyPoints = new List<Vector2>();
             //foreach(var line in final)
@@ -638,6 +660,63 @@
             v.x = (cos * tx) - (sin * ty);
             v.y = (sin * tx) + (cos * ty);
             return v;
+        }
+
+        public bool playerVisible(Vector2 playerPos, Vector2 guardPos, Line line)
+        {
+            Ray2D ray = new Ray2D(guardPos, playerPos - guardPos);
+            LineSegment l = line.segment;
+
+            var intersect = l.Intersect(ray);
+
+            if (intersect.HasValue)
+            {
+                if (Vector2.Distance(playerPos, guardPos) > Vector2.Distance(guardPos, intersect.Value))
+                    return false;
+                else
+                    return true;
+            }
+            else
+                return true;
+
+
+            ////convert to right format
+            //Vector3 linePoint1 = new Vector3(guardPos.x, guardPos.y, 0);
+            //Vector3 lineVec1 = new Vector3(playerPos.x - guardPos.x, playerPos.y - guardPos.y, 0);
+            //Vector3 linePoint2 = new Vector3(line.start.x, line.start.y, 0);
+            //Vector3 lineVec2 = new Vector3(line.end.x - line.start.x, line.end.y - line.start.y, 0);
+            //Vector3 intersection = new Vector3();
+
+            //Vector3 lineVec3 = linePoint2 - linePoint1;
+            //Vector3 crossVec1and2 = Vector3.Cross(lineVec1, lineVec2);
+            //Vector3 crossVec3and2 = Vector3.Cross(lineVec3, lineVec2);
+
+            //string msg = "";
+            //msg += "Player : " + playerPos;
+            //msg += " Guard : " + guardPos;
+            //msg += " Line start " + line.start;
+            //msg += " Line end " + line.end;
+            //Debug.Log(msg);
+
+            //float planarFactor = Vector3.Dot(lineVec3, crossVec1and2);
+
+            ////is coplanar, and not parallel
+            //if (Mathf.Abs(planarFactor) < 0.0001f
+            //        && crossVec1and2.sqrMagnitude > 0.0001f)
+            //{
+            //    float s = Vector3.Dot(crossVec3and2, crossVec1and2)
+            //            / crossVec1and2.sqrMagnitude;
+            //    intersection = linePoint1 + (lineVec1 * s);
+            //    if (s >= -1 && s <= 1)
+            //        return false;
+            //    else
+            //        return true;
+            //}
+            //else
+            //{
+            //    intersection = Vector3.zero;
+            //    return true;
+            //}
         }
 
 
