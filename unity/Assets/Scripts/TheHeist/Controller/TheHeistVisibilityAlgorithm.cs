@@ -230,12 +230,13 @@
                 else status.Insert(e.nextSeg);
 
                 // check if there is a new top segment
-                Segment newTopSeg;
+                Segment newTopSeg = null;
                 status.FindMin(out newTopSeg);
                 
+                if (topSeg == null) topSeg = newTopSeg;
 
                 // if ther is a new top segment
-                if (! topSeg.Equals(newTopSeg))
+                if (topSeg != newTopSeg && newTopSeg != null) //! topSeg.Equals(newTopSeg))
                 {
                     HandleNewTopEvent(ref result, topSeg, newTopSeg, sweepline);
                     topSeg = newTopSeg;
