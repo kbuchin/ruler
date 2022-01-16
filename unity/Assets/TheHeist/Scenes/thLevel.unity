@@ -860,6 +860,7 @@ GameObject:
   - component: {fileID: 2002079872}
   - component: {fileID: 809593872}
   - component: {fileID: 809593873}
+  - component: {fileID: 809593874}
   m_Layer: 0
   m_Name: TheHeistController
   m_TagString: Untagged
@@ -911,6 +912,17 @@ MonoBehaviour:
   playerPos: {x: 0, y: 0}
   guardPos: {x: 0, y: 0}
   guardOrientation: {x: 0, y: 0}
+--- !u!114 &809593874
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 809593870}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54b9744cbc054c6428f06843615c472d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &952631161
 GameObject:
   m_ObjectHideFlags: 0
@@ -1353,6 +1365,7 @@ MonoBehaviour:
   m_levels:
   - {fileID: 11400000, guid: 1c2bd5d98bb946e4d88ae3b2f06ea84e, type: 3}
   - {fileID: 11400000, guid: 4ec7d76fe60764d49a2bd5f568e0c864, type: 3}
+  - {fileID: 11400000, guid: 76381d536df4c4f49b327970c3c8fe9d, type: 3}
   m_victoryScreen: thVictory
   m_playerPrefab: {fileID: 189480, guid: b493c67e436cd0a49880609fc3028c5a, type: 2}
   m_guardPrefab: {fileID: 1692722388988496, guid: b068b08124ef13d4487d542e8c37d4ec,
