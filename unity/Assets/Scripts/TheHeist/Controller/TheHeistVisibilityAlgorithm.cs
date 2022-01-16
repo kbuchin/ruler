@@ -211,7 +211,7 @@
 
             Segment topSeg = null;
             if (status.Count > 0) status.FindMin(out topSeg);
-            else print("Status Empty");
+            //else print("Status Empty");
 
             // create a hashset to ensure only adding unique segments
             HashSet<Segment> slSegments = new HashSet<Segment>();
@@ -238,19 +238,19 @@
                     // add final intersection with the current top segment
                     var lastIntersection = topSeg.segment.Intersect(cone.end);
                     if (lastIntersection.HasValue) result.Add(lastIntersection.Value);
-                    else print("could not find the last intersection point");
+                    //else print("could not find the last intersection point");
                    
                     // Finished all events, so break out of the for loop
                     break;
                 }
-                Debug.Log("handle new event");
+                //Debug.Log("handle new event");
 
                 // if status still contains previous segment, it can be removed since the sweepline has already passed
                 if (status.Contains(e.prevSeg)) status.Delete(e.prevSeg);
                 else
                 {
                     status.Insert(e.prevSeg);
-                    Debug.Log("insert new status");
+                    //Debug.Log("insert new status");
                 }
                     
                 // handle next segment
@@ -261,12 +261,12 @@
                 Segment newTopSeg;
                 status.FindMin(out newTopSeg);
 
-                Debug.Log("new top: " + newTopSeg.segment.ToString());
+                //Debug.Log("new top: " + newTopSeg.segment.ToString());
 
                 // if ther is a new top segment
                 if (! topSeg.Equals(newTopSeg))
                 {
-                    Debug.Log("New top!");
+                    //Debug.Log("New top!");
                     HandleNewTopEvent(ref result, topSeg, newTopSeg, sweepline);
                     topSeg = newTopSeg;
                 }
@@ -289,7 +289,7 @@
                 var pointOnSL = oldTop.segment.Line.Intersect(sweepline);
                 if (pointOnSL.HasValue) result.Add(oldTop.segment.ClosestPoint(pointOnSL.Value));
 
-                print("add old top segments ");
+                //print("add old top segments ");
 
                 // add the first visible point on the new top segment
                 var firstVisiblePoint = newTop.segment.Intersect(sweepline);
@@ -300,13 +300,13 @@
             if (intersectionOld.HasValue)
             {
                 // add the last visible point on the intersection with the old top
-                print("add new top segments" + intersectionOld.Value);
+                //print("add new top segments" + intersectionOld.Value);
                 result.Add(intersectionOld.Value);
 
                 // get point on new top
                 var intersectionNew = newTop.segment.Intersect(sweepline);
                 if (intersectionNew.HasValue) result.Add(intersectionNew.Value);
-                else print("new top does not have intersection value");
+               // else print("new top does not have intersection value");
             }
             
             
@@ -476,7 +476,7 @@
                         if (overlapPoint.HasValue)
                             if (!MathUtil.EqualsEps(p, overlapPoint.Value, MathUtil.EPS * 10))
                             {
-                                Debug.Log("overlap 1");
+                                //Debug.Log("overlap 1");
                                 return p.magnitude.CompareTo(overlapPoint.Value.magnitude);
                             }
                     }
@@ -487,7 +487,7 @@
                         if (overlapPoint.HasValue)
                             if (!MathUtil.EqualsEps(p, overlapPoint.Value, MathUtil.EPS * 10))
                             {
-                                Debug.Log("overlap 2");
+                                //Debug.Log("overlap 2");
                                 return overlapPoint.Value.magnitude.CompareTo(p.magnitude);
                             }
                     }
@@ -505,7 +505,7 @@
                     return segment.GetHashCode().CompareTo(otherSeg.GetHashCode());
                 }
 
-                print("angle this: " + thisSegAngle + ", other: " + otherSegAngle);
+                //print("angle this: " + thisSegAngle + ", other: " + otherSegAngle);
 
                 return thisSegAngle.CompareTo(otherSegAngle);
 
