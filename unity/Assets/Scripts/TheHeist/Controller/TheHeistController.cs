@@ -493,6 +493,8 @@
                 {
                     var vision = gameObject.GetComponent<TheHeistAlgorithmV2>().Vision(LevelPolygon, m_guard.Pos, m_playerScript.Pos, m_guard.ori);
 
+                    var visionCone = gameObject.GetComponent<TheHeistVisibilityAlgorithm>().VisionCone(LevelPolygon, m_guard.Pos, m_playerScript.Pos, m_guard.ori);
+
 
                     //var vision = visionWithHoles.Outside;
                     var lines = LevelPolygon.Segments;
@@ -503,8 +505,8 @@
                     }
 
                     // update lighthouse visibility
-                    m_guard.VisionPoly = vision;
-                    m_guard.VisionAreaMesh.Polygon = new Polygon2DWithHoles(vision);
+                    // m_guard.VisionPoly = vision;
+                    m_guard.VisionAreaMesh.Polygon = new Polygon2DWithHoles(visionCone);
                 }
             }
             else
