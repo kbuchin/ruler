@@ -386,47 +386,30 @@
                 points.Sort(vc.Compare);
 
                 //// check if segments overlap each other
-                //foreach (var p in points)
-                //{
-                //    if (segment.IsEndpoint(p))
-                //    {
-                //        var overlapPoint = otherSeg.Intersect(new Ray2D(origin, p));
-                //        if (overlapPoint.HasValue)
-                //            if (!MathUtil.EqualsEps(p, overlapPoint.Value, MathUtil.EPS * 10))
-                //            {
-                //                return p.magnitude.CompareTo(overlapPoint.Value.magnitude);
-                //            }
-                //    }
-
-                //    else if (otherSeg.IsEndpoint(p))
-                //    {
-                //        var overlapPoint = segment.Intersect(new Ray2D(origin, p));
-                //        if (overlapPoint.HasValue)
-                //            if (!MathUtil.EqualsEps(p, overlapPoint.Value, MathUtil.EPS * 10))
-                //            {
-                //                return overlapPoint.Value.magnitude.CompareTo(p.magnitude);
-                //            }
-                //    }
-
-                //}
-
-                var seg = segment;
-                var seg2 = otherSeg;
-
                 foreach (var p in points)
                 {
-                    var ray = new Ray2D(origin, p);
-
-                    var p1 = p == seg.Point1 ? seg.Point1 : p == seg.Point2 ? seg.Point2 : seg.Intersect(ray);
-                    var p2 = p == seg2.Point1 ? seg2.Point1 : p == seg2.Point2 ? seg2.Point2 : seg2.Intersect(ray);
-
-                    if (p1.HasValue && p2.HasValue && !MathUtil.EqualsEps(p1.Value, p2.Value, MathUtil.EPS * 10))
+                    if (segment.IsEndpoint(p))
                     {
-                        //Debug.Log(seg + " " + seg2 + " " + p + " " + p1 + " " + p2);
-                        return p1.Value.magnitude.CompareTo(p2.Value.magnitude);
+                        var overlapPoint = otherSeg.Intersect(new Ray2D(origin, p));
+                        if (overlapPoint.HasValue)
+                            if (!MathUtil.EqualsEps(p, overlapPoint.Value, MathUtil.EPS * 10))
+                            {
+                                return p.magnitude.CompareTo(overlapPoint.Value.magnitude);
+                            }
                     }
-                }
 
+                    else if (otherSeg.IsEndpoint(p))
+                    {
+                        var overlapPoint = segment.Intersect(new Ray2D(origin, p));
+                        if (overlapPoint.HasValue)
+                            if (!MathUtil.EqualsEps(p, overlapPoint.Value, MathUtil.EPS * 10))
+                            {
+                                return overlapPoint.Value.magnitude.CompareTo(p.magnitude);
+                            }
+                    }
+
+                }
+                
 
                 // when the segments don't overlap, compare angles of furthes points
                 var thisSegAngle = Math.Max(MathUtil.Angle(origin, Vector2.right, segment.Point1), MathUtil.Angle(origin, Vector2.right, segment.Point2));

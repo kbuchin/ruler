@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE ipe SYSTEM "ipe.dtd">
 <ipe version="70218" creator="Ipe 7.2.24">
-<info created="D:20220116122307" modified="D:20220116152732"/>
+<info created="D:20220116122307" modified="D:20220116160417"/>
 <ipestyle name="basic">
 <symbol name="arrow/arc(spx)">
 <path stroke="sym-stroke" fill="sym-stroke" pen="sym-pen">
@@ -327,13 +327,6 @@ h
 h
 </path>
 <path stroke="black">
-160 736 m
-160 704 l
-192 704 l
-192 736 l
-h
-</path>
-<path stroke="black">
 224 736 m
 224 704 l
 256 704 l
@@ -341,45 +334,10 @@ h
 h
 </path>
 <path stroke="black">
-288 736 m
-288 704 l
-320 704 l
-320 736 l
-h
-</path>
-<path stroke="black">
-352 736 m
-352 704 l
-384 704 l
-384 736 l
-h
-</path>
-<path stroke="black">
 416 672 m
 416 640 l
 384 640 l
 384 672 l
-h
-</path>
-<path stroke="black">
-352 672 m
-352 640 l
-320 640 l
-320 672 l
-h
-</path>
-<path stroke="black">
-288 672 m
-288 640 l
-256 640 l
-256 672 l
-h
-</path>
-<path stroke="black">
-128 672 m
-128 640 l
-160 640 l
-160 672 l
 h
 </path>
 <path stroke="black">
@@ -401,13 +359,6 @@ h
 192 480 l
 224 480 l
 224 544 l
-h
-</path>
-<path stroke="black">
-288 544 m
-288 480 l
-320 480 l
-320 544 l
 h
 </path>
 <path stroke="black">
@@ -438,24 +389,24 @@ h
 288 448 l
 h
 </path>
-<path stroke="black">
-416 448 m
-416 416 l
-384 416 l
-384 448 l
-h
-</path>
-<path stroke="black">
-320 448 m
-320 416 l
-352 416 l
-352 448 l
-h
-</path>
 <use name="mark/square(sx)" pos="80 752" size="normal" stroke="black"/>
 <use name="mark/disk(sx)" pos="400 688" size="normal" stroke="black"/>
 <use name="mark/disk(sx)" pos="176 688" size="normal" stroke="black"/>
 <use name="mark/disk(sx)" pos="144 464" size="normal" stroke="black"/>
 <use name="mark/cross(sx)" pos="432 528" size="normal" stroke="black"/>
+<path stroke="black">
+384 736 m
+384 704 l
+288 704 l
+288 736 l
+h
+</path>
+<path stroke="black">
+256 640 m
+256 672 l
+288 672 l
+288 640 l
+h
+</path>
 </page>
 </ipe>
