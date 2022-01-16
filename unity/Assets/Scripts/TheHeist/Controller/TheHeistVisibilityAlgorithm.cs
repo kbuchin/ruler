@@ -23,12 +23,6 @@
         Vector2 guardPos;
         [SerializeField]
         Vector2 guardOrientation;
-        [SerializeField]
-        Ray guardDir;
-        //   [SerializeField]
-        //float coneWidth = 40;
-        //[SerializeField]
-        //float coneLength;
 
         private static Vector2 origin = Vector2.zero;
         private static float coneWidth = 30;
@@ -82,8 +76,10 @@
 
             List<Vector2> result = HandleEvents(events, status, sweepline);
             Polygon2D resPoly = RotatePolygon(new Polygon2D(result), -angle);
-            
-        
+
+            //Polygon2D resPoly = RotatePolygon(conePoly, -angle);
+
+
             resPoly.ShiftToOrigin(-guardPos);
 
             // return the visiblity polygon
@@ -164,28 +160,7 @@
 
             // filter and sort events
             events.Sort();
-
-            //var angle_cone1 = CalcAngle(cone.start.direction);
-            //var angle_cone2 = CalcAngle(cone.end.direction);
-
-            //foreach (Event e in events) {
-            //    var angle_v = CalcAngle(e.vertex);
-            //    var angle_prev = CalcAngle(e.prevSeg.segment.Point1);
-            //    var angle_next = CalcAngle(e.nextSeg.segment.Point2);
-
-            //    // if all points fall outside and on the same side of the cone
-            //    if (betweenAngles(angle_v, angle_cone1,  270) && betweenAngles(angle_prev, angle_cone1, 270) && betweenAngles(angle_prev, angle_cone1, 270))
-            //    {
-            //        events.Remove(e);
-            //    }
-
-            //    if (betweenAngles(angle_v, 90, angle_cone2) && betweenAngles(angle_prev, 90, angle_cone2) && betweenAngles(angle_prev, 90, angle_cone2))
-            //    {
-            //        events.Remove(e);
-            //    }
-            //}
-
-
+            
             return events;
         }
 
@@ -243,15 +218,12 @@
                     // Finished all events, so break out of the for loop
                     break;
                 }
-                Debug.Log("handle new event");
+
 
                 // if status still contains previous segment, it can be removed since the sweepline has already passed
                 if (status.Contains(e.prevSeg)) status.Delete(e.prevSeg);
-                else
-                {
-                    status.Insert(e.prevSeg);
-                    Debug.Log("insert new status");
-                }
+                else status.Insert(e.prevSeg);
+                
                     
                 // handle next segment
                 if (status.Contains(e.nextSeg)) status.Delete(e.nextSeg);
@@ -260,13 +232,11 @@
                 // check if there is a new top segment
                 Segment newTopSeg;
                 status.FindMin(out newTopSeg);
-
-                Debug.Log("new top: " + newTopSeg.segment.ToString());
+                
 
                 // if ther is a new top segment
                 if (! topSeg.Equals(newTopSeg))
                 {
-                    Debug.Log("New top!");
                     HandleNewTopEvent(ref result, topSeg, newTopSeg, sweepline);
                     topSeg = newTopSeg;
                 }
@@ -288,9 +258,7 @@
                 // add the closes point that is still on the segment
                 var pointOnSL = oldTop.segment.Line.Intersect(sweepline);
                 if (pointOnSL.HasValue) result.Add(oldTop.segment.ClosestPoint(pointOnSL.Value));
-
-                print("add old top segments ");
-
+                
                 // add the first visible point on the new top segment
                 var firstVisiblePoint = newTop.segment.Intersect(sweepline);
                 if (firstVisiblePoint.HasValue) result.Add(firstVisiblePoint.Value);
@@ -300,7 +268,6 @@
             if (intersectionOld.HasValue)
             {
                 // add the last visible point on the intersection with the old top
-                print("add new top segments" + intersectionOld.Value);
                 result.Add(intersectionOld.Value);
 
                 // get point on new top
@@ -312,60 +279,6 @@
             
 
         }
-
-        /**
-        void Start()
-        {
-            print("Start");
-
-
-            List<Vector2> Outer = new List<Vector2>() { 
-                // default triangle
-                new Vector2(0, 4), new Vector2(4, 4), new Vector2(4, 0), new Vector2(0, 0)
-            };
-
-            Polygon2DWithHoles polygon = new Polygon2DWithHoles(new Polygon2D(Outer));
-
-            guardPos = new Vector2(1, 1);
-            //guardDir = new Ray(guardPos, );
-            playerPos = new Vector2(2, 2);
-            guardOrientation = new Vector2(0, 1);
-
-          //  Polygon2D visiblePoly = VisionCone(polygon, guardPos, playerPos, guardOrientation);
-
-            //foreach (var v in polygon.Vertices)
-            //{
-            //    MathUtil.Rotate(v, (Math.PI / 180) * 90);
-            //}
-
-
-            //// ICollection<Vector2> vertices = polygon.Vertices;
-            //List<Vector2> vertices = new List<Vector2>(); 
-
-            //foreach (var v in polygon.Vertices)
-            //{
-            //    vertices.Add(MathUtil.Rotate(v, (Math.PI / 180) * 90));
-            //}
-
-            //Polygon2DWithHoles originPoly = new Polygon2DWithHoles(new Polygon2D(vertices));
-
-            //List<Vector2> verticesList = vertices.ToList();
-            //verticesList.Sort((a, b) => CalcAngle(a).CompareTo(CalcAngle(b)));
-
-            //List<Vector2> visible = RadialSweepAlgorithm(originPoly, verticesList);
-            
-            //foreach (var v in visible)
-            //{
-            //    MathUtil.Rotate(v, (Math.PI / 180) * -90);
-            //}
-            //Polygon2D visiblePoly = new Polygon2D(visible);
-
-            //visiblePoly.ShiftToOrigin(-guardPos);
-
-          //  print(visiblePoly);
-
-        }
-        **/
 
         private class Cone
         {
@@ -430,6 +343,11 @@
             {
                 return vertex.Equals(otherEvent.vertex);
             }
+
+            public override int GetHashCode()
+            {
+                return 51 * vertex.GetHashCode() + 7 * isHole.GetHashCode();
+            }
         }
 
         public class Segment : IComparable<Segment>, IEquatable<Segment>
@@ -476,7 +394,6 @@
                         if (overlapPoint.HasValue)
                             if (!MathUtil.EqualsEps(p, overlapPoint.Value, MathUtil.EPS * 10))
                             {
-                                Debug.Log("overlap 1");
                                 return p.magnitude.CompareTo(overlapPoint.Value.magnitude);
                             }
                     }
@@ -487,7 +404,6 @@
                         if (overlapPoint.HasValue)
                             if (!MathUtil.EqualsEps(p, overlapPoint.Value, MathUtil.EPS * 10))
                             {
-                                Debug.Log("overlap 2");
                                 return overlapPoint.Value.magnitude.CompareTo(p.magnitude);
                             }
                     }
@@ -495,21 +411,20 @@
                 }
 
                 // when the segments don't overlap, compare angles of furthes points
-                var thisSegAngle = Math.Max(MathUtil.Angle(origin, segment.Point1, Vector2.right), MathUtil.Angle(origin, segment.Point2, Vector2.right));
-                var otherSegAngle = Math.Max(MathUtil.Angle(origin, otherSeg.Point1, Vector2.right), MathUtil.Angle(origin, otherSeg.Point2, Vector2.right));
+                var thisSegAngle = Math.Max(MathUtil.Angle(origin, Vector2.right, segment.Point1), MathUtil.Angle(origin, Vector2.right, segment.Point2));
+                var otherSegAngle = Math.Max(MathUtil.Angle(origin, Vector2.right, otherSeg.Point1), MathUtil.Angle(origin, Vector2.right, otherSeg.Point2));
                 
-
                 if (MathUtil.EqualsEps(thisSegAngle, otherSegAngle))
                 {
                     // fallback, something arbitrary
                     return segment.GetHashCode().CompareTo(otherSeg.GetHashCode());
                 }
 
-                print("angle this: " + thisSegAngle + ", other: " + otherSegAngle);
-
                 return thisSegAngle.CompareTo(otherSegAngle);
 
             }
+
+            
         }
     }
 }
