@@ -41,6 +41,9 @@
         private ButtonContainer m_advanceButton;
 
         [SerializeField]
+        private GameObject m_gameOverButton;
+
+        [SerializeField]
         private Text m_guardText;
 
         [SerializeField]
@@ -91,6 +94,7 @@
         int m;
         int n;
         float stepsize = 0.75f;
+        
 
 
         private TheHeistGuard m_SelectedGuard;
@@ -122,11 +126,11 @@
                 case "player":
                     if (inputCheck)
                     {
-                        GetInput(stepsize); 
-                       
+                        GetInput(stepsize);
+
                     } else
                     {
-                        if (t*speed >= 1)
+                        if (t * speed >= 1)
                         {
                             foreach (var guard in m_guards)
                             {
@@ -140,20 +144,28 @@
                         {
                             LerpPlayer(stepsize);
                         }
-                    }                     
-                break;
+                    }
+                    break;
                 case "guard":
 
                     playerStart = m_playerScript.transform.position;
                     MoveGuards();
-                 
-                    if (t*speed >= 1)
+                    //print(t * speed);
+                    if (t * speed >= 1)
                     {
                         guardStarts.Clear();
                         m++;
                         t = 0;
                         inputCheck = true;
                         state = "visionCheck";
+                    }
+                    
+                    else if (t * speed % 2 <= 0.7 || t*speed > 0.75f )
+                    {
+                        foreach (TheHeistGuard guard in m_guards)
+                        {
+                            UpdateVision(guard);
+                        }
                     }
                 break;
                 case "visionCheck":
@@ -162,7 +174,8 @@
                         {
                             UpdateVision(guard);
                         }
-                        state = "player";
+                        if (!state.Equals("gameover"))
+                            state = "player";
                     }
                     break;
                 case "pause":
@@ -170,7 +183,12 @@
                     t = 0;
                     inputCheck = true;
                     break;
-
+                case "gameover":
+                    guardStarts.Clear();
+                    t = 0;
+                    inputCheck = true;
+                    m_gameOverButton.SetActive(true);
+                    break;
             }
 
             //// return if no lighthouse was selected since last update
@@ -233,6 +251,10 @@
                         {
                             guard.Pos = Vector3.Lerp(guardStarts[i], guardStarts[i] + new Vector3(-stepsize, 0f, 0f), t * speed);
                             guard.ori = Vector2.left;
+                            if (!guard.GetComponent<SpriteRenderer>().flipX)
+                            {
+                                guard.GetComponent<SpriteRenderer>().flipX = true;
+                            }
                         }
                         else
                         {
@@ -255,6 +277,10 @@
                         {
                             guard.Pos = Vector3.Lerp(guardStarts[i], guardStarts[i] + new Vector3(stepsize, 0f, 0f), t * speed);
                             guard.ori = Vector2.right;
+                            if (guard.GetComponent<SpriteRenderer>().flipX)
+                            {
+                                guard.GetComponent<SpriteRenderer>().flipX = false;
+                            }
                         }
                         else
                         {
@@ -375,8 +401,9 @@
                 var obj = Instantiate(m_guardPrefab, new Vector3(guard.x, guard.y, -2f), Quaternion.identity);
                 m_guards.Add(obj.GetComponent<TheHeistGuard>());
                 m_solution.AddGuard(obj);
-                UpdateVision(obj.GetComponent<TheHeistGuard>());
+                
             }
+            
             AddPathToGuard();
             //print(m_levels[m_levelCounter].Player.Count);
             foreach (var player in m_levels[m_levelCounter].Player)
@@ -390,6 +417,11 @@
             foreach (var gem in m_levels[m_levelCounter].Goal)
             {
                 m_gem = Instantiate(m_gemPrefab, new Vector3(gem.x, gem.y, -2f), Quaternion.identity);
+            }
+            foreach (TheHeistGuard guard in m_guards)
+            {
+                guard.ori = Vector2.left;
+                UpdateVision(guard);
             }
         }
 
@@ -511,7 +543,14 @@
 
                     // update lighthouse visibility
                     // m_guard.VisionPoly = vision;
-                    m_guard.VisionAreaMesh.Polygon = new Polygon2DWithHoles(visionCone);
+                    var vis = new Polygon2DWithHoles(visionCone);
+                    m_guard.VisionAreaMesh.Polygon = vis;
+
+                    if (vis.ContainsInside(m_playerScript.Pos))
+                    {
+                        print("player spotted");
+                        state = "gameover";
+                    }
                 }
             }
             else
