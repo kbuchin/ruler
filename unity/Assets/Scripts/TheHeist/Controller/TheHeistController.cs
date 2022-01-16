@@ -318,25 +318,30 @@
         public void AddPathToGuard()
         {
         
-            foreach (var guard in m_guards)
-            {
-                if (m_levelCounter == 0)
-                {
-                    guard.GetComponent<TheHeistGuard>().path = path0;
-                } else //make elsif if more levels
-                {
-                    if (n == 0)
-                    {
-                        guard.GetComponent<TheHeistGuard>().path = path1;
-                        n++;
-                    }
-                    else
-                    {
-                        guard.GetComponent<TheHeistGuard>().path = path2;
-                        n++;
-                    }
+            //foreach (var guard in m_guards)
+            //{
+            //    if (m_levelCounter == 0)
+            //    {
+            //        guard.GetComponent<TheHeistGuard>().path = path0;
+            //    } else //make elsif if more levels
+            //    {
+            //        if (n == 0)
+            //        {
+            //            guard.GetComponent<TheHeistGuard>().path = path1;
+            //            n++;
+            //        }
+            //        else
+            //        {
+            //            guard.GetComponent<TheHeistGuard>().path = path2;
+            //            n++;
+            //        }
                     
-                }
+            //    }
+            //}
+
+            for (int g = 0; g < m_guards.Count; g++)
+            {
+                m_guards[g].GetComponent<TheHeistGuard>().path = gameObject.GetComponent<TheHeistGuardPath>().GetPath(m_levelCounter + 1, g);
             }
         }
 
