@@ -83,10 +83,10 @@
 
             resPoly.ShiftToOrigin(-guardPos);
 
-            if (!resPoly.IsConvex()) Debug.Log("The vision polygon is nog Convex");
+            //if (!resPoly.IsConvex()) Debug.Log("The vision polygon is nog Convex");
 
             // print result before rotation
-            Debug.Log("Result: " + new Polygon2D(result).ToString());
+          //  Debug.Log("Result: " + new Polygon2D(result).ToString());
 
             // return the visiblity polygon
             return resPoly;
@@ -94,7 +94,7 @@
 
         public void PrintState(AATree<Segment> status, Segment top, Event e)
         {
-            Debug.Log("Event: " + e.vertex + ", "+ e.radians + "\n Top: " + top.segment.ToString());
+            //Debug.Log("Event: " + e.vertex + ", "+ e.radians + "\n Top: " + top.segment.ToString());
             Segment statusSeg = null;
             status.FindMin(out statusSeg);
             var statusStr = statusSeg.segment.ToString() + "angle: " + statusSeg.angleP1;
@@ -105,7 +105,7 @@
                 statusSeg = newMin;
                 statusStr += ", " + statusSeg.segment.ToString() + " angle: " + statusSeg.angleP1;
             }
-            Debug.Log("Status: " + statusStr);
+           // Debug.Log("Status: " + statusStr);
         }
 
         // returns angle between v and cone direction in degrees
@@ -127,7 +127,7 @@
             double a1 = MathUtil.Angle(origin, seg.segment.Point1, Vector2.right);
             double a2 = MathUtil.Angle(origin, seg.segment.Point2, Vector2.right);
 
-            Debug.Log("InLineCheck: " + a1 + ", " + a2);
+            //Debug.Log("InLineCheck: " + a1 + ", " + a2);
 
             // if a1 >= 270 and a2 <= 90
             if (a1 >= 180 * Mathf.Deg2Rad && a2 <= 180 * Mathf.Deg2Rad) return true;
@@ -215,7 +215,7 @@
                         var a1 = MathUtil.Angle(origin, Vector2.right, seg.segment.Point1);
                         var a2 = MathUtil.Angle(origin, Vector2.right, seg.segment.Point2);
                         var av = MathUtil.Angle(origin, Vector2.right, e.vertex);
-                        Debug.Log("Status add: " + a1 + ", " + a2 + ", v: " + av + "rad: " + e.radians);
+                       // Debug.Log("Status add: " + a1 + ", " + a2 + ", v: " + av + "rad: " + e.radians);
                         tempSet.Add(seg);
                     }
 
@@ -304,7 +304,7 @@
                 // if ther is a new top segment
                 if (topSeg != newTopSeg && newTopSeg != null) //! topSeg.Equals(newTopSeg))
                 {
-                    Debug.Log("New top: " + newTopSeg.segment.ToString());
+                    //Debug.Log("New top: " + newTopSeg.segment.ToString());
                     HandleNewTopEvent(ref result, topSeg, newTopSeg, sweepline);
                     topSeg = newTopSeg;
                 }

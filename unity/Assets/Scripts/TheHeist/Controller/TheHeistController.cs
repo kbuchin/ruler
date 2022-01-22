@@ -56,7 +56,7 @@
         protected List<GameObject> instantObjects = new List<GameObject>();
 
         // stores the current level index
-        private int m_levelCounter = -1;
+        private int m_levelCounter = -1; //has to start at -1
 
         // specified max number of guards in level
         private int m_maxNumberOfGuards;
@@ -151,6 +151,7 @@
                     playerStart = m_playerScript.transform.position;
                     MoveGuards();
                     //print(t * speed);
+                    print(t * speed % 0.2);
                     if (t * speed >= 1)
                     {
                         guardStarts.Clear();
@@ -160,8 +161,9 @@
                         state = "visionCheck";
                     }
                     
-                    else if (t * speed % 2 <= 0.7 || t*speed > 0.75f )
+                    else if (t * speed % 0.2 <= 0.05 || t*speed > 0.75f )
                     {
+                        
                         foreach (TheHeistGuard guard in m_guards)
                         {
                             UpdateVision(guard);

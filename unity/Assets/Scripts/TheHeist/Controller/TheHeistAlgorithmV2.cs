@@ -601,12 +601,12 @@
 
             if (playerHiding)
             {
-                Debug.Log("Player is hiding");
+                //Debug.Log("Player is hiding");
 
             }
             else
             {
-                Debug.Log("Player is not hiding");               
+               // Debug.Log("Player is not hiding");               
             }
 
 
