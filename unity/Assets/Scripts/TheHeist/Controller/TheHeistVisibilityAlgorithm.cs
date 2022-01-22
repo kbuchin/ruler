@@ -21,11 +21,11 @@
         Vector2 playerPos;
         [SerializeField]
         Vector2 guardPos;
-        [SerializeField]
+        // [SerializeField]
         Vector2 guardOrientation;
 
         private static Vector2 origin = Vector2.zero;
-        private static float coneWidth = 30;
+        private static readonly float coneWidth = 30;
 
         private Cone cone = new Cone(origin, coneWidth);
 
@@ -35,7 +35,7 @@
             // set values
             this.playerPos = playerPos;
             this.guardPos = guardPos;
-            this.guardOrientation = (guardOrientation.Equals(origin)) ? Vector2.left : guardOrientation;
+            this.guardOrientation = Vector2.right; // (guardOrientation.Equals(origin)) ? Vector2.left : guardOrientation;
 
             // clone polygon
             Polygon2DWithHoles poly = new Polygon2DWithHoles(polygon.Outside, polygon.Holes);
@@ -45,6 +45,7 @@
             // shift such that guard is origin of polygon
             poly.ShiftToOrigin(guardPos);
 
+            // cone's polygon for debugging
             var coneList = new List<Vector2>();
             coneList.Add(origin);
             coneList.Add(cone.start.direction);
@@ -82,8 +83,29 @@
 
             resPoly.ShiftToOrigin(-guardPos);
 
+            if (!resPoly.IsConvex()) Debug.Log("The vision polygon is nog Convex");
+
+            // print result before rotation
+            Debug.Log("Result: " + new Polygon2D(result).ToString());
+
             // return the visiblity polygon
             return resPoly;
+        }
+
+        public void PrintState(AATree<Segment> status, Segment top, Event e)
+        {
+            Debug.Log("Event: " + e.vertex + ", "+ e.radians + "\n Top: " + top.segment.ToString());
+            Segment statusSeg = null;
+            status.FindMin(out statusSeg);
+            var statusStr = statusSeg.segment.ToString() + "angle: " + statusSeg.angleP1;
+            for (int i = 1; i < status.Count; i++)
+            {
+                Segment newMin = null;
+                status.FindNextBiggest(statusSeg, out newMin);
+                statusSeg = newMin;
+                statusStr += ", " + statusSeg.segment.ToString() + " angle: " + statusSeg.angleP1;
+            }
+            Debug.Log("Status: " + statusStr);
         }
 
         // returns angle between v and cone direction in degrees
@@ -98,6 +120,19 @@
         {
             if (a1 < test && test < a2) return true;
             else return true;
+        }
+
+        private bool InConeStart(Segment seg)
+        {
+            double a1 = MathUtil.Angle(origin, seg.segment.Point1, Vector2.right);
+            double a2 = MathUtil.Angle(origin, seg.segment.Point2, Vector2.right);
+
+            Debug.Log("InLineCheck: " + a1 + ", " + a2);
+
+            // if a1 >= 270 and a2 <= 90
+            if (a1 >= 180 * Mathf.Deg2Rad && a2 <= 180 * Mathf.Deg2Rad) return true;
+            else if (a2 >= 180 * Mathf.Deg2Rad && a1 <= 180 * Mathf.Deg2Rad) return true;
+            else return false;
         }
 
         public static Vector2 Rotate(Vector2 v, float degrees)
@@ -168,13 +203,26 @@
         private AATree<Segment> InitStatusTree(List<Event> events, Ray2D sweepline)
         {
             AATree<Segment> status = new AATree<Segment>();
+            HashSet<Segment> tempSet = new HashSet<Segment>();
 
             // if the event's previous segment intersects the sweepline, add the segment to the status
             foreach (var e in events)
             {
-                var intersection = e.prevSeg.segment.Intersect(sweepline);
-                if (intersection.HasValue) status.Insert(e.prevSeg);
+                foreach ( Segment seg in e.GetSegments()) {
+                    var intersection = seg.segment.Intersect(sweepline);
+                    if (intersection.HasValue && InConeStart(seg))
+                    {
+                        var a1 = MathUtil.Angle(origin, Vector2.right, seg.segment.Point1);
+                        var a2 = MathUtil.Angle(origin, Vector2.right, seg.segment.Point2);
+                        var av = MathUtil.Angle(origin, Vector2.right, e.vertex);
+                        Debug.Log("Status add: " + a1 + ", " + a2 + ", v: " + av + "rad: " + e.radians);
+                        tempSet.Add(seg);
+                    }
+
+                }
             }
+
+            foreach (var s in tempSet) status.Insert(s);
 
             return status;
         }
@@ -189,7 +237,7 @@
             else print("Status Empty");
 
             // create a hashset to ensure only adding unique segments
-            HashSet<Segment> slSegments = new HashSet<Segment>();
+            HashSet<Segment> tempSet = new HashSet<Segment>();
 
             // handle first top
             // add the origin
@@ -207,8 +255,18 @@
                 sweepline = new Ray2D(origin, e.vertex);
                 // print("event angle: " + e.radians);
 
+                PrintState(status, topSeg, e);
+
+                // if event
+                if (MathUtil.EqualsEps(MathUtil.Angle(origin, cone.end.direction, Vector2.right), e.radians)
+                    && topSeg.segment.IsEndpoint(e.vertex))
+                {
+                    result.Add(e.vertex);
+                }
+                
                 // finish if sweepline falls outside the vision cone
-                if (MathUtil.Angle(origin, cone.end.direction, Vector2.right) < e.radians)
+                if (MathUtil.Angle(origin, cone.end.direction, Vector2.right) < e.radians 
+                    || MathUtil.EqualsEps(MathUtil.Angle(origin, cone.end.direction, Vector2.right), e.radians))
                 {
                     // add final intersection with the current top segment
                     var lastIntersection = topSeg.segment.Intersect(cone.end);
@@ -219,15 +277,23 @@
                     break;
                 }
 
-
+                // handle deletion of segments no longer in sweepline
                 // if status still contains previous segment, it can be removed since the sweepline has already passed
-                if (status.Contains(e.prevSeg)) status.Delete(e.prevSeg);
-                else status.Insert(e.prevSeg);
+                foreach (Segment seg in e.GetSegments())
+                {
+                    if (status.Contains(seg)) status.Delete(seg);
+                    else if (tempSet.Contains(seg)) tempSet.Remove(seg);
+                    else tempSet.Add(seg);
+                }
+
+                // if next event is on the same sweepline, skip adding new segments to the status structure till all are swept
+                if (i + 1 < events.Count && Line.Colinear(origin, e.vertex, events[i + 1].vertex)) continue;
+
                 
-                    
-                // handle next segment
-                if (status.Contains(e.nextSeg)) status.Delete(e.nextSeg);
-                else status.Insert(e.nextSeg);
+                // after all all vertices on the same sweepline have been handled, add them to the status
+                foreach (Segment seg in tempSet) status.Insert(seg);
+                tempSet.Clear();
+
 
                 // check if there is a new top segment
                 Segment newTopSeg = null;
@@ -238,9 +304,11 @@
                 // if ther is a new top segment
                 if (topSeg != newTopSeg && newTopSeg != null) //! topSeg.Equals(newTopSeg))
                 {
+                    Debug.Log("New top: " + newTopSeg.segment.ToString());
                     HandleNewTopEvent(ref result, topSeg, newTopSeg, sweepline);
                     topSeg = newTopSeg;
                 }
+                
                 
 
             }
@@ -258,22 +326,22 @@
             {
                 // add the closes point that is still on the segment
                 var pointOnSL = oldTop.segment.Line.Intersect(sweepline);
-                if (pointOnSL.HasValue) result.Add(oldTop.segment.ClosestPoint(pointOnSL.Value));
+                if (pointOnSL.HasValue && !result.Contains(pointOnSL.Value)) result.Add(oldTop.segment.ClosestPoint(pointOnSL.Value));
                 
                 // add the first visible point on the new top segment
                 var firstVisiblePoint = newTop.segment.Intersect(sweepline);
-                if (firstVisiblePoint.HasValue) result.Add(firstVisiblePoint.Value);
+                if (firstVisiblePoint.HasValue && !result.Contains(firstVisiblePoint.Value)) result.Add(firstVisiblePoint.Value);
             }
 
             // new top is in front of old top
             if (intersectionOld.HasValue)
             {
                 // add the last visible point on the intersection with the old top
-                result.Add(intersectionOld.Value);
+                if (!result.Contains(intersectionOld.Value)) result.Add(intersectionOld.Value);
 
                 // get point on new top
                 var intersectionNew = newTop.segment.Intersect(sweepline);
-                if (intersectionNew.HasValue) result.Add(intersectionNew.Value);
+                if (intersectionNew.HasValue && !result.Contains(intersectionNew.Value)) result.Add(intersectionNew.Value);
                 else print("new top does not have intersection value");
             }
             
@@ -286,6 +354,7 @@
             public Ray2D ray;
             public Ray2D start;
             public Ray2D end;
+            public double endAngle;
 
             public Cone(Vector2 origin, float width)
             {
@@ -294,8 +363,9 @@
                 
                 Vector2 vecEnd = MathUtil.Rotate(direction, -width * Mathf.Deg2Rad);
 
-                this.start = new Ray2D(origin, Vector2.right);
-                this.end = new Ray2D(origin, vecEnd);
+                start = new Ray2D(origin, Vector2.right);
+                end = new Ray2D(origin, vecEnd);
+                endAngle = MathUtil.Angle(origin, Vector2.right, end.direction);
             }
 
             public Cone(Ray2D direction, float width)
@@ -317,7 +387,7 @@
         {
             public readonly Vector2 vertex;
             // public float degrees;
-            public float radians;
+            public double radians;
             public Segment prevSeg;
             public Segment nextSeg;
             public bool isHole;
@@ -332,12 +402,17 @@
                 this.isHole = isHole;
 
                 // this.degrees = CalcAngle(Vector2.zero);
-                this.radians = (float)MathUtil.Angle(origin, vertex, Vector2.right);
+                radians = MathUtil.Angle(origin, vertex, Vector2.right);
+            }
+
+            public List<Segment> GetSegments()
+            {
+                return new List<Segment>() { prevSeg, nextSeg };
             }
 
             public int CompareTo(Event otherEvent)
             {
-                return vc.Compare(otherEvent.vertex, vertex);
+                return radians.CompareTo(otherEvent.radians); // vc.Compare(otherEvent.vertex, vertex);
             }
 
             public bool Equals(Event otherEvent)
@@ -354,17 +429,20 @@
         public class Segment : IComparable<Segment>, IEquatable<Segment>
         {
             public LineSegment segment;
+            public double angleP1;
 
             private static readonly VertexComparer vc = new VertexComparer();
 
             public Segment(Vector2 p1, Vector2 p2)
             {
                 segment = new LineSegment(p1, p2);
+                angleP1 = MathUtil.Angle(origin, p2, Vector2.right);
             }
 
             public Segment(LineSegment linesegment)
             {
                 segment = linesegment;
+                angleP1 = MathUtil.Angle(origin, linesegment.Point2, Vector2.right);
             }
 
             public bool Equals(Segment otherSeg)
