@@ -291,12 +291,11 @@ Prefab:
       value: "The problem that you solve in this game is getting to the gem. It requires
         the player to place to avoid the guards field of view entirely.\n\r\nThe levels
         in the game are grids of tiles that the player and the guards traverse in
-        a turn based system.\n\nThe visibility area of a guard is calculated using
-        a sweepline algorithm. The solution is verified using a combination of a naive
-        checker for containment of certain points by some visibility polygon, and
-        an area comparison (with some tolerance) between the original polygon and
-        the union of visibility polygons. The union is calculated using a (different)
-        sweepline algorithm.\n"
+        a turn based system.\n\nThe visibility polygon of a guard is calculated and
+        created using a sweepline algorithm. The solution is verified using a combination
+        of a naive checker for containment of the player character by each visibility
+        polygon. Completion of a level is checked by a simple distance calculation
+        with some tolerance.\n"
       objectReference: {fileID: 0}
     - target: {fileID: 11497240, guid: 47375d1ad9de78947b5dddba6bf6a125, type: 2}
       propertyPath: m_FontData.m_Font
